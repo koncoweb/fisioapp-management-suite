@@ -61,6 +61,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Products collection rules
+    match /products/{productId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // Deny access to all other collections by default
     match /{document=**} {
       allow read, write: if false;

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +15,7 @@ import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Unauthorized from "@/pages/Unauthorized";
 import NotFound from "./pages/NotFound";
+import ProductManagement from "./pages/admin/ProductManagement";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +35,11 @@ const App = () => (
             {/* Protected Routes */}
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/products" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <ProductManagement />
+                </ProtectedRoute>
+              } />
               <Route path="/employees" element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <div>Employee Management (Coming soon)</div>
