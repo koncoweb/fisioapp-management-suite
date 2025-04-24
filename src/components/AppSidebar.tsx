@@ -36,20 +36,20 @@ const AppSidebar: React.FC = () => {
 
   const adminMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/employees', label: 'Employees', icon: Users },
-    { path: '/products', label: 'Products', icon: Package },
-    { path: '/services', label: 'Services', icon: Settings },
-    { path: '/bookings', label: 'Bookings', icon: Calendar },
-    { path: '/messages', label: 'Messages', icon: MessageSquare },
-    { path: '/payments', label: 'Payments', icon: Receipt },
-    { path: '/notifications', label: 'Notifications', icon: Bell },
+    { path: '/employees', label: 'Karyawan', icon: Users },
+    { path: '/products', label: 'Produk', icon: Package },
+    { path: '/services', label: 'Layanan', icon: Settings },
+    { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    { path: '/messages', label: 'Pesan', icon: MessageSquare },
+    { path: '/payments', label: 'Pembayaran', icon: Receipt },
+    { path: '/notifications', label: 'Notifikasi', icon: Bell },
   ];
 
   const therapistMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/bookings', label: 'Bookings', icon: Calendar },
-    { path: '/messages', label: 'Messages', icon: MessageSquare },
-    { path: '/services', label: 'Services', icon: Settings },
+    { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    { path: '/messages', label: 'Pesan', icon: MessageSquare },
+    { path: '/services', label: 'Layanan', icon: Settings },
   ];
 
   const menuItems = isAdmin ? adminMenuItems : therapistMenuItems;
@@ -68,13 +68,13 @@ const AppSidebar: React.FC = () => {
       <SidebarHeader className="py-4">
         <div className="flex flex-col items-center justify-center">
           <h1 className="text-2xl font-bold text-primary">Fisioapp</h1>
-          <p className="text-xs text-muted-foreground">Physiotherapy Clinic</p>
+          <p className="text-xs text-muted-foreground">Klinik Fisioterapi</p>
         </div>
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Menu Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (
@@ -99,7 +99,7 @@ const AppSidebar: React.FC = () => {
             <SidebarMenuItem>
               <SidebarMenuButton onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
-                <span>Logout</span>
+                <span>Keluar</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

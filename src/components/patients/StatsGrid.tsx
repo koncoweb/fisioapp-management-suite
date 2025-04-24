@@ -7,27 +7,27 @@ const StatsGrid = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatsCard
-        title="Upcoming Appointments"
+        title="Jadwal Pemeriksaan"
         value={3}
-        description="Next: Tomorrow at 10:00 AM"
+        description="Berikutnya: Besok jam 10:00"
         icon={Calendar}
       />
       <StatsCard
-        title="Active Therapists"
+        title="Terapis Aktif"
         value={2}
-        description="Assigned to your care"
+        description="Ditugaskan untuk perawatan Anda"
         icon={Users}
       />
       <StatsCard
-        title="Treatment Progress"
+        title="Progres Pengobatan"
         value="75%"
-        description="Overall completion"
+        description="Penyelesaian keseluruhan"
         icon={Activity}
       />
       <StatsCard
-        title="Wellness Score"
+        title="Skor Kesehatan"
         value={8.5}
-        description="out of 10"
+        description="dari 10"
         icon={Heart}
       />
     </div>

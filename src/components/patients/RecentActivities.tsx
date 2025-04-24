@@ -15,17 +15,17 @@ interface Activity {
 }
 
 const activities: Activity[] = [
-  { date: "Today", activity: "Completed physiotherapy session", type: "Therapy" },
-  { date: "Yesterday", activity: "Updated medical records", type: "Admin" },
-  { date: "2 days ago", activity: "Scheduled next appointment", type: "Appointment" },
+  { date: "Hari ini", activity: "Menyelesaikan sesi fisioterapi", type: "Terapi" },
+  { date: "Kemarin", activity: "Memperbarui catatan medis", type: "Admin" },
+  { date: "2 hari lalu", activity: "Menjadwalkan janji berikutnya", type: "Jadwal" },
 ];
 
 const RecentActivities = () => {
   return (
     <Card className="mt-6 bg-white border-blue-200">
       <CardHeader>
-        <CardTitle className="text-blue-800">Recent Activities</CardTitle>
-        <CardDescription>Your latest medical activities and updates</CardDescription>
+        <CardTitle className="text-blue-800">Aktivitas Terkini</CardTitle>
+        <CardDescription>Aktivitas dan pembaruan medis terbaru Anda</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

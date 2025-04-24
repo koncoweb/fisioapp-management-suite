@@ -25,16 +25,16 @@ const Header: React.FC = () => {
     const path = location.pathname;
     
     if (path === '/') return 'Dashboard';
-    if (path === '/employees') return 'Employee Management';
-    if (path === '/services') return 'Therapy Services';
-    if (path === '/bookings') return 'Session Bookings';
-    if (path === '/payments') return 'Payment Records';
-    if (path === '/profile') return 'My Profile';
+    if (path === '/employees') return 'Manajemen Karyawan';
+    if (path === '/services') return 'Layanan Terapi';
+    if (path === '/bookings') return 'Jadwal Sesi';
+    if (path === '/payments') return 'Catatan Pembayaran';
+    if (path === '/profile') return 'Profil Saya';
     
     // Extract dynamic paths
-    if (path.startsWith('/employees/')) return 'Employee Details';
-    if (path.startsWith('/services/')) return 'Service Details';
-    if (path.startsWith('/bookings/')) return 'Booking Details';
+    if (path.startsWith('/employees/')) return 'Detail Karyawan';
+    if (path.startsWith('/services/')) return 'Detail Layanan';
+    if (path.startsWith('/bookings/')) return 'Detail Jadwal';
     
     // Default title
     return 'Fisioapp';
@@ -57,7 +57,7 @@ const Header: React.FC = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">
               <div className="flex flex-col">
@@ -70,13 +70,13 @@ const Header: React.FC = () => {
               className="cursor-pointer"
               onClick={() => window.location.href = '/profile'}
             >
-              Profile
+              Profil
             </DropdownMenuItem>
             <DropdownMenuItem 
               className="cursor-pointer text-red-500"
               onClick={() => signOut()}
             >
-              Log out
+              Keluar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
