@@ -13,24 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { PersonalInfoFields } from '@/components/register/PersonalInfoFields';
+import { ContactInfoFields } from '@/components/register/ContactInfoFields';
+import { InsuranceFields } from '@/components/register/InsuranceFields';
+import { PasswordFields } from '@/components/register/PasswordFields';
 
 const registerSchema = z.object({
   namaLengkap: z.string().min(2, { message: 'Nama harus minimal 2 karakter' }),
@@ -48,7 +37,7 @@ const registerSchema = z.object({
   path: ['confirmPassword'],
 });
 
-type RegisterFormData = z.infer<typeof registerSchema>;
+export type RegisterFormData = z.infer<typeof registerSchema>;
 
 const Register: React.FC = () => {
   const { register } = useAuth();
@@ -106,154 +95,11 @@ const Register: React.FC = () => {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="namaLengkap"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Lengkap</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nama lengkap anda" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="email@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="jenisKelamin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jenis Kelamin</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih jenis kelamin" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                          <SelectItem value="Perempuan">Perempuan</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="usia"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Usia</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="Usia anda" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="alamat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Alamat</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Alamat lengkap" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="pekerjaan"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Pekerjaan</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Pekerjaan anda" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="nomorBPJS"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor BPJS (Opsional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nomor BPJS" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="nomorAsuransiLain"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nomor Asuransi Lain (Opsional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nomor asuransi lain" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Konfirmasi Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
+                <PersonalInfoFields form={form} />
+                <ContactInfoFields form={form} />
+                <InsuranceFields form={form} />
+                <PasswordFields form={form} />
+                
                 <Button 
                   type="submit" 
                   className="w-full" 
