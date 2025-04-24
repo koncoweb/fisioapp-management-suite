@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,7 +46,6 @@ const BookingPage: React.FC = () => {
     resolver: zodResolver(bookingFormSchema),
   });
 
-  // Fetch therapy services
   const { data: therapyServices, isLoading: isLoadingServices } = useQuery({
     queryKey: ['therapyServices'],
     queryFn: async () => {
@@ -60,7 +58,6 @@ const BookingPage: React.FC = () => {
     }
   });
 
-  // Fetch therapists
   const { data: therapists, isLoading: isLoadingTherapists } = useQuery({
     queryKey: ['therapists'],
     queryFn: async () => {
@@ -73,13 +70,11 @@ const BookingPage: React.FC = () => {
     }
   });
 
-  // Handle date change to generate available time slots
   const handleDateChange = (date: Date | undefined) => {
     if (!date) return;
     
     form.setValue('date', date);
     
-    // Check if selected date is a working day
     const dayOfWeek = date.getDay();
     if (!DEFAULT_WORKING_HOURS.days.includes(dayOfWeek)) {
       toast({
@@ -91,7 +86,6 @@ const BookingPage: React.FC = () => {
       return;
     }
     
-    // Generate time slots based on working hours
     const [startHour, startMinute] = DEFAULT_WORKING_HOURS.start.split(':').map(Number);
     const [endHour, endMinute] = DEFAULT_WORKING_HOURS.end.split(':').map(Number);
     
@@ -103,7 +97,6 @@ const BookingPage: React.FC = () => {
       const timeString = `${currentHour.toString().padStart(2, '0')}:${currentMinute.toString().padStart(2, '0')}`;
       slots.push(timeString);
       
-      // Increment by 30 minutes
       currentMinute += 30;
       if (currentMinute >= 60) {
         currentHour += 1;
@@ -137,7 +130,6 @@ const BookingPage: React.FC = () => {
         return;
       }
 
-      // Calculate end time based on service duration
       const [hour, minute] = values.time.split(':').map(Number);
       const startDate = new Date();
       startDate.setHours(hour, minute, 0);
@@ -147,7 +139,7 @@ const BookingPage: React.FC = () => {
 
       const bookingDetails = {
         patientId: userData.uid,
-        patientName: userData.name || userData.email,
+        patientName: userData.namaLengkap || userData.email,
         therapistId: values.therapistId,
         therapistName: therapist.name,
         serviceId: values.serviceId,
@@ -224,7 +216,6 @@ const BookingPage: React.FC = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Service Selection */}
                 <FormField
                   control={form.control}
                   name="serviceId"
@@ -262,7 +253,6 @@ const BookingPage: React.FC = () => {
                   )}
                 />
 
-                {/* Therapist Selection */}
                 <FormField
                   control={form.control}
                   name="therapistId"
@@ -297,7 +287,6 @@ const BookingPage: React.FC = () => {
                   )}
                 />
 
-                {/* Date Selection */}
                 <FormField
                   control={form.control}
                   name="date"
@@ -329,7 +318,6 @@ const BookingPage: React.FC = () => {
                             selected={field.value}
                             onSelect={(date) => handleDateChange(date)}
                             disabled={(date) => {
-                              // Disable past dates and non-working days
                               const day = date.getDay();
                               const isPastDate = date < new Date(new Date().setHours(0, 0, 0, 0));
                               const isWorkingDay = DEFAULT_WORKING_HOURS.days.includes(day);
@@ -346,7 +334,6 @@ const BookingPage: React.FC = () => {
                   )}
                 />
 
-                {/* Time Selection */}
                 <FormField
                   control={form.control}
                   name="time"
@@ -383,7 +370,6 @@ const BookingPage: React.FC = () => {
                 />
               </div>
 
-              {/* Notes */}
               <FormField
                 control={form.control}
                 name="notes"
