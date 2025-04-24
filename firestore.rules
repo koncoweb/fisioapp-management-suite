@@ -18,6 +18,12 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
+    function isTherapist() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'therapist';
+    }
+
     // Users collection rules
     match /users/{userId} {
       // Allow read of user profiles by authenticated users
@@ -35,12 +41,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Bookings collection rules
+    // Bookings collection rules - Updated to allow patient bookings
     match /bookings/{bookingId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && 
+        (resource.data.patientId == request.auth.uid || 
+         resource.data.therapistId == request.auth.uid || isAdmin());
+      
+      // Allow patients to create their own bookings
+      allow create: if isSignedIn() && request.resource.data.patientId == request.auth.uid;
+      
       // Allow therapists to update their own bookings and admins to manage all bookings
-      allow create, update: if isSignedIn() && 
-        (request.resource.data.therapistId == request.auth.uid || isAdmin());
+      allow update: if isSignedIn() && 
+        (resource.data.therapistId == request.auth.uid || isAdmin());
+        
       allow delete: if isAdmin();
     }
 
