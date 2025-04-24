@@ -173,7 +173,7 @@ const BookingPage: React.FC = () => {
     if (!bookingData) return;
     
     try {
-      await addDoc(collection(db, 'bookings'), bookingData);
+      await addDoc(collection(db, 'therapySessions'), bookingData);
       
       toast({
         title: "Berhasil",
@@ -182,7 +182,7 @@ const BookingPage: React.FC = () => {
       
       navigate('/patients');
     } catch (error) {
-      console.error("Error creating booking:", error);
+      console.error("Error creating therapy session:", error);
       toast({
         title: "Error",
         description: "Gagal membuat jadwal terapi. Silakan coba lagi.",

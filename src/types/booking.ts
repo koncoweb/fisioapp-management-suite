@@ -1,4 +1,3 @@
-
 export interface TherapyBooking {
   id: string;
   patientId: string;
@@ -10,6 +9,22 @@ export interface TherapyBooking {
   date: string; // Format: YYYY-MM-DD
   startTime: string; // Format: HH:MM
   endTime: string; // Format: HH:MM
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  notes?: string;
+  createdAt: string;
+}
+
+export interface TherapySession {
+  id: string;
+  patientId: string;
+  patientName: string;
+  therapistId: string;
+  therapistName: string;
+  serviceId: string;
+  serviceName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
   createdAt: string;
