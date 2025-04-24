@@ -1,0 +1,62 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Users collection rules
+    match /users/{userId} {
+      // Allow read of user profiles by authenticated users
+      allow read: if isSignedIn();
+      // Allow creation only during registration with matching auth ID
+      allow create: if isSignedIn() && 
+                   request.auth.uid == userId &&
+                   request.resource.data.keys().hasAll(['email', 'name', 'role']) &&
+                   (request.resource.data.role == 'admin' || request.resource.data.role == 'therapist');
+      // Allow updates only by the owner or admin
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Services collection rules
+    match /services/{serviceId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Bookings collection rules
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn();
+      // Allow therapists to update their own bookings and admins to manage all bookings
+      allow create, update: if isSignedIn() && 
+        (request.resource.data.therapistId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Payments collection rules
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() && 
+        (resource.data.therapistId == request.auth.uid || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // Deny access to all other collections by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
