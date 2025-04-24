@@ -1,9 +1,8 @@
-
 export interface Employee {
   id: string;
   name: string;
   email: string;
-  role: 'admin' | 'therapist';
+  role: 'admin' | 'therapist' | 'karyawan';
   phone?: string;
   specialization?: string;
   profileImageUrl?: string;

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,14 +35,21 @@ interface EmployeeFormProps {
 
 const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) => {
   const { toast } = useToast();
+  
+  // Function to determine if the employee role is valid for our form
+  const getValidRole = (role?: string): EmployeeRole => {
+    if (role === "admin" || role === "therapist" || role === "karyawan") {
+      return role as EmployeeRole;
+    }
+    return "karyawan"; // Default to karyawan if role is not valid
+  };
+  
   const form = useForm<EmployeeFormData>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: {
       namaLengkap: employee?.namaLengkap || "",
       email: employee?.email || "",
-      role: (employee?.role === "admin" || employee?.role === "therapist" || employee?.role === "karyawan") 
-        ? employee.role 
-        : "karyawan", // Default to karyawan if role is not one of the allowed employee roles
+      role: getValidRole(employee?.role),
       alamat: employee?.alamat || "",
       jenisKelamin: employee?.jenisKelamin || "",
       usia: employee?.usia || "",
