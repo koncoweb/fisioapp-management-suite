@@ -33,7 +33,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
-  const { login } = useAuth();
+  const { login, userData } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,7 +49,12 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
-      navigate('/');
+      // Check user role from context after login
+      if (userData?.role === 'admin') {
+        navigate('/products'); // Redirect admin to products management page
+      } else {
+        navigate('/'); // Redirect other users to main dashboard
+      }
     } catch (error) {
       console.error('Login error:', error);
     } finally {
