@@ -9,36 +9,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
-import { Package, Edit, Trash2 } from 'lucide-react';
-import { Product, ProductType } from '@/types/product';
+import { Package } from 'lucide-react';
+import { Product } from '@/types/product';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { 
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import ProductForm from '@/components/products/ProductForm';
+import ProductList from '@/components/products/ProductList';
 
 const ProductManagement = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -103,85 +88,15 @@ const ProductManagement = () => {
     },
   });
 
-  const ProductForm = ({ onSubmit }: { onSubmit: (data: any) => void }) => {
-    const [formData, setFormData] = useState({
-      name: editingProduct?.name || '',
-      type: editingProduct?.type || 'product' as ProductType,
-      price: editingProduct?.price || 0,
-      duration: editingProduct?.duration || 0,
-    });
-
-    const handleSubmit = (e: React.FormEvent) => {
-      e.preventDefault();
-      onSubmit(formData);
-    };
-
-    return (
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-            <Input
-              value={formData.name}
-              onChange={e => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Product/Service Name"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Select
-              value={formData.type}
-              onValueChange={value => setFormData({ ...formData, type: value as ProductType })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="product">Product</SelectItem>
-                <SelectItem value="service">Service</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Input
-              type="number"
-              value={formData.price}
-              onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-              placeholder="Price (in Rupiah)"
-              min="0"
-              required
-            />
-          </div>
-          {formData.type === 'service' && (
-            <div className="grid gap-2">
-              <Input
-                type="number"
-                value={formData.duration}
-                onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
-                placeholder="Duration (in minutes)"
-                min="0"
-                required
-              />
-            </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button type="submit">
-            {editingProduct ? 'Update' : 'Add'} {formData.type === 'product' ? 'Product' : 'Service'}
-          </Button>
-        </DialogFooter>
-      </form>
-    );
-  };
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center p-8">Loading...</div>;
-  }
-
   const handleDelete = (id: string) => {
     if (window.confirm('Are you sure you want to delete this item?')) {
       deleteMutation.mutate(id);
     }
   };
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center p-8">Loading...</div>;
+  }
 
   return (
     <Card>
@@ -213,52 +128,21 @@ const ProductManagement = () => {
                     addMutation.mutate(data);
                   }
                 }}
+                initialData={editingProduct}
               />
             </DialogContent>
           </Dialog>
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Price (Rp)</TableHead>
-              <TableHead>Duration (min)</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products?.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>{product.name}</TableCell>
-                <TableCell className="capitalize">{product.type}</TableCell>
-                <TableCell>{product.price.toLocaleString('id-ID')}</TableCell>
-                <TableCell>{product.type === 'service' ? product.duration : '-'}</TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setEditingProduct(product);
-                      setIsOpen(true);
-                    }}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(product.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <ProductList
+          products={products}
+          onEdit={(product) => {
+            setEditingProduct(product);
+            setIsOpen(true);
+          }}
+          onDelete={handleDelete}
+        />
       </CardContent>
     </Card>
   );
