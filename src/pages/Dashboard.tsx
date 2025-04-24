@@ -16,10 +16,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { BookingSession } from '@/types';
 import { Calendar, Users, Receipt } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const Dashboard: React.FC = () => {
   const { userData } = useAuth();
@@ -30,6 +31,7 @@ const Dashboard: React.FC = () => {
     totalEmployees: 0,
     totalRevenue: 0,
   });
+  const { toast } = useToast();
 
   const isAdmin = userData?.role === 'admin';
   const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
@@ -39,66 +41,96 @@ const Dashboard: React.FC = () => {
       setIsLoading(true);
       try {
         // Fetch today's bookings
-        let bookingsQuery;
-        if (isAdmin) {
-          bookingsQuery = query(
-            collection(db, 'bookings'),
-            where('date', '==', today),
-            orderBy('startTime'),
-            limit(5)
-          );
-        } else {
-          bookingsQuery = query(
-            collection(db, 'bookings'),
-            where('date', '==', today),
-            where('therapistId', '==', userData?.uid || ''),
-            orderBy('startTime'),
-            limit(5)
-          );
-        }
-        const bookingsSnapshot = await getDocs(bookingsQuery);
-        const bookingsData: BookingSession[] = [];
-        
-        bookingsSnapshot.forEach((doc) => {
-          const data = doc.data();
-          bookingsData.push({ 
-            id: doc.id, 
-            clientName: data.clientName,
-            serviceName: data.serviceName,
-            therapistName: data.therapistName,
-            therapistId: data.therapistId,
-            date: data.date,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            status: data.status
-          } as BookingSession);
-        });
-        
-        setTodayBookings(bookingsData);
+        if (userData) {
+          let bookingsQuery;
+          if (isAdmin) {
+            bookingsQuery = query(
+              collection(db, 'bookings'),
+              where('date', '==', today),
+              orderBy('startTime'),
+              limit(5)
+            );
+          } else {
+            bookingsQuery = query(
+              collection(db, 'bookings'),
+              where('date', '==', today),
+              where('therapistId', '==', userData?.uid || ''),
+              orderBy('startTime'),
+              limit(5)
+            );
+          }
+          
+          try {
+            const bookingsSnapshot = await getDocs(bookingsQuery);
+            const bookingsData: BookingSession[] = [];
+            
+            bookingsSnapshot.forEach((doc) => {
+              const data = doc.data() as DocumentData;
+              bookingsData.push({ 
+                id: doc.id, 
+                clientName: data.clientName || '',
+                clientPhone: data.clientPhone || '',
+                serviceName: data.serviceName || '',
+                serviceId: data.serviceId || '',
+                therapistName: data.therapistName || '',
+                therapistId: data.therapistId || '',
+                date: data.date || '',
+                startTime: data.startTime || '',
+                endTime: data.endTime || '',
+                status: data.status || 'scheduled',
+                notes: data.notes || '',
+                createdAt: data.createdAt || ''
+              });
+            });
+            
+            setTodayBookings(bookingsData);
+          } catch (error) {
+            console.error('Error fetching bookings:', error);
+            toast({
+              title: "Error",
+              description: "Failed to fetch bookings. Please check Firestore permissions.",
+              variant: "destructive",
+            });
+          }
 
-        // Fetch statistics if admin
-        if (isAdmin) {
-          const employeesSnapshot = await getDocs(collection(db, 'users'));
-          const totalEmployees = employeesSnapshot.size;
-          
-          const allBookingsSnapshot = await getDocs(collection(db, 'bookings'));
-          const totalBookings = allBookingsSnapshot.size;
-          
-          const paymentsSnapshot = await getDocs(collection(db, 'payments'));
-          let totalRevenue = 0;
-          paymentsSnapshot.forEach((doc) => {
-            totalRevenue += doc.data().amount || 0;
-          });
-          
-          setStats({
-            totalBookings,
-            totalEmployees,
-            totalRevenue,
-          });
+          // Fetch statistics if admin
+          if (isAdmin) {
+            try {
+              const employeesSnapshot = await getDocs(collection(db, 'users'));
+              const totalEmployees = employeesSnapshot.size;
+              
+              const allBookingsSnapshot = await getDocs(collection(db, 'bookings'));
+              const totalBookings = allBookingsSnapshot.size;
+              
+              const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+              let totalRevenue = 0;
+              paymentsSnapshot.forEach((doc) => {
+                const data = doc.data();
+                totalRevenue += data.amount || 0;
+              });
+              
+              setStats({
+                totalBookings,
+                totalEmployees,
+                totalRevenue,
+              });
+            } catch (error) {
+              console.error('Error fetching admin stats:', error);
+              toast({
+                title: "Error",
+                description: "Failed to fetch statistics. Please check Firestore permissions.",
+                variant: "destructive",
+              });
+            }
+          }
         }
-
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -106,8 +138,10 @@ const Dashboard: React.FC = () => {
 
     if (userData) {
       fetchDashboardData();
+    } else {
+      setIsLoading(false);
     }
-  }, [userData, isAdmin, today]);
+  }, [userData, isAdmin, today, toast]);
 
   if (isLoading) {
     return (

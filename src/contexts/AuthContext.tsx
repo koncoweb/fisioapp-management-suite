@@ -60,12 +60,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               uid: user.uid,
               ...userData
             });
+          } else {
+            console.log("User document does not exist in Firestore");
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
           toast({
             title: "Error",
-            description: "Failed to fetch user data",
+            description: "Failed to fetch user data. Please check Firestore permissions.",
             variant: "destructive",
           });
         }
@@ -107,19 +109,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const user = credential.user;
       
       // Create user profile in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        email,
-        name,
-        role,
-        createdAt: new Date().toISOString()
-      });
-
-      toast({
-        title: "Success",
-        description: "Account created successfully",
-      });
+      try {
+        await setDoc(doc(db, 'users', user.uid), {
+          email,
+          name,
+          role,
+          createdAt: new Date().toISOString()
+        });
+        
+        toast({
+          title: "Success",
+          description: "Account created successfully",
+        });
+      } catch (firestoreError: any) {
+        console.error("Firestore error:", firestoreError);
+        // User created in Auth but failed to create in Firestore
+        toast({
+          title: "Partial Success",
+          description: "Account created but profile data couldn't be saved. Please check Firestore permissions.",
+          variant: "destructive",
+        });
+        // Continue without throwing to prevent blocking the registration flow
+      }
     } catch (error: any) {
-      console.error(error);
+      console.error("Registration error:", error);
       let message = "Failed to create account";
       if (error.code === 'auth/email-already-in-use') {
         message = "Email already in use";
