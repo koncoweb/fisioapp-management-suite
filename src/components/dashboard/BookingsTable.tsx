@@ -55,7 +55,7 @@ const BookingsTable = ({ bookings, date, isAdmin }: BookingsTableProps) => {
         return 'bg-green-100 text-green-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
-      case 'confirmed':
+      case 'scheduled':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-yellow-100 text-yellow-800';
@@ -112,19 +112,19 @@ const BookingsTable = ({ bookings, date, isAdmin }: BookingsTableProps) => {
                     >
                       {booking.status === 'completed' ? 'Selesai' :
                        booking.status === 'cancelled' ? 'Dibatalkan' :
-                       booking.status === 'confirmed' ? 'Dikonfirmasi' : 
+                       booking.status === 'scheduled' ? 'Dijadwalkan' : 
                        'Menunggu'}
                     </div>
                   </TableCell>
                   <TableCell>
-                    {(isAdmin || (!isAdmin && booking.status === 'pending')) && (
+                    {(isAdmin || (!isAdmin && booking.status === 'scheduled')) && (
                       <div className="space-x-2">
-                        {booking.status === 'pending' && (
+                        {booking.status === 'scheduled' && (
                           <>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
+                              onClick={() => handleStatusUpdate(booking.id, 'scheduled')}
                               className="text-blue-600 hover:text-blue-700"
                             >
                               Konfirmasi
@@ -139,7 +139,7 @@ const BookingsTable = ({ bookings, date, isAdmin }: BookingsTableProps) => {
                             </Button>
                           </>
                         )}
-                        {booking.status === 'confirmed' && (
+                        {booking.status === 'scheduled' && (
                           <Button
                             variant="outline"
                             size="sm"

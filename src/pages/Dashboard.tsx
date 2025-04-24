@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -64,7 +63,7 @@ const Dashboard: React.FC = () => {
                 date: data.date || '',
                 startTime: data.startTime || '',
                 endTime: data.endTime || '',
-                status: data.status || 'pending',
+                status: data.status || 'scheduled',
                 notes: data.notes || '',
                 createdAt: data.createdAt || ''
               });
