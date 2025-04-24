@@ -30,7 +30,7 @@ import {
 const AppSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData, logout } = useAuth();
+  const { userData, signOut } = useAuth();
   
   const isAdmin = userData?.role === 'admin';
 
@@ -56,7 +56,7 @@ const AppSidebar: React.FC = () => {
   
   const handleLogout = async () => {
     try {
-      await logout();
+      await signOut();
       navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
