@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -41,16 +40,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Bookings collection rules - Updated to allow patient bookings
+    // Bookings collection rules - Updated to allow both admin and patient bookings
     match /bookings/{bookingId} {
+      // Allow reading by involved parties (patient, therapist, or admin)
       allow read: if isSignedIn() && 
         (resource.data.patientId == request.auth.uid || 
-         resource.data.therapistId == request.auth.uid || isAdmin());
+         resource.data.therapistId == request.auth.uid || 
+         isAdmin());
       
-      // Allow patients to create their own bookings
-      allow create: if isSignedIn() && request.resource.data.patientId == request.auth.uid;
+      // Allow creation by admin or if the authenticated user is the patient making the booking
+      allow create: if isAdmin() || 
+        (isSignedIn() && request.resource.data.patientId == request.auth.uid);
       
-      // Allow therapists to update their own bookings and admins to manage all bookings
+      // Allow updates by therapist assigned to the booking or admin
       allow update: if isSignedIn() && 
         (resource.data.therapistId == request.auth.uid || isAdmin());
         
