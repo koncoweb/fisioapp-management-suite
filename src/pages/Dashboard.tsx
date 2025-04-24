@@ -7,19 +7,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { collection, query, where, getDocs, orderBy, limit, DocumentData } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { BookingSession } from '@/types';
-import { Calendar, Users, Receipt } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TherapySessionForm from '@/components/therapy/TherapySessionForm';
+import { Calendar, Heart } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const Dashboard: React.FC = () => {
@@ -34,6 +24,7 @@ const Dashboard: React.FC = () => {
   const { toast } = useToast();
 
   const isAdmin = userData?.role === 'admin';
+  const isTherapist = userData?.role === 'therapist';
   const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
 
   useEffect(() => {
@@ -154,117 +145,159 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Today's Bookings
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todayBookings.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {todayBookings.length === 0 ? "No sessions scheduled" : "Sessions scheduled for today"}
-            </p>
-          </CardContent>
-        </Card>
-        
-        {isAdmin && (
-          <>
+      {isTherapist ? (
+        <Tabs defaultValue="sessions" className="w-full">
+          <TabsList>
+            <TabsTrigger value="sessions">Today's Sessions</TabsTrigger>
+            <TabsTrigger value="results">Session Results</TabsTrigger>
+          </TabsList>
+          <TabsContent value="sessions">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Today's Bookings
+                  </CardTitle>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{todayBookings.length}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {todayBookings.length === 0 ? "No sessions scheduled" : "Sessions scheduled for today"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Today's Sessions</CardTitle>
+                <CardDescription>
+                  {isAdmin 
+                    ? "All therapy sessions scheduled for today" 
+                    : "Your therapy sessions scheduled for today"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableCaption>
+                    {todayBookings.length === 0 
+                      ? "No sessions scheduled for today" 
+                      : `Showing ${todayBookings.length} sessions for ${today}`}
+                  </TableCaption>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Time</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Service</TableHead>
+                      {isAdmin && <TableHead>Therapist</TableHead>}
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {todayBookings.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={isAdmin ? 5 : 4} className="text-center py-6">
+                          No bookings scheduled for today
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      todayBookings.map((booking) => (
+                        <TableRow key={booking.id}>
+                          <TableCell className="font-medium">
+                            {booking.startTime} - {booking.endTime}
+                          </TableCell>
+                          <TableCell>{booking.clientName}</TableCell>
+                          <TableCell>{booking.serviceName}</TableCell>
+                          {isAdmin && <TableCell>{booking.therapistName}</TableCell>}
+                          <TableCell>
+                            <div
+                              className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                              ${booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
+                                'bg-blue-100 text-blue-800'}`}
+                            >
+                              {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="results">
+            <Card>
+              <CardHeader>
+                <CardTitle>Record Therapy Session</CardTitle>
+                <CardDescription>
+                  Input therapy session details and results
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TherapySessionForm />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Total Employees
+                  Today's Bookings
                 </CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalEmployees}</div>
+                <div className="text-2xl font-bold">{todayBookings.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Active staff members
+                  {todayBookings.length === 0 ? "No sessions scheduled" : "Sessions scheduled for today"}
                 </p>
               </CardContent>
             </Card>
             
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Total Revenue
-                </CardTitle>
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  Rp {stats.totalRevenue.toLocaleString()}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  All-time revenue
-                </p>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Today's Sessions</CardTitle>
-          <CardDescription>
-            {isAdmin 
-              ? "All therapy sessions scheduled for today" 
-              : "Your therapy sessions scheduled for today"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableCaption>
-              {todayBookings.length === 0 
-                ? "No sessions scheduled for today" 
-                : `Showing ${todayBookings.length} sessions for ${today}`}
-            </TableCaption>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Service</TableHead>
-                {isAdmin && <TableHead>Therapist</TableHead>}
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {todayBookings.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={isAdmin ? 5 : 4} className="text-center py-6">
-                    No bookings scheduled for today
-                  </TableCell>
-                </TableRow>
-              ) : (
-                todayBookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="font-medium">
-                      {booking.startTime} - {booking.endTime}
-                    </TableCell>
-                    <TableCell>{booking.clientName}</TableCell>
-                    <TableCell>{booking.serviceName}</TableCell>
-                    {isAdmin && <TableCell>{booking.therapistName}</TableCell>}
-                    <TableCell>
-                      <div
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                        ${booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
-                          'bg-blue-100 text-blue-800'}`}
-                      >
-                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            {isAdmin && (
+              <>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Employees
+                    </CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.totalEmployees}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Active staff members
+                    </p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Revenue
+                    </CardTitle>
+                    <Receipt className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      Rp {stats.totalRevenue.toLocaleString()}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      All-time revenue
+                    </p>
+                  </CardContent>
+                </Card>
+              </>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 };
