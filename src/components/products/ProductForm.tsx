@@ -10,7 +10,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 import { Product, ProductType } from '@/types/product';
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const formSchema = z.object({
+  name: z.string().min(2, {
+    message: "Name must be at least 2 characters.",
+  }),
+  type: z.enum(["product", "service"]),
+  price: z.coerce.number().min(0, {
+    message: "Price must be a positive number.",
+  }),
+  duration: z.coerce.number().min(0).optional(),
+});
 
 interface ProductFormProps {
   onSubmit: (data: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => void;
@@ -18,72 +40,106 @@ interface ProductFormProps {
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ onSubmit, initialData }) => {
-  const [formData, setFormData] = useState({
-    name: initialData?.name || '',
-    type: initialData?.type || 'product' as ProductType,
-    price: initialData?.price || 0,
-    duration: initialData?.duration || 0,
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: initialData?.name || '',
+      type: initialData?.type || 'product',
+      price: initialData?.price || 0,
+      duration: initialData?.duration || 0,
+    },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const watchType = form.watch("type");
+
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    onSubmit(values);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid gap-4">
-        <div className="grid gap-2">
-          <Input
-            value={formData.name}
-            onChange={e => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Product/Service Name"
-            required
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter product/service name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="product">Product</SelectItem>
+                  <SelectItem value="service">Service</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Price (Rp)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Enter price"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {watchType === "service" && (
+          <FormField
+            control={form.control}
+            name="duration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Duration (minutes)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter duration in minutes"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
-        <div className="grid gap-2">
-          <Select
-            value={formData.type}
-            onValueChange={value => setFormData({ ...formData, type: value as ProductType })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="product">Product</SelectItem>
-              <SelectItem value="service">Service</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="grid gap-2">
-          <Input
-            type="number"
-            value={formData.price}
-            onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-            placeholder="Price (in Rupiah)"
-            min="0"
-            required
-          />
-        </div>
-        {formData.type === 'service' && (
-          <div className="grid gap-2">
-            <Input
-              type="number"
-              value={formData.duration}
-              onChange={e => setFormData({ ...formData, duration: Number(e.target.value) })}
-              placeholder="Duration (in minutes)"
-              min="0"
-              required
-            />
-          </div>
         )}
-      </div>
-      <DialogFooter>
-        <Button type="submit">
-          {initialData ? 'Update' : 'Add'} {formData.type === 'product' ? 'Product' : 'Service'}
-        </Button>
-      </DialogFooter>
-    </form>
+
+        <DialogFooter>
+          <Button type="submit" className="w-full sm:w-auto">
+            {initialData ? 'Update' : 'Add'} {watchType === 'product' ? 'Product' : 'Service'}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 };
 

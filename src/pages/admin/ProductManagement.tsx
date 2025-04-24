@@ -16,19 +16,21 @@ import { db } from '@/lib/firebase';
 import { 
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import ProductForm from '@/components/products/ProductForm';
 import ProductList from '@/components/products/ProductList';
 import { useProductMutations } from '@/hooks/useProductMutations';
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductManagement = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { addMutation, updateMutation, deleteMutation } = useProductMutations();
+  const { toast } = useToast();
 
   const {
     data: products,
@@ -51,25 +53,29 @@ const ProductManagement = () => {
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center p-8">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center p-4 min-h-[400px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <CardTitle>Products & Services Management</CardTitle>
-            <CardDescription>Manage your products and services catalog</CardDescription>
+            <CardDescription>Manage your clinic's products and services catalog</CardDescription>
           </div>
           <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <Package className="mr-2 h-4 w-4" />
-                Add New
+                Add New Item
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-[600px]">
               <DialogHeader>
                 <DialogTitle>{editingProduct ? 'Edit' : 'Add New'} Product/Service</DialogTitle>
                 <DialogDescription>
@@ -83,12 +89,20 @@ const ProductManagement = () => {
                       onSuccess: () => {
                         setIsOpen(false);
                         setEditingProduct(null);
+                        toast({
+                          title: "Success",
+                          description: "Product updated successfully",
+                        });
                       }
                     });
                   } else {
                     addMutation.mutate(data, {
                       onSuccess: () => {
                         setIsOpen(false);
+                        toast({
+                          title: "Success",
+                          description: "Product added successfully",
+                        });
                       }
                     });
                   }
