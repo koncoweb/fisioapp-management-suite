@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -9,8 +10,20 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TherapySessionForm from '@/components/therapy/TherapySessionForm';
-import { Calendar, Heart } from 'lucide-react';
+import { Calendar, Heart, Users, Receipt } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, getDocs, DocumentData } from 'firebase/firestore';
+import { BookingSession } from '@/types';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 const Dashboard: React.FC = () => {
   const { userData } = useAuth();
