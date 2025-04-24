@@ -73,7 +73,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employee }
         role: employee.role as 'admin' | 'therapist' | 'karyawan',
         alamat: employee.alamat || '',
         jenisKelamin: employee.jenisKelamin || '',
-        usia: employee.usia || 0,
+        usia: employee.usia ? Number(employee.usia) : 0, // Ensure usia is a number
       });
     } else {
       form.reset({

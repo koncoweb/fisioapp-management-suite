@@ -18,7 +18,15 @@ export const AgeField: React.FC<AgeFieldProps> = ({ form }) => {
         <FormItem>
           <FormLabel>Age</FormLabel>
           <FormControl>
-            <Input {...field} type="number" />
+            <Input 
+              type="number" 
+              {...field} 
+              onChange={(e) => {
+                // Convert the string value to a number before updating the form
+                const value = e.target.value ? parseInt(e.target.value, 10) : 0;
+                field.onChange(value);
+              }}
+            />
           </FormControl>
           <FormMessage />
         </FormItem>
