@@ -1,3 +1,4 @@
+
 rules_version = '2';
 
 service cloud.firestore {
@@ -21,6 +22,13 @@ service cloud.firestore {
       return isSignedIn() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'therapist';
+    }
+
+    function isPatient() {
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role != 'admin' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role != 'therapist';
     }
 
     // Users collection rules
@@ -74,8 +82,7 @@ service cloud.firestore {
          isAdmin());
       
       // Allow creation by admin or if the authenticated user is the patient making the booking
-      allow create: if isAdmin() || 
-        (isSignedIn() && request.resource.data.patientId == request.auth.uid);
+      allow create: if isAdmin() || isPatient(); 
       
       // Allow updates by therapist assigned to the session or admin
       allow update: if isSignedIn() && 

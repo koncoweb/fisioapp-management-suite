@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -29,11 +30,13 @@ const Dashboard: React.FC = () => {
       try {
         if (userData) {
           let bookingsQuery;
+          
+          // Fix: Remove orderBy from queries to prevent index requirements
+          // We'll sort the data after fetching it
           if (isAdmin) {
             bookingsQuery = query(
               collection(db, 'therapySessions'),
               where('date', '==', today),
-              orderBy('startTime'),
               limit(5)
             );
           } else {
@@ -41,14 +44,13 @@ const Dashboard: React.FC = () => {
               collection(db, 'therapySessions'),
               where('date', '==', today),
               where('therapistId', '==', userData?.uid || ''),
-              orderBy('startTime'),
               limit(5)
             );
           }
           
           try {
             const bookingsSnapshot = await getDocs(bookingsQuery);
-            const bookingsData: BookingSession[] = [];
+            let bookingsData: BookingSession[] = [];
             
             bookingsSnapshot.forEach((doc) => {
               const data = doc.data() as DocumentData;
@@ -67,6 +69,13 @@ const Dashboard: React.FC = () => {
                 notes: data.notes || '',
                 createdAt: data.createdAt || ''
               });
+            });
+            
+            // Sort data manually after fetching
+            bookingsData.sort((a, b) => {
+              if (a.startTime < b.startTime) return -1;
+              if (a.startTime > b.startTime) return 1;
+              return 0;
             });
             
             setTodayBookings(bookingsData);
