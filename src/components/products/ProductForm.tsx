@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -23,6 +23,7 @@ import { Product, ProductType } from '@/types/product';
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
+// Update the schema to ensure all required fields are non-optional
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
@@ -52,8 +53,16 @@ const ProductForm: React.FC<ProductFormProps> = ({ onSubmit, initialData }) => {
 
   const watchType = form.watch("type");
 
+  // Fix the handleSubmit function to ensure types match
   const handleSubmit = (values: z.infer<typeof formSchema>) => {
-    onSubmit(values);
+    // This type assertion ensures we're passing the correct type to onSubmit
+    const submitData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'> = {
+      name: values.name,
+      type: values.type,
+      price: values.price,
+      duration: values.duration,
+    };
+    onSubmit(submitData);
   };
 
   return (
