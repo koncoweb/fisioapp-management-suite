@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-
 import {
   Card,
   CardContent,
@@ -34,13 +33,18 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 
 const registerSchema = z.object({
-  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
-  confirmPassword: z.string().min(6, { message: 'Confirm password must be at least 6 characters' }),
-  role: z.enum(['admin', 'therapist']),
+  namaLengkap: z.string().min(2, { message: 'Nama harus minimal 2 karakter' }),
+  email: z.string().email({ message: 'Email tidak valid' }),
+  password: z.string().min(6, { message: 'Password minimal 6 karakter' }),
+  confirmPassword: z.string().min(6, { message: 'Konfirmasi password minimal 6 karakter' }),
+  jenisKelamin: z.enum(['Laki-laki', 'Perempuan']),
+  usia: z.string().min(1, { message: 'Usia harus diisi' }),
+  alamat: z.string().min(1, { message: 'Alamat harus diisi' }),
+  pekerjaan: z.string().min(1, { message: 'Pekerjaan harus diisi' }),
+  nomorBPJS: z.string().optional(),
+  nomorAsuransiLain: z.string().optional(),
 }).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "Passwords tidak sama",
   path: ['confirmPassword'],
 });
 
@@ -55,21 +59,33 @@ const Register: React.FC = () => {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
+      namaLengkap: '',
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'therapist',
+      jenisKelamin: 'Laki-laki',
+      usia: '',
+      alamat: '',
+      pekerjaan: '',
+      nomorBPJS: '',
+      nomorAsuransiLain: '',
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsSubmitting(true);
     try {
-      await register(data.email, data.password, data.name, data.role);
+      await register(data.email, data.password, data.namaLengkap, 'Pasien', {
+        alamat: data.alamat,
+        jenisKelamin: data.jenisKelamin,
+        usia: data.usia,
+        pekerjaan: data.pekerjaan,
+        nomorBPJS: data.nomorBPJS || '',
+        nomorAsuransiLain: data.nomorAsuransiLain || '',
+      });
       toast({
-        title: "Registration successful",
-        description: "Your account has been created. You can now log in.",
+        title: "Registrasi berhasil",
+        description: "Akun anda telah dibuat. Silahkan login.",
       });
       navigate('/login');
     } catch (error) {
@@ -85,28 +101,25 @@ const Register: React.FC = () => {
         <Card className="shadow-lg">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-bold text-primary">Fisioapp</CardTitle>
-            <CardDescription>Create your account</CardDescription>
+            <CardDescription>Daftar akun baru</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="namaLengkap"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Nama Lengkap</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Your name" 
-                          {...field} 
-                        />
+                        <Input placeholder="Nama lengkap anda" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="email"
@@ -114,17 +127,105 @@ const Register: React.FC = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="email" 
-                          placeholder="your.email@example.com" 
-                          {...field} 
-                        />
+                        <Input type="email" placeholder="email@example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
+                <FormField
+                  control={form.control}
+                  name="jenisKelamin"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Jenis Kelamin</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih jenis kelamin" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                          <SelectItem value="Perempuan">Perempuan</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="usia"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Usia</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Usia anda" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="alamat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Alamat</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Alamat lengkap" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="pekerjaan"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Pekerjaan</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Pekerjaan anda" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="nomorBPJS"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nomor BPJS (Opsional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nomor BPJS" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="nomorAsuransiLain"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nomor Asuransi Lain (Opsional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nomor asuransi lain" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="password"
@@ -132,80 +233,40 @@ const Register: React.FC = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="******" 
-                          {...field} 
-                        />
+                        <Input type="password" placeholder="******" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={form.control}
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>Konfirmasi Password</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="password" 
-                          placeholder="******" 
-                          {...field} 
-                        />
+                        <Input type="password" placeholder="******" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select your role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="therapist">Therapist</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
+
                 <Button 
                   type="submit" 
                   className="w-full" 
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center">
-                      <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    'Register'
-                  )}
+                  {isSubmitting ? 'Mendaftar...' : 'Daftar'}
                 </Button>
               </form>
             </Form>
           </CardContent>
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
-              Already have an account?{' '}
+              Sudah punya akun?{' '}
               <Link to="/login" className="text-primary hover:underline">
                 Login
               </Link>

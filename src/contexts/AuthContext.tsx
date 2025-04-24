@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   User, 
@@ -11,13 +10,28 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
 
-export type UserRole = 'admin' | 'therapist';
+export type UserRole = 'admin' | 'therapist' | 'Pasien';
+
+export interface AdditionalUserData {
+  alamat?: string;
+  jenisKelamin?: string;
+  usia?: string;
+  pekerjaan?: string;
+  nomorBPJS?: string;
+  nomorAsuransiLain?: string;
+}
 
 export interface UserData {
   uid: string;
   email: string;
-  name: string;
+  namaLengkap: string;
   role: UserRole;
+  alamat?: string;
+  jenisKelamin?: string;
+  usia?: string;
+  pekerjaan?: string;
+  nomorBPJS?: string;
+  nomorAsuransiLain?: string;
 }
 
 interface AuthContextType {
@@ -25,7 +39,7 @@ interface AuthContextType {
   userData: UserData | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
+  register: (email: string, password: string, namaLengkap: string, role: UserRole, additionalData?: AdditionalUserData) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -103,7 +117,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (email: string, password: string, name: string, role: UserRole) => {
+  const register = async (
+    email: string, 
+    password: string, 
+    namaLengkap: string, 
+    role: UserRole, 
+    additionalData?: AdditionalUserData
+  ) => {
     try {
       const credential = await createUserWithEmailAndPassword(auth, email, password);
       const user = credential.user;
@@ -112,30 +132,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         await setDoc(doc(db, 'users', user.uid), {
           email,
-          name,
+          namaLengkap,
           role,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
+          ...additionalData
         });
         
         toast({
-          title: "Success",
-          description: "Account created successfully",
+          title: "Sukses",
+          description: "Akun berhasil dibuat",
         });
       } catch (firestoreError: any) {
         console.error("Firestore error:", firestoreError);
-        // User created in Auth but failed to create in Firestore
         toast({
-          title: "Partial Success",
-          description: "Account created but profile data couldn't be saved. Please check Firestore permissions.",
+          title: "Error",
+          description: "Gagal menyimpan data profil. Silakan coba lagi.",
           variant: "destructive",
         });
-        // Continue without throwing to prevent blocking the registration flow
+        throw firestoreError;
       }
     } catch (error: any) {
       console.error("Registration error:", error);
-      let message = "Failed to create account";
+      let message = "Gagal membuat akun";
       if (error.code === 'auth/email-already-in-use') {
-        message = "Email already in use";
+        message = "Email sudah terdaftar";
       }
       toast({
         title: "Error",
