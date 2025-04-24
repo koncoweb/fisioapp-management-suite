@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { collection, query, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -18,6 +19,7 @@ import { TherapySession } from '@/types/booking';
 
 const BookingManagement = () => {
   const { toast } = useToast();
+  const { userData } = useAuth();
 
   const { data: sessions, isLoading, refetch } = useQuery({
     queryKey: ['therapySessions'],
@@ -32,10 +34,24 @@ const BookingManagement = () => {
   });
 
   const handleStatusUpdate = async (sessionId: string, newStatus: 'confirmed' | 'cancelled') => {
+    if (!userData) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to perform this action",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const sessionRef = doc(db, 'therapySessions', sessionId);
       await updateDoc(sessionRef, {
-        status: newStatus
+        status: newStatus,
+        statusDiupdate: {
+          nama: userData.namaLengkap,
+          userId: userData.uid,
+          timestamp: new Date().toISOString()
+        }
       });
       
       await refetch();
@@ -73,6 +89,7 @@ const BookingManagement = () => {
                 <TableHead>Date</TableHead>
                 <TableHead>Time</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Last Updated By</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -91,6 +108,16 @@ const BookingManagement = () => {
                     }>
                       {session.status}
                     </span>
+                  </TableCell>
+                  <TableCell>
+                    {session.statusDiupdate ? (
+                      <div className="text-sm">
+                        <p>{session.statusDiupdate.nama}</p>
+                        <p className="text-gray-500 text-xs">
+                          {new Date(session.statusDiupdate.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    ) : null}
                   </TableCell>
                   <TableCell>
                     {session.status === 'pending' && (
@@ -125,3 +152,4 @@ const BookingManagement = () => {
 };
 
 export default BookingManagement;
+

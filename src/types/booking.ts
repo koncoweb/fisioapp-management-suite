@@ -28,6 +28,11 @@ export interface TherapySession {
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   notes?: string;
   createdAt: string;
+  statusDiupdate?: {
+    nama: string;
+    userId: string;
+    timestamp: string;
+  };
 }
 
 export interface TherapyService {
