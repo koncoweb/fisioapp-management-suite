@@ -52,7 +52,7 @@ const Header: React.FC = () => {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
-                {userData?.name ? userData.name.charAt(0).toUpperCase() : <User />}
+                {userData?.namaLengkap ? userData.namaLengkap.charAt(0).toUpperCase() : <User />}
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -61,7 +61,7 @@ const Header: React.FC = () => {
             <DropdownMenuSeparator />
             <DropdownMenuItem className="cursor-pointer">
               <div className="flex flex-col">
-                <span>{userData?.name}</span>
+                <span>{userData?.namaLengkap}</span>
                 <span className="text-xs text-muted-foreground">{userData?.role.toUpperCase()}</span>
               </div>
             </DropdownMenuItem>
