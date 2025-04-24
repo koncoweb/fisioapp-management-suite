@@ -20,6 +20,7 @@ import EmployeeManagement from "./pages/admin/EmployeeManagement";
 import PatientDashboard from "./pages/patients/Dashboard";
 import BookingPage from "./pages/patients/BookingPage";
 import BookingManagement from "./pages/admin/BookingManagement";
+import Settings from "./pages/admin/Settings";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,11 @@ const App = () => (
               } />
               <Route path="/notifications" element={<div>Notifications (Coming soon)</div>} />
               <Route path="/profile" element={<div>User Profile (Coming soon)</div>} />
+              <Route path="/settings" element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <Settings />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* Default route */}
