@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Users } from 'lucide-react';
+import { Calendar, Users, Receipt } from 'lucide-react';
 
 interface StatsCardProps {
   title: string;
