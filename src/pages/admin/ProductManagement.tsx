@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,10 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
 import { Package } from 'lucide-react';
 import { Product } from '@/types/product';
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { 
   Dialog,
@@ -24,12 +23,12 @@ import {
 } from "@/components/ui/dialog";
 import ProductForm from '@/components/products/ProductForm';
 import ProductList from '@/components/products/ProductList';
+import { useProductMutations } from '@/hooks/useProductMutations';
 
 const ProductManagement = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const { addMutation, updateMutation, deleteMutation } = useProductMutations();
 
   const {
     data: products,
@@ -43,49 +42,6 @@ const ProductManagement = () => {
         ...doc.data()
       })) as Product[];
     }
-  });
-
-  const addMutation = useMutation({
-    mutationFn: async (newProduct: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const docRef = await addDoc(collection(db, 'products'), {
-        ...newProduct,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      return docRef;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: "Success", description: "Product added successfully" });
-      setIsOpen(false);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (product: Product) => {
-      const docRef = doc(db, 'products', product.id);
-      await updateDoc(docRef, {
-        ...product,
-        updatedAt: new Date().toISOString(),
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: "Success", description: "Product updated successfully" });
-      setIsOpen(false);
-      setEditingProduct(null);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const docRef = doc(db, 'products', id);
-      await deleteDoc(docRef);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      toast({ title: "Success", description: "Product deleted successfully" });
-    },
   });
 
   const handleDelete = (id: string) => {
@@ -123,9 +79,18 @@ const ProductManagement = () => {
               <ProductForm
                 onSubmit={(data) => {
                   if (editingProduct) {
-                    updateMutation.mutate({ ...editingProduct, ...data });
+                    updateMutation.mutate({ ...editingProduct, ...data }, {
+                      onSuccess: () => {
+                        setIsOpen(false);
+                        setEditingProduct(null);
+                      }
+                    });
                   } else {
-                    addMutation.mutate(data);
+                    addMutation.mutate(data, {
+                      onSuccess: () => {
+                        setIsOpen(false);
+                      }
+                    });
                   }
                 }}
                 initialData={editingProduct}
