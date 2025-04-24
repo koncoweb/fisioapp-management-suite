@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -61,7 +60,18 @@ const Dashboard: React.FC = () => {
         const bookingsData: BookingSession[] = [];
         
         bookingsSnapshot.forEach((doc) => {
-          bookingsData.push({ id: doc.id, ...doc.data() } as BookingSession);
+          const data = doc.data();
+          bookingsData.push({ 
+            id: doc.id, 
+            clientName: data.clientName,
+            serviceName: data.serviceName,
+            therapistName: data.therapistName,
+            therapistId: data.therapistId,
+            date: data.date,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            status: data.status
+          } as BookingSession);
         });
         
         setTodayBookings(bookingsData);

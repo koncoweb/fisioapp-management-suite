@@ -46,7 +46,7 @@ const AppSidebar: React.FC = () => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  active={location.pathname === '/'}
+                  isActive={location.pathname === '/'}
                   onClick={() => navigate('/')}
                 >
                   <Home className="h-4 w-4" />
@@ -57,7 +57,7 @@ const AppSidebar: React.FC = () => {
               {isAdmin && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    active={location.pathname.startsWith('/employees')}
+                    isActive={location.pathname.startsWith('/employees')}
                     onClick={() => navigate('/employees')}
                   >
                     <Users className="h-4 w-4" />
@@ -68,7 +68,7 @@ const AppSidebar: React.FC = () => {
               
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  active={location.pathname.startsWith('/services')}
+                  isActive={location.pathname.startsWith('/services')}
                   onClick={() => navigate('/services')}
                 >
                   <Settings className="h-4 w-4" />
@@ -78,7 +78,7 @@ const AppSidebar: React.FC = () => {
               
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  active={location.pathname.startsWith('/bookings')}
+                  isActive={location.pathname.startsWith('/bookings')}
                   onClick={() => navigate('/bookings')}
                 >
                   <Calendar className="h-4 w-4" />
@@ -89,7 +89,7 @@ const AppSidebar: React.FC = () => {
               {isAdmin && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    active={location.pathname.startsWith('/payments')}
+                    isActive={location.pathname.startsWith('/payments')}
                     onClick={() => navigate('/payments')}
                   >
                     <Receipt className="h-4 w-4" />
