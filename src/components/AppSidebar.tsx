@@ -16,20 +16,53 @@ import {
 } from '@/components/ui/sidebar';
 
 import {
-  Home,
+  LayoutDashboard,
   Users,
-  Calendar,
-  Receipt,
+  Package,
   Settings,
+  Calendar,
+  MessageSquare,
+  Receipt,
+  LogOut,
+  Bell,
 } from 'lucide-react';
 
 const AppSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { userData } = useAuth();
+  const { userData, logout } = useAuth();
   
   const isAdmin = userData?.role === 'admin';
+
+  const adminMenuItems = [
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/employees', label: 'Employees', icon: Users },
+    { path: '/products', label: 'Products', icon: Package },
+    { path: '/services', label: 'Services', icon: Settings },
+    { path: '/bookings', label: 'Bookings', icon: Calendar },
+    { path: '/messages', label: 'Messages', icon: MessageSquare },
+    { path: '/payments', label: 'Payments', icon: Receipt },
+    { path: '/notifications', label: 'Notifications', icon: Bell },
+  ];
+
+  const therapistMenuItems = [
+    { path: '/', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/bookings', label: 'Bookings', icon: Calendar },
+    { path: '/messages', label: 'Messages', icon: MessageSquare },
+    { path: '/services', label: 'Services', icon: Settings },
+  ];
+
+  const menuItems = isAdmin ? adminMenuItems : therapistMenuItems;
   
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
   return (
     <Sidebar>
       <SidebarHeader className="py-4">
@@ -41,70 +74,35 @@ const AppSidebar: React.FC = () => {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel>Main Menu</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={location.pathname === '/'}
-                  onClick={() => navigate('/')}
-                >
-                  <Home className="h-4 w-4" />
-                  <span>Dashboard</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              {isAdmin && (
-                <SidebarMenuItem>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton
-                    isActive={location.pathname.startsWith('/employees')}
-                    onClick={() => navigate('/employees')}
+                    isActive={location.pathname === item.path}
+                    onClick={() => navigate(item.path)}
                   >
-                    <Users className="h-4 w-4" />
-                    <span>Employees</span>
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              )}
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={location.pathname.startsWith('/services')}
-                  onClick={() => navigate('/services')}
-                >
-                  <Settings className="h-4 w-4" />
-                  <span>Services</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  isActive={location.pathname.startsWith('/bookings')}
-                  onClick={() => navigate('/bookings')}
-                >
-                  <Calendar className="h-4 w-4" />
-                  <span>Bookings</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              
-              {isAdmin && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    isActive={location.pathname.startsWith('/payments')}
-                    onClick={() => navigate('/payments')}
-                  >
-                    <Receipt className="h-4 w-4" />
-                    <span>Payments</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       
       <SidebarFooter>
-        <div className="px-3 py-2">
-          <p className="text-xs text-center text-muted-foreground">© 2025 Fisioapp</p>
+        <div className="p-4">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </div>
       </SidebarFooter>
     </Sidebar>
