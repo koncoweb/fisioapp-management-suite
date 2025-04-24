@@ -13,6 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
+// Define the allowed roles for employees
+type EmployeeRole = "admin" | "therapist" | "karyawan";
+
 const employeeFormSchema = z.object({
   namaLengkap: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email format"),
@@ -38,7 +41,9 @@ const EmployeeForm = ({ isOpen, onClose, employee }: EmployeeFormProps) => {
     defaultValues: {
       namaLengkap: employee?.namaLengkap || "",
       email: employee?.email || "",
-      role: employee?.role || "karyawan",
+      role: (employee?.role === "admin" || employee?.role === "therapist" || employee?.role === "karyawan") 
+        ? employee.role 
+        : "karyawan", // Default to karyawan if role is not one of the allowed employee roles
       alamat: employee?.alamat || "",
       jenisKelamin: employee?.jenisKelamin || "",
       usia: employee?.usia || "",
