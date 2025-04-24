@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
@@ -31,14 +32,14 @@ const Dashboard: React.FC = () => {
           let bookingsQuery;
           if (isAdmin) {
             bookingsQuery = query(
-              collection(db, 'bookings'),
+              collection(db, 'therapySessions'),
               where('date', '==', today),
               orderBy('startTime'),
               limit(5)
             );
           } else {
             bookingsQuery = query(
-              collection(db, 'bookings'),
+              collection(db, 'therapySessions'),
               where('date', '==', today),
               where('therapistId', '==', userData?.uid || ''),
               orderBy('startTime'),
@@ -54,8 +55,8 @@ const Dashboard: React.FC = () => {
               const data = doc.data() as DocumentData;
               bookingsData.push({ 
                 id: doc.id, 
-                clientName: data.clientName || '',
-                clientPhone: data.clientPhone || '',
+                clientName: data.patientName || '',
+                clientPhone: data.patientPhone || '',
                 serviceName: data.serviceName || '',
                 serviceId: data.serviceId || '',
                 therapistName: data.therapistName || '',
@@ -63,7 +64,7 @@ const Dashboard: React.FC = () => {
                 date: data.date || '',
                 startTime: data.startTime || '',
                 endTime: data.endTime || '',
-                status: data.status || 'scheduled',
+                status: data.status || 'pending',
                 notes: data.notes || '',
                 createdAt: data.createdAt || ''
               });
@@ -71,10 +72,10 @@ const Dashboard: React.FC = () => {
             
             setTodayBookings(bookingsData);
           } catch (error) {
-            console.error('Error fetching bookings:', error);
+            console.error('Error fetching therapy sessions:', error);
             toast({
               title: "Error",
-              description: "Failed to fetch bookings. Please check Firestore permissions.",
+              description: "Failed to fetch therapy sessions. Please check Firestore permissions.",
               variant: "destructive",
             });
           }
@@ -84,7 +85,7 @@ const Dashboard: React.FC = () => {
               const employeesSnapshot = await getDocs(collection(db, 'users'));
               const totalEmployees = employeesSnapshot.size;
               
-              const allBookingsSnapshot = await getDocs(collection(db, 'bookings'));
+              const allBookingsSnapshot = await getDocs(collection(db, 'therapySessions'));
               const totalBookings = allBookingsSnapshot.size;
               
               const paymentsSnapshot = await getDocs(collection(db, 'payments'));
