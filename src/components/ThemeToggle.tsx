@@ -18,9 +18,9 @@ const ThemeToggle: React.FC = () => {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
           {theme === 'light' ? (
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all" />
+            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all text-blue-500" />
           ) : (
-            <Moon className="h-4 w-4 rotate-0 scale-100 transition-all" />
+            <Moon className="h-4 w-4 rotate-0 scale-100 transition-all text-blue-400" />
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>

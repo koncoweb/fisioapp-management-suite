@@ -34,9 +34,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
             <CardContent className={`p-2 ${isMobile ? 'pb-0.5' : 'pb-1'}`}>
               <div className="flex items-center justify-center h-16 bg-secondary/30 rounded-md mb-1">
                 {product.type === 'product' ? (
-                  <Package className="h-8 w-8 text-primary opacity-70" />
+                  <Package className="h-8 w-8 text-blue-500 opacity-70" />
                 ) : (
-                  <Clock className="h-8 w-8 text-accent opacity-70" />
+                  <Clock className="h-8 w-8 text-orange-500 opacity-70" />
                 )}
               </div>
               <h3 className="font-medium text-xs truncate">{product.name}</h3>
@@ -52,7 +52,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
               <Button 
                 onClick={() => onAddToCart(product)} 
                 className="w-full h-6 text-[10px]"
-                variant={product.type === 'service' ? "secondary" : "default"}
+                variant={product.type === 'service' ? "outline" : "default"}
                 size="sm"
               >
                 <ShoppingCart className="mr-1 h-3 w-3" />
