@@ -30,29 +30,29 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-grow overflow-auto max-h-[500px]">
+      <div className="flex-grow overflow-auto max-h-[400px]">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-            <CartIcon className="h-12 w-12 mb-2 opacity-20" />
-            <p>Your cart is empty</p>
+          <div className="flex flex-col items-center justify-center py-4 text-center text-muted-foreground">
+            <CartIcon className="h-8 w-8 mb-1 opacity-20" />
+            <p className="text-sm">Your cart is empty</p>
           </div>
         ) : (
-          <ul className="space-y-4">
+          <ul className="space-y-2 text-sm">
             {items.map((item) => (
-              <li key={item.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-md">
-                <div className="flex-grow">
-                  <h4 className="font-medium">{item.name}</h4>
-                  <p className="text-sm text-muted-foreground">
+              <li key={item.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+                <div className="flex-grow min-w-0">
+                  <h4 className="font-medium text-xs truncate">{item.name}</h4>
+                  <p className="text-xs text-muted-foreground">
                     Rp {item.price.toLocaleString('id-ID')} x {item.quantity}
                   </p>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
                   <div className="flex items-center border rounded-md">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-6 w-6"
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     >
                       <Minus className="h-3 w-3" />
@@ -62,13 +62,13 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
                       type="text"
                       value={item.quantity}
                       onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                      className="h-8 w-12 text-center border-0 p-0"
+                      className="h-6 w-8 text-center border-0 p-0 text-xs"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-6 w-6"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     >
                       <Plus className="h-3 w-3" />
@@ -78,10 +78,10 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    className="h-6 w-6 text-destructive hover:text-destructive"
                     onClick={() => removeItem(item.id)}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3 w-3" />
                     <span className="sr-only">Remove</span>
                   </Button>
                 </div>
@@ -92,23 +92,25 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
       </div>
 
       {items.length > 0 && (
-        <div className="mt-6">
-          <Separator className="my-4" />
-          <div className="flex justify-between items-center mb-4">
-            <span className="font-semibold">Total</span>
-            <span className="text-lg font-bold">Rp {total.toLocaleString('id-ID')}</span>
+        <div className="mt-3">
+          <Separator className="my-2" />
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-semibold text-sm">Total</span>
+            <span className="text-base font-bold">Rp {total.toLocaleString('id-ID')}</span>
           </div>
           <div className="flex flex-col gap-2">
             <Button 
               variant="default" 
-              className="w-full"
+              size="sm"
+              className="w-full text-sm h-8"
             >
               Process Payment
             </Button>
             <Button 
-              variant="outline" 
+              variant="outline"
+              size="sm"
               onClick={clearCart} 
-              className="w-full"
+              className="w-full text-sm h-8"
             >
               Clear Cart
             </Button>

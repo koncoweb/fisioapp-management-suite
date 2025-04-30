@@ -4,6 +4,7 @@ import { Product } from '@/types/product';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ShoppingCart, Package, Clock } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ProductGridProps {
   products: Product[];
@@ -11,41 +12,44 @@ interface ProductGridProps {
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
       {products.length === 0 && (
-        <div className="col-span-full text-center py-10 text-gray-500">
+        <div className="col-span-full text-center py-6 text-gray-500 text-sm">
           No products or services available
         </div>
       )}
       
       {products.map((product) => (
-        <Card key={product.id} className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-center h-32 bg-gray-100 rounded-md mb-4">
+        <Card key={product.id} className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow border-gray-200">
+          <CardContent className={`p-2 ${isMobile ? 'pb-1' : 'pb-2'}`}>
+            <div className="flex items-center justify-center h-20 bg-gray-50 rounded-md mb-1">
               {product.type === 'product' ? (
-                <Package className="h-16 w-16 text-primary opacity-50" />
+                <Package className="h-10 w-10 text-primary opacity-50" />
               ) : (
-                <Clock className="h-16 w-16 text-secondary opacity-50" />
+                <Clock className="h-10 w-10 text-secondary opacity-50" />
               )}
             </div>
-            <h3 className="font-medium text-lg truncate">{product.name}</h3>
-            <div className="mt-2">
-              <p className="text-lg font-semibold">Rp {product.price.toLocaleString('id-ID')}</p>
-              <p className="text-sm text-muted-foreground capitalize">{product.type}</p>
+            <h3 className="font-medium text-xs sm:text-sm truncate">{product.name}</h3>
+            <div className="mt-0.5">
+              <p className="text-sm font-semibold">Rp {product.price.toLocaleString('id-ID')}</p>
+              <p className="text-xs text-muted-foreground capitalize">{product.type}</p>
               {product.type === 'service' && product.duration && (
-                <p className="text-xs text-muted-foreground">{product.duration} minutes</p>
+                <p className="text-xs text-muted-foreground">{product.duration} min</p>
               )}
             </div>
           </CardContent>
-          <CardFooter className="px-4 py-3 border-t bg-gray-50/50">
+          <CardFooter className="px-2 py-1 border-t bg-gray-50/50">
             <Button 
               onClick={() => onAddToCart(product)} 
-              className="w-full"
+              className="w-full h-8 text-xs"
               variant="default"
+              size="sm"
             >
-              <ShoppingCart className="mr-2 h-4 w-4" />
-              Add to Cart
+              <ShoppingCart className="mr-1 h-3 w-3" />
+              Add
             </Button>
           </CardFooter>
         </Card>
