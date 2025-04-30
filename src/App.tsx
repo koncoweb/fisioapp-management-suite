@@ -57,7 +57,6 @@ const App = () => (
                     <EmployeeManagement />
                   </ProtectedRoute>
                 } />
-                <Route path="/services" element={<div>Therapy Services (Coming soon)</div>} />
                 <Route path="/bookings" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <BookingManagement />
@@ -74,11 +73,6 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/messages" element={<div>Messages (Coming soon)</div>} />
-                <Route path="/payments" element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <div>Payment Records (Coming soon)</div>
-                  </ProtectedRoute>
-                } />
                 <Route path="/notifications" element={<div>Notifications (Coming soon)</div>} />
                 <Route path="/profile" element={<div>User Profile (Coming soon)</div>} />
                 <Route path="/settings" element={

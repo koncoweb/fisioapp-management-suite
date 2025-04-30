@@ -19,10 +19,8 @@ import {
   LayoutDashboard,
   Users,
   Package,
-  Settings,
   Calendar,
   MessageSquare,
-  Receipt,
   LogOut,
   Bell,
   ShoppingCart,
@@ -40,12 +38,10 @@ const AppSidebar: React.FC = () => {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/employees', label: 'Karyawan', icon: Users },
     { path: '/products', label: 'Produk', icon: Package },
-    { path: '/services', label: 'Layanan', icon: Settings },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
     { path: '/keuangan', label: 'Keuangan', icon: DollarSign },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
-    { path: '/payments', label: 'Pembayaran', icon: Receipt },
     { path: '/notifications', label: 'Notifikasi', icon: Bell },
   ];
 
@@ -53,7 +49,6 @@ const AppSidebar: React.FC = () => {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
-    { path: '/services', label: 'Layanan', icon: Settings },
   ];
 
   const menuItems = isAdmin ? adminMenuItems : therapistMenuItems;
