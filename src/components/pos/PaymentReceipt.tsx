@@ -72,7 +72,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
       // Persiapkan data untuk disimpan ke Firestore
       const transactionData = {
         receiptNo,
-        transactionDate: serverTimestamp(),
+        transactionDate: new Date(), // Using regular Date instead of serverTimestamp
         patientId: patient?.id || null,
         patientName: patient?.nama || 'Guest',
         items: items.map(item => ({
@@ -81,7 +81,14 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
           price: item.price,
           quantity: item.quantity,
           type: item.type,
-          appointments: item.appointments ? JSON.parse(JSON.stringify(item.appointments)) : null
+          // Handle appointments safely by converting to plain objects
+          appointments: item.appointments ? 
+            item.appointments.map(a => ({
+              date: format(a.date, 'yyyy-MM-dd'),
+              time: a.time
+            })) : null,
+          // Include duration if available
+          duration: item.duration || null
         })),
         total: finalTotal,
         originalTotal: total,
@@ -91,11 +98,12 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
         paymentAmount,
         changeAmount,
         loyaltyPoints,
-        createdAt: serverTimestamp()
+        createdAt: new Date() // Using regular Date instead of serverTimestamp
       };
       
       // Simpan transaksi ke koleksi 'transactions' di Firestore
       const docRef = await addDoc(collection(db, "transactions"), transactionData);
+      console.log("Transaction saved with ID:", docRef.id);
       
       // Tampilkan animasi sukses dan notifikasi
       setPaymentCompleted(true);
@@ -115,7 +123,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
       }, 2000);
     } catch (error) {
       console.error("Error saving transaction:", error);
-      toast.error("Gagal menyimpan transaksi");
+      toast.error(`Gagal menyimpan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsSaving(false);
     }

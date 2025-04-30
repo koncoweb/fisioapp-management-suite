@@ -87,41 +87,44 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           item.type === 'service' && item.appointments && item.therapist
         );
         
-        for (const item of therapyItems) {
-          if (item.appointments && item.therapist) {
-            try {
-              if (item.isPackage) {
-                // Untuk item paket, buat beberapa sesi terapi
-                for (let i = 0; i < item.appointments.length; i++) {
+        // Process all therapy items and save the sessions
+        if (therapyItems.length > 0) {
+          for (const item of therapyItems) {
+            if (item.appointments && item.therapist) {
+              try {
+                if (item.isPackage) {
+                  // Untuk item paket, buat beberapa sesi terapi
+                  for (let i = 0; i < item.appointments.length; i++) {
+                    await saveTherapySession(
+                      selectedPatient, 
+                      item.therapist, 
+                      item.id.split('-')[0], // Extract original product ID
+                      item.name.split('(')[0].trim(), // Extract original product name
+                      item.appointments[i],
+                      true,
+                      i,
+                      undefined, // We'll handle transaction ID separately
+                      item.duration // Pass the duration from the product
+                    );
+                  }
+                } else {
+                  // Untuk kunjungan tunggal
                   await saveTherapySession(
-                    selectedPatient, 
-                    item.therapist, 
+                    selectedPatient,
+                    item.therapist,
                     item.id.split('-')[0], // Extract original product ID
                     item.name.split('(')[0].trim(), // Extract original product name
-                    item.appointments[i],
-                    true,
-                    i,
-                    undefined,
+                    item.appointments[0],
+                    false,
+                    0,
+                    undefined, // We'll handle transaction ID separately
                     item.duration // Pass the duration from the product
                   );
                 }
-              } else {
-                // Untuk kunjungan tunggal
-                await saveTherapySession(
-                  selectedPatient,
-                  item.therapist,
-                  item.id.split('-')[0], // Extract original product ID
-                  item.name.split('(')[0].trim(), // Extract original product name
-                  item.appointments[0],
-                  false,
-                  0,
-                  undefined,
-                  item.duration // Pass the duration from the product
-                );
+              } catch (error) {
+                console.error("Error saving therapy session:", error);
+                toast.error(`Gagal menyimpan jadwal terapi: ${error instanceof Error ? error.message : 'Unknown error'}`);
               }
-            } catch (error) {
-              console.error("Error saving therapy session:", error);
-              toast.error(`Gagal menyimpan jadwal terapi: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
           }
         }

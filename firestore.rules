@@ -97,12 +97,9 @@ service cloud.firestore {
 
     // Therapy Sessions collection rules - Updated to allow patient bookings
     match /therapySessions/{sessionId} {
-      allow read: if isSignedIn() && 
-        (resource.data.patientId == request.auth.uid || 
-         resource.data.therapistId == request.auth.uid || 
-         isAdmin());
+      allow read: if isSignedIn();
       
-      // Allow creation by admin or if the authenticated user is the patient making the booking
+      // Allow creation by any signed in user
       allow create: if isSignedIn(); 
       
       // Allow updates by therapist assigned to the session or admin
