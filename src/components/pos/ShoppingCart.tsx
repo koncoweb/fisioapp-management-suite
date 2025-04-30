@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Minus, ShoppingCart as CartIcon } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import PaymentReceipt from './PaymentReceipt';
+import PatientSelector from './PatientSelector';
+import { toast } from "sonner";
 
 interface ShoppingCartProps {
   items: CartItem[];
@@ -13,6 +15,18 @@ interface ShoppingCartProps {
   removeItem: (id: string) => void;
   clearCart: () => void;
   total: number;
+}
+
+interface Patient {
+  id: string;
+  nama: string;
+  alamat: string;
+  usia: number;
+  keluhan?: string;
+  telepon?: string;
+  email?: string;
+  riwayatMedis?: string;
+  createdAt: any;
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ 
@@ -23,6 +37,8 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   total
 }) => {
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const [patientSelectorOpen, setPatientSelectorOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   
   const handleQuantityChange = (id: string, value: string) => {
     const quantity = parseInt(value);
@@ -32,11 +48,21 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   };
 
   const handleProcessPayment = () => {
+    // First open patient selector
+    setPatientSelectorOpen(true);
+  };
+
+  const handlePatientSelected = (patient: Patient) => {
+    setSelectedPatient(patient);
+    setPatientSelectorOpen(false);
+    toast.success(`Pasien "${patient.nama}" terpilih`);
+    // After selecting patient, open the receipt
     setReceiptOpen(true);
   };
 
   const handleCloseReceipt = () => {
     setReceiptOpen(false);
+    setSelectedPatient(null);
     clearCart();
   };
 
@@ -51,7 +77,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
         ) : (
           <ul className="space-y-2 text-sm">
             {items.map((item) => (
-              <li key={item.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
+              <li key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
                 <div className="flex-grow min-w-0">
                   <h4 className="font-medium text-xs truncate">{item.name}</h4>
                   <p className="text-xs text-muted-foreground">
@@ -131,11 +157,20 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
         </div>
       )}
 
+      {/* Patient Selector Modal */}
+      <PatientSelector
+        isOpen={patientSelectorOpen}
+        onClose={() => setPatientSelectorOpen(false)}
+        onSelectPatient={handlePatientSelected}
+      />
+
+      {/* Payment Receipt (now includes selected patient) */}
       <PaymentReceipt
         isOpen={receiptOpen}
         onClose={handleCloseReceipt}
         items={items}
         total={total}
+        patient={selectedPatient}
       />
     </div>
   );
