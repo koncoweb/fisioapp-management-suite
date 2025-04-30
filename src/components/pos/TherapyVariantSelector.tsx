@@ -99,6 +99,7 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
           <h3 className="font-semibold mb-2">{product.name}</h3>
           <p className="text-sm text-muted-foreground mb-4">
             {product.description || `${product.name} - ${product.type}`}
+            {product.duration && ` - ${product.duration} minutes`}
           </p>
 
           {/* Therapist selector */}

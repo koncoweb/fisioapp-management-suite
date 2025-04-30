@@ -14,6 +14,7 @@ export interface TherapySessionData {
   serviceId: string;
   date: string;
   time: string;
+  duration: number; // Added duration field
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   transactionId?: string;
   isPackage?: boolean;
@@ -34,7 +35,8 @@ export const saveTherapySession = async (
   appointment: AppointmentSlot,
   isPackage = false,
   packageIndex = 0,
-  transactionId?: string
+  transactionId?: string,
+  duration?: number // Added duration parameter
 ) => {
   try {
     if (!patient || !patient.id) {
@@ -66,7 +68,7 @@ export const saveTherapySession = async (
       throw new Error(`Terapis ${therapist.name} sudah memiliki jadwal pada ${formattedDate} pukul ${appointment.time}`);
     }
     
-    // Create the therapy session
+    // Create the therapy session with duration included
     const sessionData: TherapySessionData = {
       patientId: patient.id,
       patientName: patient.nama,
@@ -76,6 +78,7 @@ export const saveTherapySession = async (
       serviceName,
       date: formattedDate,
       time: appointment.time,
+      duration: duration || 60, // Default to 60 minutes if not provided
       status: 'scheduled',
       transactionId,
       isPackage,

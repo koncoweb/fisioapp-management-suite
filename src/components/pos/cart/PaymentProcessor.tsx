@@ -100,7 +100,9 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                     item.name.split('(')[0].trim(), // Extract original product name
                     item.appointments[i],
                     true,
-                    i
+                    i,
+                    undefined,
+                    item.duration // Pass the duration from the product
                   );
                 }
               } else {
@@ -112,7 +114,9 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                   item.name.split('(')[0].trim(), // Extract original product name
                   item.appointments[0],
                   false,
-                  0
+                  0,
+                  undefined,
+                  item.duration // Pass the duration from the product
                 );
               }
             } catch (error) {

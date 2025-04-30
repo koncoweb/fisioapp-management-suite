@@ -38,9 +38,32 @@ export const useAppointmentAvailability = (therapistId: string | undefined) => {
       
       // Filter out booked time slots
       const bookedTimeSlots = new Set<string>();
+      
+      // Process each therapy session to block the appropriate time slots
       querySnapshot.forEach((doc) => {
         const sessionData = doc.data();
+        
+        // Add the main session time slot
         bookedTimeSlots.add(sessionData.time);
+        
+        // If we have duration information, block additional slots based on duration
+        if (sessionData.duration) {
+          const [hour, minute] = sessionData.time.split(':').map(Number);
+          const sessionStartMinutes = hour * 60 + minute;
+          const sessionDuration = sessionData.duration;
+          
+          // Block 30-minute slots that overlap with the session duration
+          for (let i = 30; i < sessionDuration; i += 30) {
+            const nextSlotMinutes = sessionStartMinutes + i;
+            const nextSlotHour = Math.floor(nextSlotMinutes / 60);
+            const nextSlotMinute = nextSlotMinutes % 60;
+            
+            const nextTimeSlot = `${String(nextSlotHour).padStart(2, '0')}:${String(nextSlotMinute).padStart(2, '0')}`;
+            if (allTimeSlots.includes(nextTimeSlot)) {
+              bookedTimeSlots.add(nextTimeSlot);
+            }
+          }
+        }
       });
       
       // Set available time slots

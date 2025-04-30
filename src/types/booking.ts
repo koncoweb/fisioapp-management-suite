@@ -27,6 +27,7 @@ export interface TherapySession {
   time?: string; // Adding time property to match what's used
   startTime?: string;
   endTime?: string;
+  duration: number; // Added duration field
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled'; // Added 'scheduled' to match what's used
   notes?: string;
   createdAt: string;

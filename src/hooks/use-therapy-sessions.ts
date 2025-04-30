@@ -12,7 +12,8 @@ export const useTherapySessions = () => {
       const snapshot = await getDocs(sessionsQuery);
       return snapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
+        duration: doc.data().duration || 60 // Ensure there's a duration field, default to 60 minutes
       })) as TherapySession[];
     }
   });
