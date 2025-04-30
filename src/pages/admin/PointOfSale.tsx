@@ -10,10 +10,13 @@ import ShoppingCart from '@/components/pos/ShoppingCart';
 import TherapyVariantSelector from '@/components/pos/TherapyVariantSelector';
 import { toast } from "@/components/ui/sonner";
 import { motion } from 'framer-motion';
+import { format } from 'date-fns';
 
 export interface CartItem extends Product {
   quantity: number;
   isPackage?: boolean;
+  appointmentDate?: Date;
+  appointmentTime?: string;
 }
 
 const PointOfSale = () => {
@@ -41,7 +44,12 @@ const PointOfSale = () => {
     }
   };
 
-  const handleVariantSelect = (product: Product, isPackage: boolean) => {
+  const handleVariantSelect = (
+    product: Product, 
+    isPackage: boolean, 
+    appointmentDate?: Date, 
+    appointmentTime?: string
+  ) => {
     const customProduct = { ...product };
     
     if (isPackage) {
@@ -53,18 +61,46 @@ const PointOfSale = () => {
       customProduct.name = `${product.name} (Single visit)`;
     }
     
-    addToCart(customProduct, isPackage);
+    // If date and time are selected, append to the name
+    if (appointmentDate && appointmentTime) {
+      const formattedDate = format(appointmentDate, "dd MMM yyyy");
+      customProduct.name = `${customProduct.name} - ${formattedDate} at ${appointmentTime}`;
+    }
+    
+    addToCart(customProduct, isPackage, appointmentDate, appointmentTime);
     setSelectedProduct(null);
   };
 
-  const addToCart = (product: Product, isPackage = false) => {
+  const addToCart = (
+    product: Product, 
+    isPackage = false, 
+    appointmentDate?: Date, 
+    appointmentTime?: string
+  ) => {
     setCart(currentCart => {
-      // For packages, we treat them as different products
-      const cartItemId = isPackage ? `${product.id}-package` : product.id;
+      // Generate a unique ID for the cart item that includes the date and time if it's a service
+      const uniqueId = product.type === 'service' && appointmentDate && appointmentTime
+        ? `${product.id}-${appointmentDate.toISOString()}-${appointmentTime}`
+        : isPackage 
+          ? `${product.id}-package` 
+          : product.id;
       
-      // Check if product is already in cart
+      // For services with appointment, always add as a new item
+      if (product.type === 'service' && appointmentDate && appointmentTime) {
+        const newItem = { 
+          ...product, 
+          quantity: 1, 
+          isPackage,
+          appointmentDate,
+          appointmentTime,
+          id: uniqueId
+        };
+        return [...currentCart, newItem];
+      }
+      
+      // For other products, check if they already exist in cart
       const existingItemIndex = currentCart.findIndex(item => 
-        isPackage ? item.id === cartItemId : item.id === product.id && !item.isPackage
+        isPackage ? item.id === `${product.id}-package` : item.id === product.id && !item.isPackage
       );
       
       if (existingItemIndex > -1) {
@@ -81,7 +117,7 @@ const PointOfSale = () => {
           ...product, 
           quantity: 1, 
           isPackage,
-          id: cartItemId // Use modified ID for packages
+          id: uniqueId
         };
         return [...currentCart, newItem];
       }

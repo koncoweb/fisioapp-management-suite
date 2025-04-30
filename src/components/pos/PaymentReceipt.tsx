@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { formatISO, format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock } from 'lucide-react';
 import { Patient } from '@/types';
 
 interface PaymentReceiptProps {
@@ -100,12 +100,24 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                 <h3 className="font-medium mb-1 text-xs">Detail Layanan:</h3>
                 <ul className="space-y-1 text-[10px]">
                   {items.map((item) => (
-                    <li key={item.id} className="flex justify-between">
-                      <div>
-                        <span>{item.name}</span>
-                        <span className="text-[9px] text-muted-foreground"> x{item.quantity}</span>
+                    <li key={item.id} className="flex flex-col">
+                      <div className="flex justify-between">
+                        <div>
+                          <span>{item.name}</span>
+                          <span className="text-[9px] text-muted-foreground"> x{item.quantity}</span>
+                        </div>
+                        <span>Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
                       </div>
-                      <span>Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
+                      
+                      {/* Display appointment details */}
+                      {item.appointmentDate && item.appointmentTime && item.type === 'service' && (
+                        <div className="flex items-center text-[9px] text-muted-foreground mt-0.5 ml-2">
+                          <Calendar className="h-2.5 w-2.5 mr-0.5" />
+                          <span className="mr-1">{format(item.appointmentDate, "dd MMM yyyy")}</span>
+                          <Clock className="h-2.5 w-2.5 mr-0.5" />
+                          <span>{item.appointmentTime}</span>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

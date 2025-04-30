@@ -3,12 +3,13 @@ import React, { useState } from 'react';
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Minus, ShoppingCart as CartIcon } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingCart as CartIcon, Calendar, Clock } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import PaymentReceipt from './PaymentReceipt';
 import PatientSelector from './PatientSelector';
 import { Patient } from '@/types';
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 interface ShoppingCartProps {
   items: CartItem[];
@@ -72,6 +73,16 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
                   <p className="text-[10px] text-muted-foreground">
                     Rp {item.price.toLocaleString('id-ID')} x {item.quantity}
                   </p>
+                  
+                  {/* Show appointment details if available */}
+                  {item.appointmentDate && item.appointmentTime && (
+                    <div className="flex items-center mt-0.5 text-[9px] text-muted-foreground">
+                      <Calendar className="h-2 w-2 mr-0.5" />
+                      <span className="mr-1">{format(item.appointmentDate, "dd MMM")}</span>
+                      <Clock className="h-2 w-2 mr-0.5" />
+                      <span>{item.appointmentTime}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center space-x-1 flex-shrink-0">
                   <div className="flex items-center border rounded-md">
