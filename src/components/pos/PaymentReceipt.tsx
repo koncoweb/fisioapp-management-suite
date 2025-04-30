@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { CartItem } from '@/pages/admin/PointOfSale';
+import { AppointmentSlot, CartItem } from '@/pages/admin/PointOfSale';
 import { formatISO, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Calendar, Clock } from 'lucide-react';
@@ -109,8 +109,36 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                         <span>Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
                       </div>
                       
-                      {/* Display appointment details */}
-                      {item.appointmentDate && item.appointmentTime && item.type === 'service' && (
+                      {/* Display appointment details for packages with multiple appointments */}
+                      {item.appointments && item.appointments.length > 0 && item.type === 'service' && (
+                        <div className="ml-2 mt-0.5 space-y-1">
+                          {item.isPackage ? (
+                            // For package with multiple appointments
+                            item.appointments.map((appointment, idx) => (
+                              <div key={idx} className="flex items-center text-[9px] text-muted-foreground">
+                                <span className="mr-1 font-semibold">Visit {idx + 1}:</span>
+                                <Calendar className="h-2.5 w-2.5 mr-0.5" />
+                                <span className="mr-1">{format(appointment.date, "dd MMM yyyy")}</span>
+                                <Clock className="h-2.5 w-2.5 mr-0.5" />
+                                <span>{appointment.time}</span>
+                              </div>
+                            ))
+                          ) : (
+                            // For single appointment (backward compatibility)
+                            <div className="flex items-center text-[9px] text-muted-foreground">
+                              <Calendar className="h-2.5 w-2.5 mr-0.5" />
+                              <span className="mr-1">
+                                {format(item.appointments[0].date, "dd MMM yyyy")}
+                              </span>
+                              <Clock className="h-2.5 w-2.5 mr-0.5" />
+                              <span>{item.appointments[0].time}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Legacy support for old appointmentDate format */}
+                      {!item.appointments && item.appointmentDate && item.appointmentTime && item.type === 'service' && (
                         <div className="flex items-center text-[9px] text-muted-foreground mt-0.5 ml-2">
                           <Calendar className="h-2.5 w-2.5 mr-0.5" />
                           <span className="mr-1">{format(item.appointmentDate, "dd MMM yyyy")}</span>

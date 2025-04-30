@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { collection, getDocs } from 'firebase/firestore';
@@ -12,11 +11,17 @@ import { toast } from "@/components/ui/sonner";
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 
+export interface AppointmentSlot {
+  date: Date;
+  time: string;
+}
+
 export interface CartItem extends Product {
   quantity: number;
   isPackage?: boolean;
-  appointmentDate?: Date;
-  appointmentTime?: string;
+  appointments?: AppointmentSlot[];
+  appointmentDate?: Date;  // Kept for backward compatibility
+  appointmentTime?: string; // Kept for backward compatibility
 }
 
 const PointOfSale = () => {
@@ -47,8 +52,7 @@ const PointOfSale = () => {
   const handleVariantSelect = (
     product: Product, 
     isPackage: boolean, 
-    appointmentDate?: Date, 
-    appointmentTime?: string
+    appointments: AppointmentSlot[]
   ) => {
     const customProduct = { ...product };
     
@@ -61,38 +65,51 @@ const PointOfSale = () => {
       customProduct.name = `${product.name} (Single visit)`;
     }
     
-    // If date and time are selected, append to the name
-    if (appointmentDate && appointmentTime) {
-      const formattedDate = format(appointmentDate, "dd MMM yyyy");
-      customProduct.name = `${customProduct.name} - ${formattedDate} at ${appointmentTime}`;
+    // For single visit, format name with date/time
+    if (!isPackage && appointments.length === 1) {
+      const { date, time } = appointments[0];
+      const formattedDate = format(date, "dd MMM yyyy");
+      customProduct.name = `${customProduct.name} - ${formattedDate} at ${time}`;
     }
     
-    addToCart(customProduct, isPackage, appointmentDate, appointmentTime);
+    addToCart(customProduct, isPackage, appointments);
     setSelectedProduct(null);
   };
 
   const addToCart = (
     product: Product, 
     isPackage = false, 
-    appointmentDate?: Date, 
-    appointmentTime?: string
+    appointments: AppointmentSlot[] = []
   ) => {
     setCart(currentCart => {
-      // Generate a unique ID for the cart item that includes the date and time if it's a service
-      const uniqueId = product.type === 'service' && appointmentDate && appointmentTime
-        ? `${product.id}-${appointmentDate.toISOString()}-${appointmentTime}`
-        : isPackage 
-          ? `${product.id}-package` 
-          : product.id;
+      // Generate a unique ID for the cart item
+      let uniqueId = product.id;
       
-      // For services with appointment, always add as a new item
-      if (product.type === 'service' && appointmentDate && appointmentTime) {
+      // For services with appointments
+      if (product.type === 'service' && appointments.length > 0) {
+        if (isPackage) {
+          uniqueId = `${product.id}-package-${Date.now()}`;
+        } else {
+          const { date, time } = appointments[0];
+          uniqueId = `${product.id}-${date.toISOString()}-${time}`;
+        }
+      } else if (isPackage) {
+        uniqueId = `${product.id}-package`;
+      }
+      
+      // For services with appointments, always add as a new item
+      if (product.type === 'service' && appointments.length > 0) {
+        // For backward compatibility
+        const appointmentDate = appointments.length > 0 ? appointments[0].date : undefined;
+        const appointmentTime = appointments.length > 0 ? appointments[0].time : undefined;
+        
         const newItem = { 
           ...product, 
           quantity: 1, 
           isPackage,
-          appointmentDate,
-          appointmentTime,
+          appointments,
+          appointmentDate,  // For backward compatibility
+          appointmentTime, // For backward compatibility
           id: uniqueId
         };
         return [...currentCart, newItem];
