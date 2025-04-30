@@ -115,10 +115,7 @@ const PointOfSale = () => {
             <ProductGrid 
               products={products || []} 
               onAddToCart={addToCart} 
-              onSelectProduct={(product) => {
-                setSelectedProduct(product);
-                setShowPricePopup(true);
-              }}
+              onSelectProduct={setSelectedProduct}
             />
           </div>
         </div>

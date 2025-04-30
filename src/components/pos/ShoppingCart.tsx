@@ -80,7 +80,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
           <Separator className="my-2" />
           <div className="flex justify-between items-center mb-2">
             <span className="font-semibold text-sm">Total:</span>
-            <span className="text-base font-bold">(Nominal Harga)</span>
+            <span className="text-base font-bold">Rp {total.toLocaleString('id-ID')}</span>
           </div>
           <div className="flex flex-col gap-2">
             <Button 

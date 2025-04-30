@@ -15,6 +15,14 @@ interface ProductGridProps {
 const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart, onSelectProduct }) => {
   const isMobile = useIsMobile();
   
+  const handleProductClick = (product: Product) => {
+    if (product.type === 'service' && onSelectProduct) {
+      onSelectProduct(product);
+    } else {
+      onAddToCart(product);
+    }
+  };
+  
   return (
     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
       {products.length === 0 && (
@@ -27,7 +35,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart, onSele
         <Card 
           key={product.id} 
           className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-shadow border-gray-200 cursor-pointer"
-          onClick={() => onSelectProduct ? onSelectProduct(product) : onAddToCart(product)}
+          onClick={() => handleProductClick(product)}
         >
           <CardContent className={`p-1 ${isMobile ? 'pb-1' : 'pb-1'}`}>
             <div className="flex items-center justify-center h-16 bg-gray-100 rounded-md mb-1">
