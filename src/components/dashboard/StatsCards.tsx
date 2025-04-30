@@ -59,7 +59,7 @@ export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAd
         description={todayBookings === 0 ? "Tidak ada sesi terjadwal" : "Sesi terjadwal hari ini"}
         icon={Calendar}
         onClick={() => navigate('/admin/bookings')}
-        className="bg-blue-50 hover:bg-blue-100 border-blue-200"
+        className="bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800"
       />
       
       {isAdmin && (
@@ -70,7 +70,7 @@ export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAd
             description="Total pendapatan hari ini"
             icon={TrendingUp}
             onClick={() => navigate('/keuangan')}
-            className="bg-green-50 hover:bg-green-100 border-green-200"
+            className="bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 border-green-200 dark:border-green-800"
           />
           <StatsCard
             title="Pengeluaran Hari Ini"
@@ -78,7 +78,7 @@ export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAd
             description="Total pengeluaran hari ini"
             icon={TrendingDown}
             onClick={() => navigate('/keuangan')}
-            className="bg-red-50 hover:bg-red-100 border-red-200"
+            className="bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border-red-200 dark:border-red-800"
           />
         </>
       )}
