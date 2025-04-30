@@ -3,16 +3,29 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface StatsCardProps {
   title: string;
   value: string | number;
   description: string;
   icon: React.ElementType;
+  onClick?: () => void;
+  className?: string;
 }
 
-const StatsCard = ({ title, value, description, icon: Icon }: StatsCardProps) => (
-  <Card>
+const StatsCard = ({ 
+  title, 
+  value, 
+  description, 
+  icon: Icon, 
+  onClick,
+  className 
+}: StatsCardProps) => (
+  <Card 
+    onClick={onClick} 
+    className={`${className || ''} ${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+  >
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
       <CardTitle className="text-sm font-medium">
         {title}
@@ -36,6 +49,8 @@ interface DashboardStatsProps {
 }
 
 export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAdmin }: DashboardStatsProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <StatsCard
@@ -43,6 +58,8 @@ export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAd
         value={todayBookings}
         description={todayBookings === 0 ? "Tidak ada sesi terjadwal" : "Sesi terjadwal hari ini"}
         icon={Calendar}
+        onClick={() => navigate('/admin/bookings')}
+        className="bg-blue-50 hover:bg-blue-100 border-blue-200"
       />
       
       {isAdmin && (
@@ -52,12 +69,16 @@ export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAd
             value={formatCurrency(todayIncome || 0)}
             description="Total pendapatan hari ini"
             icon={TrendingUp}
+            onClick={() => navigate('/keuangan')}
+            className="bg-green-50 hover:bg-green-100 border-green-200"
           />
           <StatsCard
             title="Pengeluaran Hari Ini"
             value={formatCurrency(todayExpenses || 0)}
             description="Total pengeluaran hari ini"
             icon={TrendingDown}
+            onClick={() => navigate('/keuangan')}
+            className="bg-red-50 hover:bg-red-100 border-red-200"
           />
         </>
       )}

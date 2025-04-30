@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import TherapySessionForm from '@/components/therapy/TherapySessionForm';
@@ -13,6 +14,13 @@ interface TherapistViewProps {
 }
 
 const TherapistView = ({ todayBookings, today }: TherapistViewProps) => {
+  const navigate = useNavigate();
+  
+  // Filter for unconfirmed sessions to display in the table
+  const unconfirmedBookings = todayBookings.filter(
+    booking => booking.status === 'scheduled' || !booking.status
+  );
+  
   return (
     <Tabs defaultValue="sessions" className="w-full">
       <TabsList>
@@ -26,7 +34,7 @@ const TherapistView = ({ todayBookings, today }: TherapistViewProps) => {
         />
         <div className="mt-6">
           <BookingsTable
-            bookings={todayBookings}
+            bookings={unconfirmedBookings}
             date={today}
             isAdmin={false}
           />

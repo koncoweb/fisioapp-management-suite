@@ -13,6 +13,7 @@ import { startOfDay, endOfDay } from 'date-fns';
 const Dashboard: React.FC = () => {
   const { userData } = useAuth();
   const [todayBookings, setTodayBookings] = useState<BookingSession[]>([]);
+  const [unconfirmedBookings, setUnconfirmedBookings] = useState<BookingSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     todayIncome: 0,
@@ -35,14 +36,14 @@ const Dashboard: React.FC = () => {
             bookingsQuery = query(
               collection(db, 'therapySessions'),
               where('date', '==', today),
-              limit(5)
+              limit(10) // Increased limit to get more sessions for filtering
             );
           } else {
             bookingsQuery = query(
               collection(db, 'therapySessions'),
               where('date', '==', today),
               where('therapistId', '==', userData?.uid || ''),
-              limit(5)
+              limit(10)
             );
           }
           
@@ -76,7 +77,15 @@ const Dashboard: React.FC = () => {
               return 0;
             });
             
+            // Set all bookings for stats display
             setTodayBookings(bookingsData);
+            
+            // Filter for unconfirmed sessions to display in the table
+            const unconfirmedSessions = bookingsData.filter(
+              booking => booking.status === 'scheduled' || !booking.status
+            );
+            setUnconfirmedBookings(unconfirmedSessions);
+            
           } catch (error) {
             console.error('Error fetching therapy sessions:', error);
             toast({
@@ -181,7 +190,7 @@ const Dashboard: React.FC = () => {
       />
       <div className="mt-6">
         <BookingsTable
-          bookings={todayBookings}
+          bookings={unconfirmedBookings}
           date={today}
           isAdmin={isAdmin}
         />
