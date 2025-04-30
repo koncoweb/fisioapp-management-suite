@@ -1,14 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { CartItem } from '@/types/pos';
-import { Card, CardContent } from "@/components/ui/card";
-import { Patient } from '@/types';
-import { toast } from "sonner";
-import CartHeader from './cart/CartHeader';
 import CartItemList from './cart/CartItemList';
 import CartFooter from './cart/CartFooter';
-import PaymentReceipt from './PaymentReceipt';
-import PatientSelector from './PatientSelector';
+import PaymentProcessor, { PaymentProcessorHandle } from './cart/PaymentProcessor';
 
 interface ShoppingCartProps {
   items: CartItem[];
@@ -25,53 +20,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   clearCart,
   total
 }) => {
-  const [receiptOpen, setReceiptOpen] = useState(false);
-  const [patientSelectorOpen, setPatientSelectorOpen] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isProcessingPatient, setIsProcessingPatient] = useState(false);
-  const [paymentDetails, setPaymentDetails] = useState({
-    amount: 0,
-    change: 0
-  });
-  
+  const paymentProcessorRef = useRef<PaymentProcessorHandle>(null);
+
+  // This will be called by CartFooter when payment process should start
   const handleProcessPayment = (paymentAmount: number, changeAmount: number) => {
-    // Store payment information
-    setPaymentDetails({
-      amount: paymentAmount,
-      change: changeAmount
-    });
-    
-    // First open patient selector
-    setPatientSelectorOpen(true);
-  };
-
-  const handlePatientSelected = (patient: Patient) => {
-    setSelectedPatient(patient);
-    setPatientSelectorOpen(false);
-    
-    // Set processing state to true (useful for newly created patients)
     setIsProcessingPatient(true);
-    
-    // Verify patient exists in Firestore by checking for ID
-    if (patient.id) {
-      toast.success(`Pasien "${patient.nama}" terpilih`);
-      // After selecting patient, open the receipt with a small delay 
-      // to ensure Firestore transaction is complete
-      setTimeout(() => {
-        setIsProcessingPatient(false);
-        setReceiptOpen(true);
-      }, 500);
-    } else {
-      toast.error("Data pasien tidak lengkap, mohon coba lagi");
-      setIsProcessingPatient(false);
-    }
-  };
-
-  const handleCloseReceipt = () => {
-    setReceiptOpen(false);
-    setSelectedPatient(null);
-    clearCart();
-    setPaymentDetails({ amount: 0, change: 0 });
+    paymentProcessorRef.current?.handleProcessPayment(paymentAmount, changeAmount);
+    // Reset the processing state after a delay
+    setTimeout(() => setIsProcessingPatient(false), 600);
   };
 
   return (
@@ -92,22 +49,12 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
         isProcessing={isProcessingPatient}
       />
 
-      {/* Patient Selector Modal */}
-      <PatientSelector
-        isOpen={patientSelectorOpen}
-        onClose={() => setPatientSelectorOpen(false)}
-        onSelectPatient={handlePatientSelected}
-      />
-
-      {/* Payment Receipt (now includes selected patient and payment details) */}
-      <PaymentReceipt
-        isOpen={receiptOpen}
-        onClose={handleCloseReceipt}
+      {/* PaymentProcessor handles patient selection and receipt display */}
+      <PaymentProcessor
+        ref={paymentProcessorRef}
         items={items}
         total={total}
-        patient={selectedPatient}
-        paymentAmount={paymentDetails.amount}
-        changeAmount={paymentDetails.change}
+        clearCart={clearCart}
       />
     </div>
   );
