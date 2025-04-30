@@ -20,7 +20,7 @@ const TherapistSelector: React.FC<TherapistSelectorProps> = ({
   selectedTherapist, 
   onTherapistSelect 
 }) => {
-  const { therapists, isLoading } = useTherapists();
+  const { data: therapists = [], isLoading } = useTherapists();
 
   return (
     <div className="mb-4">

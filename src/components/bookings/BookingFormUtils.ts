@@ -1,8 +1,7 @@
-
 import { DEFAULT_WORKING_HOURS } from '@/types/booking';
-import { UseToastReturn } from '@/hooks/use-toast';
+import { toast as useToastType } from '@/hooks/use-toast';
 
-export const generateTimeSlots = (date: Date | undefined, toast: UseToastReturn['toast']) => {
+export const generateTimeSlots = (date: Date | undefined, toast: ReturnType<typeof useToastType>) => {
   if (!date) return [];
   
   const dayOfWeek = date.getDay();
