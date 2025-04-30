@@ -1,46 +1,54 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Trash2, Loader2 } from 'lucide-react';
+import { formatRupiah } from '@/lib/utils';
 
 interface CartFooterProps {
   total: number;
+  hasItems: boolean;
   onProcessPayment: () => void;
   onClearCart: () => void;
-  hasItems: boolean;
+  isProcessing?: boolean;
 }
 
-const CartFooter: React.FC<CartFooterProps> = ({
-  total,
-  onProcessPayment,
+const CartFooter: React.FC<CartFooterProps> = ({ 
+  total, 
+  hasItems, 
+  onProcessPayment, 
   onClearCart,
-  hasItems
+  isProcessing = false
 }) => {
-  if (!hasItems) return null;
-
   return (
-    <div className="mt-2">
-      <Separator className="my-1.5" />
-      <div className="flex justify-between items-center mb-1.5">
-        <span className="font-semibold text-xs">Total</span>
-        <span className="text-sm font-bold">Rp {total.toLocaleString('id-ID')}</span>
+    <div className="mt-4 space-y-3">
+      <div className="flex justify-between items-center font-semibold">
+        <span>Total</span>
+        <span>Rp {total.toLocaleString('id-ID')}</span>
       </div>
-      <div className="flex flex-col gap-1.5">
+      
+      <div className="flex gap-2">
         <Button 
-          variant="default" 
-          size="sm"
-          onClick={onProcessPayment}
-          className="w-full text-xs h-7"
+          onClick={onProcessPayment} 
+          className="flex-1" 
+          disabled={!hasItems || isProcessing}
         >
-          Process Payment
+          {isProcessing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            'Process Payment'
+          )}
         </Button>
+        
         <Button 
-          variant="outline"
-          size="sm"
-          onClick={onClearCart} 
-          className="w-full text-xs h-7"
+          variant="outline" 
+          size="icon" 
+          onClick={onClearCart}
+          disabled={!hasItems || isProcessing}
         >
-          Clear Cart
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     </div>

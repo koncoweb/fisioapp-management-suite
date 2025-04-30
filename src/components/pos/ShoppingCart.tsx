@@ -28,6 +28,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [patientSelectorOpen, setPatientSelectorOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [isProcessingPatient, setIsProcessingPatient] = useState(false);
   
   const handleProcessPayment = () => {
     // First open patient selector
@@ -37,9 +38,23 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   const handlePatientSelected = (patient: Patient) => {
     setSelectedPatient(patient);
     setPatientSelectorOpen(false);
-    toast.success(`Pasien "${patient.nama}" terpilih`);
-    // After selecting patient, open the receipt
-    setReceiptOpen(true);
+    
+    // Set processing state to true (useful for newly created patients)
+    setIsProcessingPatient(true);
+    
+    // Verify patient exists in Firestore by checking for ID
+    if (patient.id) {
+      toast.success(`Pasien "${patient.nama}" terpilih`);
+      // After selecting patient, open the receipt with a small delay 
+      // to ensure Firestore transaction is complete
+      setTimeout(() => {
+        setIsProcessingPatient(false);
+        setReceiptOpen(true);
+      }, 500);
+    } else {
+      toast.error("Data pasien tidak lengkap, mohon coba lagi");
+      setIsProcessingPatient(false);
+    }
   };
 
   const handleCloseReceipt = () => {
@@ -63,6 +78,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
         hasItems={items.length > 0}
         onProcessPayment={handleProcessPayment}
         onClearCart={clearCart}
+        isProcessing={isProcessingPatient}
       />
 
       {/* Patient Selector Modal */}

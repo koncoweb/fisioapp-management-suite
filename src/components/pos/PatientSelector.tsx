@@ -23,13 +23,18 @@ const PatientSelector: React.FC<PatientSelectorProps> = ({ isOpen, onClose, onSe
   const [isAddingNew, setIsAddingNew] = useState(false);
 
   const handleSelectExisting = (patient: Patient) => {
+    // For existing patients, we have Firestore ID already
     onSelectPatient(patient);
     onClose();
   };
 
   const handlePatientAdded = (patient: Patient) => {
-    onSelectPatient(patient);
-    onClose();
+    // For newly added patients, the callback is only called after 
+    // successful Firestore transaction with the patient ID assigned
+    if (patient && patient.id) {
+      onSelectPatient(patient);
+      setIsAddingNew(false);
+    }
   };
 
   return (

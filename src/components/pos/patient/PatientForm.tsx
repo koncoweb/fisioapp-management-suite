@@ -10,7 +10,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Patient } from '@/types';
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 const patientSchema = z.object({
   nama: z.string().min(1, { message: "Nama harus diisi" }),
