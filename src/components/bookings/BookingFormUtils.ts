@@ -1,7 +1,13 @@
-import { DEFAULT_WORKING_HOURS } from '@/types/booking';
-import { toast as useToastType } from '@/hooks/use-toast';
 
-export const generateTimeSlots = (date: Date | undefined, toast: ReturnType<typeof useToastType>) => {
+import { DEFAULT_WORKING_HOURS } from '@/types/booking';
+import { useToast } from '@/hooks/use-toast';
+
+// Define the toast function type correctly
+type ToastFunction = typeof useToast extends () => infer R 
+  ? R extends { toast: infer T } ? T : never 
+  : never;
+
+export const generateTimeSlots = (date: Date | undefined, toast: ToastFunction) => {
   if (!date) return [];
   
   const dayOfWeek = date.getDay();
