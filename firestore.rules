@@ -59,10 +59,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Transactions collection rules - New collection for POS transactions
+    // Transactions collection rules - Updated to allow any signed-in user to create transactions
     match /transactions/{transactionId} {
       allow read: if isSignedIn();
+      // Allow any signed-in user to create transactions
       allow create: if isSignedIn();
+      // Only admins can update or delete transactions
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
@@ -101,7 +103,7 @@ service cloud.firestore {
          isAdmin());
       
       // Allow creation by admin or if the authenticated user is the patient making the booking
-      allow create: if isAdmin() || isPatient(); 
+      allow create: if isSignedIn(); 
       
       // Allow updates by therapist assigned to the session or admin
       allow update: if isSignedIn() && 
