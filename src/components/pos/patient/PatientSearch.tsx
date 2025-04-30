@@ -1,9 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, User } from 'lucide-react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Patient } from '@/types';
 import { toast } from 'sonner';
@@ -17,8 +17,48 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ onSelectPatient }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
+  // Fetch newest patients when component mounts
+  useEffect(() => {
+    fetchNewestPatients();
+  }, []);
+  
+  // Function to fetch 10 newest patients
+  const fetchNewestPatients = async () => {
+    setIsLoading(true);
+    
+    try {
+      const patientsRef = collection(db, 'patients');
+      const q = query(
+        patientsRef,
+        orderBy('createdAt', 'desc'),
+        limit(10)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const patientResults: Patient[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        patientResults.push({
+          id: doc.id,
+          ...doc.data(),
+        } as Patient);
+      });
+      
+      setPatients(patientResults);
+    } catch (error) {
+      console.error("Error fetching newest patients:", error);
+      toast.error("Gagal mengambil data pasien terbaru");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      // If search query is empty, fetch newest patients
+      fetchNewestPatients();
+      return;
+    }
     
     setIsLoading(true);
     
@@ -51,12 +91,20 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ onSelectPatient }) => {
     }
   };
 
+  // Handle Enter key press in search input
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyPress={handleKeyPress}
           placeholder="Cari pasien berdasarkan nama..."
           className="flex-1"
         />
@@ -65,11 +113,15 @@ const PatientSearch: React.FC<PatientSearchProps> = ({ onSelectPatient }) => {
         </Button>
       </div>
       
-      {patients.length > 0 || isLoading ? (
+      {isLoading || patients.length > 0 ? (
         <div className="max-h-60 overflow-auto border rounded-md">
-          {patients.length === 0 ? (
+          {isLoading ? (
             <div className="p-4 text-center text-muted-foreground">
-              {isLoading ? 'Mencari...' : 'Tidak ada pasien ditemukan'}
+              Mencari...
+            </div>
+          ) : patients.length === 0 ? (
+            <div className="p-4 text-center text-muted-foreground">
+              Tidak ada pasien ditemukan
             </div>
           ) : (
             <ul className="divide-y">
