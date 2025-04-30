@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { Button } from "@/components/ui/button";
@@ -16,18 +15,6 @@ interface ShoppingCartProps {
   removeItem: (id: string) => void;
   clearCart: () => void;
   total: number;
-}
-
-interface Patient {
-  id: string;
-  nama: string;
-  alamat: string;
-  usia: number;
-  keluhan?: string;
-  telepon?: string;
-  email?: string;
-  riwayatMedis?: string;
-  createdAt: any;
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ 
