@@ -6,8 +6,9 @@ import { Separator } from "@/components/ui/separator";
 import { AppointmentSlot, CartItem } from '@/types/pos';
 import { formatISO, format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Calendar, Clock } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock, Wallet } from 'lucide-react';
 import { Patient } from '@/types';
+import { formatRupiah } from '@/lib/utils';
 
 interface PaymentReceiptProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface PaymentReceiptProps {
   items: CartItem[];
   total: number;
   patient?: Patient | null;
+  paymentAmount?: number;
+  changeAmount?: number;
 }
 
 const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
@@ -22,7 +25,9 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   onClose,
   items,
   total,
-  patient
+  patient,
+  paymentAmount = 0,
+  changeAmount = 0
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const today = new Date();
@@ -153,9 +158,25 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               
               <Separator className="my-1" />
               
-              <div className="flex justify-between font-semibold text-xs">
-                <span>Total</span>
-                <span>Rp {total.toLocaleString('id-ID')}</span>
+              {/* Payment details section */}
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Total</span>
+                  <span>{formatRupiah(total)}</span>
+                </div>
+                
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <Wallet className="h-3 w-3 mr-1 text-muted-foreground" /> 
+                    <span>Tunai</span>
+                  </div>
+                  <span>{formatRupiah(paymentAmount)}</span>
+                </div>
+                
+                <div className="flex justify-between font-medium">
+                  <span>Kembalian</span>
+                  <span>{formatRupiah(changeAmount)}</span>
+                </div>
               </div>
             </div>
             

@@ -29,8 +29,18 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   const [patientSelectorOpen, setPatientSelectorOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isProcessingPatient, setIsProcessingPatient] = useState(false);
+  const [paymentDetails, setPaymentDetails] = useState({
+    amount: 0,
+    change: 0
+  });
   
-  const handleProcessPayment = () => {
+  const handleProcessPayment = (paymentAmount: number, changeAmount: number) => {
+    // Store payment information
+    setPaymentDetails({
+      amount: paymentAmount,
+      change: changeAmount
+    });
+    
     // First open patient selector
     setPatientSelectorOpen(true);
   };
@@ -61,6 +71,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
     setReceiptOpen(false);
     setSelectedPatient(null);
     clearCart();
+    setPaymentDetails({ amount: 0, change: 0 });
   };
 
   return (
@@ -88,13 +99,15 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
         onSelectPatient={handlePatientSelected}
       />
 
-      {/* Payment Receipt (now includes selected patient) */}
+      {/* Payment Receipt (now includes selected patient and payment details) */}
       <PaymentReceipt
         isOpen={receiptOpen}
         onClose={handleCloseReceipt}
         items={items}
         total={total}
         patient={selectedPatient}
+        paymentAmount={paymentDetails.amount}
+        changeAmount={paymentDetails.change}
       />
     </div>
   );
