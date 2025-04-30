@@ -15,9 +15,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [theme, setTheme] = useState<Theme>(() => {
     // Check for saved theme in localStorage
     const savedTheme = localStorage.getItem('theme') as Theme;
-    // Check system preference if no saved theme
+    // Default to dark theme, check system preference if no saved theme
     if (!savedTheme) {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'dark';
     }
     return savedTheme;
   });
