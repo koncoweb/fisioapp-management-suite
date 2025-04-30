@@ -19,6 +19,11 @@ export interface TherapySessionData {
   isPackage?: boolean;
   packageIndex?: number;
   createdAt: Date;
+  statusDiupdate?: {
+    nama: string;
+    userId: string;
+    timestamp: string;
+  };
 }
 
 export const saveTherapySession = async (
