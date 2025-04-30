@@ -64,7 +64,7 @@ export const TransactionsTable = () => {
         {format(transaction.transactionDate, 'PPP')}
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="bg-green-50">Income</Badge>
+        <Badge variant="outline" className="bg-green-50">Pendapatan</Badge>
       </TableCell>
       <TableCell>{transaction.receiptNo}</TableCell>
       <TableCell>{transaction.patientName}</TableCell>
@@ -83,7 +83,7 @@ export const TransactionsTable = () => {
         {format(expense.date, 'PPP')}
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="bg-red-50">Expense</Badge>
+        <Badge variant="outline" className="bg-red-50">Pengeluaran</Badge>
       </TableCell>
       <TableCell>{expense.category}</TableCell>
       <TableCell>{expense.name}</TableCell>
@@ -97,10 +97,10 @@ export const TransactionsTable = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Financial Records</h3>
+        <h3 className="text-lg font-medium">Catatan Keuangan</h3>
         <div className="w-full max-w-sm">
           <Input
-            placeholder="Search records..."
+            placeholder="Cari catatan..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -109,9 +109,9 @@ export const TransactionsTable = () => {
 
       <Tabs defaultValue="all">
         <TabsList>
-          <TabsTrigger value="all">All Records</TabsTrigger>
-          <TabsTrigger value="income">Income</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="all">Semua Catatan</TabsTrigger>
+          <TabsTrigger value="income">Pendapatan</TabsTrigger>
+          <TabsTrigger value="expenses">Pengeluaran</TabsTrigger>
         </TabsList>
         
         <TabsContent value="all">
@@ -120,18 +120,18 @@ export const TransactionsTable = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : filteredAll.length === 0 ? (
-            <div className="text-center p-4 text-muted-foreground">No records found</div>
+            <div className="text-center p-4 text-muted-foreground">Tidak ada catatan ditemukan</div>
           ) : (
             <div className="border rounded-md">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>ID/Category</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="hidden md:table-cell">Details</TableHead>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Jenis</TableHead>
+                    <TableHead>ID/Kategori</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Jumlah</TableHead>
+                    <TableHead className="hidden md:table-cell">Detail</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -152,18 +152,18 @@ export const TransactionsTable = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : filteredTransactions.length === 0 ? (
-            <div className="text-center p-4 text-muted-foreground">No income records found</div>
+            <div className="text-center p-4 text-muted-foreground">Tidak ada catatan pendapatan ditemukan</div>
           ) : (
             <div className="border rounded-md">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Receipt No</TableHead>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="hidden md:table-cell">Items</TableHead>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Jenis</TableHead>
+                    <TableHead>No. Kwitansi</TableHead>
+                    <TableHead>Pasien</TableHead>
+                    <TableHead>Jumlah</TableHead>
+                    <TableHead className="hidden md:table-cell">Item</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -180,18 +180,18 @@ export const TransactionsTable = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : filteredExpenses.length === 0 ? (
-            <div className="text-center p-4 text-muted-foreground">No expense records found</div>
+            <div className="text-center p-4 text-muted-foreground">Tidak ada catatan pengeluaran ditemukan</div>
           ) : (
             <div className="border rounded-md">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Category</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="hidden md:table-cell">Description</TableHead>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Jenis</TableHead>
+                    <TableHead>Kategori</TableHead>
+                    <TableHead>Nama</TableHead>
+                    <TableHead>Jumlah</TableHead>
+                    <TableHead className="hidden md:table-cell">Deskripsi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

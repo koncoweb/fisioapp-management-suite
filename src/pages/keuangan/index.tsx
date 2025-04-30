@@ -32,9 +32,9 @@ export default function KeuanganPage() {
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Financial Management</h1>
+          <h1 className="text-xl font-bold tracking-tight">Manajemen Keuangan</h1>
           <p className="text-sm text-muted-foreground">
-            Manage income, expenses, and generate financial reports
+            Kelola pendapatan, pengeluaran, dan buat laporan keuangan
           </p>
         </div>
         <ExpenseForm />
@@ -44,8 +44,8 @@ export default function KeuanganPage() {
       
       <Tabs defaultValue="transactions">
         <TabsList>
-          <TabsTrigger value="transactions" className="text-sm">Transactions</TabsTrigger>
-          <TabsTrigger value="reports" className="text-sm">Reports</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-sm">Transaksi</TabsTrigger>
+          <TabsTrigger value="reports" className="text-sm">Laporan</TabsTrigger>
         </TabsList>
         
         <TabsContent value="transactions" className="mt-4">

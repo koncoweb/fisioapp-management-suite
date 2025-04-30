@@ -51,7 +51,7 @@ const PointOfSale = () => {
         {/* Product Grid */}
         <Card className="w-full md:w-2/3 glass-card">
           <CardHeader>
-            <CardTitle>Products & Services</CardTitle>
+            <CardTitle>Produk & Layanan</CardTitle>
           </CardHeader>
           <CardContent>
             <ProductGrid 
@@ -74,7 +74,7 @@ const PointOfSale = () => {
           {/* Shopping Cart */}
           <Card className="w-full glass-card">
             <CardHeader>
-              <CardTitle>Shopping Cart</CardTitle>
+              <CardTitle>Keranjang Belanja</CardTitle>
             </CardHeader>
             <CardContent>
               <ShoppingCart 

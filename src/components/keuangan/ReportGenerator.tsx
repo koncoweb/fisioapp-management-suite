@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useTransactions, useExpenses } from "@/hooks/use-transactions";
 import { formatCurrency } from "@/lib/utils";
@@ -98,7 +97,7 @@ export const ReportGenerator = () => {
   };
 
   const downloadReport = (report: any, type: string) => {
-    const fileName = `financial-report-${type}-${format(new Date(), 'yyyy-MM-dd')}.json`;
+    const fileName = `laporan-keuangan-${type}-${format(new Date(), 'yyyy-MM-dd')}.json`;
     const json = JSON.stringify(report, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const href = URL.createObjectURL(blob);
@@ -118,7 +117,7 @@ export const ReportGenerator = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-medium">Financial Report</h3>
+            <h3 className="text-lg font-medium">Laporan Keuangan</h3>
             <p className="text-sm text-muted-foreground">{report.periodLabel}</p>
           </div>
           <Button
@@ -128,14 +127,14 @@ export const ReportGenerator = () => {
             className="flex items-center gap-1"
           >
             <Download className="h-4 w-4" />
-            Download
+            Unduh
           </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Income</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Pendapatan</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
@@ -145,7 +144,7 @@ export const ReportGenerator = () => {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
+              <CardTitle className="text-sm font-medium">Total Pengeluaran</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
@@ -155,7 +154,7 @@ export const ReportGenerator = () => {
           </Card>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Balance</CardTitle>
+              <CardTitle className="text-sm font-medium">Saldo</CardTitle>
             </CardHeader>
             <CardContent>
               <div className={cn("text-2xl font-bold", report.balance >= 0 ? "text-green-600" : "text-red-600")}>
@@ -168,8 +167,8 @@ export const ReportGenerator = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Income by Category</CardTitle>
-              <CardDescription>Breakdown of income sources</CardDescription>
+              <CardTitle>Pendapatan berdasarkan Kategori</CardTitle>
+              <CardDescription>Rincian sumber pendapatan</CardDescription>
             </CardHeader>
             <CardContent>
               {Object.keys(report.incomeByCategory).length > 0 ? (
@@ -182,14 +181,14 @@ export const ReportGenerator = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-center text-muted-foreground py-4">No income data for this period</p>
+                <p className="text-center text-muted-foreground py-4">Tidak ada data pendapatan untuk periode ini</p>
               )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Expenses by Category</CardTitle>
-              <CardDescription>Breakdown of expense categories</CardDescription>
+              <CardTitle>Pengeluaran berdasarkan Kategori</CardTitle>
+              <CardDescription>Rincian kategori pengeluaran</CardDescription>
             </CardHeader>
             <CardContent>
               {Object.keys(report.expensesByCategory).length > 0 ? (
@@ -202,7 +201,7 @@ export const ReportGenerator = () => {
                   ))}
                 </ul>
               ) : (
-                <p className="text-center text-muted-foreground py-4">No expense data for this period</p>
+                <p className="text-center text-muted-foreground py-4">Tidak ada data pengeluaran untuk periode ini</p>
               )}
             </CardContent>
           </Card>
@@ -210,15 +209,15 @@ export const ReportGenerator = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Transactions Summary</CardTitle>
+            <CardTitle>Ringkasan Transaksi</CardTitle>
             <CardDescription>
-              {report.transactions.length} income transactions, {report.expenses.length} expense transactions
+              {report.transactions.length} transaksi pendapatan, {report.expenses.length} transaksi pengeluaran
             </CardDescription>
           </CardHeader>
           <CardContent>
             <FileText className="h-12 w-12 mx-auto text-muted-foreground opacity-50 my-4" />
             <p className="text-center text-sm text-muted-foreground">
-              Download the full report to see detailed transaction data
+              Unduh laporan lengkap untuk melihat data transaksi secara detail
             </p>
           </CardContent>
         </Card>
@@ -229,7 +228,7 @@ export const ReportGenerator = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium">Financial Reports</h3>
+        <h3 className="text-lg font-medium">Laporan Keuangan</h3>
         
         <Popover>
           <PopoverTrigger asChild>
@@ -251,9 +250,9 @@ export const ReportGenerator = () => {
 
       <Tabs defaultValue="daily">
         <TabsList className="mb-4">
-          <TabsTrigger value="daily">Daily</TabsTrigger>
-          <TabsTrigger value="weekly">Weekly</TabsTrigger>
-          <TabsTrigger value="monthly">Monthly</TabsTrigger>
+          <TabsTrigger value="daily">Harian</TabsTrigger>
+          <TabsTrigger value="weekly">Mingguan</TabsTrigger>
+          <TabsTrigger value="monthly">Bulanan</TabsTrigger>
         </TabsList>
         
         <TabsContent value="daily">

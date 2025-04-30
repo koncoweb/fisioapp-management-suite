@@ -49,15 +49,15 @@ interface ExpenseFormData {
 }
 
 const EXPENSE_CATEGORIES = [
-  "Supplies",
-  "Equipment",
-  "Utilities",
-  "Rent",
-  "Salaries",
-  "Marketing",
-  "Insurance",
-  "Maintenance",
-  "Other",
+  "Persediaan",
+  "Peralatan",
+  "Utilitas",
+  "Sewa",
+  "Gaji",
+  "Pemasaran",
+  "Asuransi",
+  "Pemeliharaan",
+  "Lainnya",
 ];
 
 export const ExpenseForm = () => {
@@ -77,7 +77,7 @@ export const ExpenseForm = () => {
 
   const onSubmit = (data: ExpenseFormData) => {
     if (!userData?.uid) {
-      toast.error("You must be logged in to add expenses");
+      toast.error("Anda harus login untuk menambahkan pengeluaran");
       return;
     }
 
@@ -90,7 +90,7 @@ export const ExpenseForm = () => {
       },
       {
         onSuccess: () => {
-          toast.success("Expense added successfully");
+          toast.success("Pengeluaran berhasil ditambahkan");
           form.reset({
             name: "",
             amount: 0,
@@ -101,7 +101,7 @@ export const ExpenseForm = () => {
           setOpen(false);
         },
         onError: (error) => {
-          toast.error(`Failed to add expense: ${error.message}`);
+          toast.error(`Gagal menambahkan pengeluaran: ${error.message}`);
         },
       }
     );
@@ -110,23 +110,23 @@ export const ExpenseForm = () => {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button>Add Expense</Button>
+        <Button>Tambah Pengeluaran</Button>
       </SheetTrigger>
       <SheetContent className="sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Add New Expense</SheetTitle>
+          <SheetTitle>Tambah Pengeluaran Baru</SheetTitle>
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
             <FormField
               control={form.control}
               name="name"
-              rules={{ required: "Name is required" }}
+              rules={{ required: "Nama wajib diisi" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Expense Name</FormLabel>
+                  <FormLabel>Nama Pengeluaran</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter expense name" {...field} />
+                    <Input placeholder="Masukkan nama pengeluaran" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -136,16 +136,16 @@ export const ExpenseForm = () => {
             <FormField
               control={form.control}
               name="amount"
-              rules={{ required: "Amount is required", min: { value: 0.01, message: "Amount must be greater than 0" } }}
+              rules={{ required: "Jumlah wajib diisi", min: { value: 0.01, message: "Jumlah harus lebih dari 0" } }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>Jumlah</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
-                      placeholder="Enter amount"
+                      placeholder="Masukkan jumlah"
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />
@@ -158,14 +158,14 @@ export const ExpenseForm = () => {
             <FormField
               control={form.control}
               name="category"
-              rules={{ required: "Category is required" }}
+              rules={{ required: "Kategori wajib diisi" }}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Kategori</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
+                        <SelectValue placeholder="Pilih kategori" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -184,10 +184,10 @@ export const ExpenseForm = () => {
             <FormField
               control={form.control}
               name="date"
-              rules={{ required: "Date is required" }}
+              rules={{ required: "Tanggal wajib diisi" }}
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date</FormLabel>
+                  <FormLabel>Tanggal</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -201,7 +201,7 @@ export const ExpenseForm = () => {
                           {field.value ? (
                             format(field.value, "PPP")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Pilih tanggal</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -226,10 +226,10 @@ export const ExpenseForm = () => {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Deskripsi</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter expense description"
+                      placeholder="Masukkan deskripsi pengeluaran"
                       className="resize-none"
                       {...field}
                     />
@@ -241,10 +241,10 @@ export const ExpenseForm = () => {
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button variant="outline" type="button" onClick={() => setOpen(false)}>
-                Cancel
+                Batal
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save Expense"}
+                {isPending ? "Menyimpan..." : "Simpan Pengeluaran"}
               </Button>
             </div>
           </form>

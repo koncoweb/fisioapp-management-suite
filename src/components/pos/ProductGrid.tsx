@@ -19,7 +19,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
       {products.length === 0 && (
         <div className="col-span-full text-center py-4 text-muted-foreground text-xs">
-          No products or services available
+          Tidak ada produk atau layanan tersedia
         </div>
       )}
       
@@ -42,9 +42,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
               <h3 className="font-medium text-xs truncate">{product.name}</h3>
               <div className="mt-0.5">
                 <p className="text-xs font-semibold">Rp {product.price.toLocaleString('id-ID')}</p>
-                <p className="text-[10px] text-muted-foreground capitalize">{product.type}</p>
+                <p className="text-[10px] text-muted-foreground capitalize">{product.type === 'product' ? 'Produk' : 'Layanan'}</p>
                 {product.type === 'service' && product.duration && (
-                  <p className="text-[10px] text-muted-foreground">{product.duration} min</p>
+                  <p className="text-[10px] text-muted-foreground">{product.duration} menit</p>
                 )}
               </div>
             </CardContent>
@@ -56,7 +56,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
                 size="sm"
               >
                 <ShoppingCart className="mr-1 h-3 w-3" />
-                {product.type === 'service' ? 'Select' : 'Add'}
+                {product.type === 'service' ? 'Pilih' : 'Tambah'}
               </Button>
             </CardFooter>
           </Card>
