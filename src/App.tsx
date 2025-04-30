@@ -24,6 +24,7 @@ import BookingPage from "./pages/patients/BookingPage";
 import BookingManagement from "./pages/admin/BookingManagement";
 import Settings from "./pages/admin/Settings";
 import PointOfSale from "./pages/admin/PointOfSale";
+import KeuanganPage from "./pages/keuangan";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,11 @@ const App = () => (
                 <Route path="/pos" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <PointOfSale />
+                  </ProtectedRoute>
+                } />
+                <Route path="/keuangan" element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <KeuanganPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/messages" element={<div>Messages (Coming soon)</div>} />

@@ -26,6 +26,7 @@ import {
   LogOut,
   Bell,
   ShoppingCart,
+  DollarSign,
 } from 'lucide-react';
 
 const AppSidebar: React.FC = () => {
@@ -42,6 +43,7 @@ const AppSidebar: React.FC = () => {
     { path: '/services', label: 'Layanan', icon: Settings },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
+    { path: '/keuangan', label: 'Keuangan', icon: DollarSign },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
     { path: '/payments', label: 'Pembayaran', icon: Receipt },
     { path: '/notifications', label: 'Notifikasi', icon: Bell },

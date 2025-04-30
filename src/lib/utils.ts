@@ -1,4 +1,3 @@
-
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -18,4 +17,16 @@ export function formatRupiah(value: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value).replace('IDR', 'Rp');
+}
+
+/**
+ * Format a number as currency (IDR)
+ */
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
