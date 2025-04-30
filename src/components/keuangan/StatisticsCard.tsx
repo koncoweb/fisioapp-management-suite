@@ -25,26 +25,26 @@ export const StatisticsCard = ({
   period
 }: StatisticsCardProps) => {
   const colorMap = {
-    income: 'text-green-600',
-    expense: 'text-red-600',
-    balance: value >= 0 ? 'text-green-600' : 'text-red-600'
+    income: 'text-green-600 dark:text-green-400',
+    expense: 'text-red-600 dark:text-red-400',
+    balance: value >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
   };
   
   const periodMap = {
     day: {
       icon: Clock,
-      bgColor: 'bg-blue-50',
-      borderColor: 'border-blue-200'
+      bgColor: 'bg-blue-50 dark:bg-blue-950/30',
+      borderColor: 'border-blue-200 dark:border-blue-800'
     },
     week: {
       icon: TrendingUp,
-      bgColor: 'bg-purple-50',
-      borderColor: 'border-purple-200'
+      bgColor: 'bg-purple-50 dark:bg-purple-950/30',
+      borderColor: 'border-purple-200 dark:border-purple-800'
     },
     month: {
       icon: Calendar,
-      bgColor: 'bg-amber-50',
-      borderColor: 'border-amber-200'
+      bgColor: 'bg-amber-50 dark:bg-amber-950/30',
+      borderColor: 'border-amber-200 dark:border-amber-800'
     }
   };
   
@@ -56,15 +56,15 @@ export const StatisticsCard = ({
   
   return (
     <Card className={cardStyles}>
-      <CardHeader className="pb-2 flex flex-row items-center justify-between">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      <CardHeader className="pb-1 flex flex-row items-center justify-between">
+        <CardTitle className="text-xs font-medium">{title}</CardTitle>
         {PeriodIcon && <PeriodIcon className="h-4 w-4 opacity-70" />}
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="h-7 bg-muted animate-pulse rounded"></div>
+          <div className="h-6 bg-muted animate-pulse rounded"></div>
         ) : (
-          <div className="text-2xl font-bold tracking-tight">
+          <div className="text-xl font-bold tracking-tight">
             <span className={textColor}>{formatCurrency(value)}</span>
           </div>
         )}

@@ -29,11 +29,11 @@ export default function KeuanganPage() {
   }
   
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Financial Management</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-xl font-bold tracking-tight">Financial Management</h1>
+          <p className="text-sm text-muted-foreground">
             Manage income, expenses, and generate financial reports
           </p>
         </div>
@@ -44,15 +44,15 @@ export default function KeuanganPage() {
       
       <Tabs defaultValue="transactions">
         <TabsList>
-          <TabsTrigger value="transactions">Transactions</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-sm">Transactions</TabsTrigger>
+          <TabsTrigger value="reports" className="text-sm">Reports</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="transactions" className="mt-6">
+        <TabsContent value="transactions" className="mt-4">
           <TransactionsTable />
         </TabsContent>
         
-        <TabsContent value="reports" className="mt-6">
+        <TabsContent value="reports" className="mt-4">
           <ReportGenerator />
         </TabsContent>
       </Tabs>

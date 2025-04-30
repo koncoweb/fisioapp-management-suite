@@ -9,13 +9,13 @@ export const StatisticsGrid = () => {
   const { data: monthlyData, isLoading: isMonthlyLoading } = useFinancialSummary('month');
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="space-y-3 p-3 rounded-lg dark:bg-slate-900/50 bg-slate-50">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-medium">Today</h3>
-          <Badge variant="outline" className="bg-blue-50">Daily</Badge>
+          <h3 className="text-sm font-semibold">Today</h3>
+          <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-xs">Daily</Badge>
         </div>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           <StatisticsCard 
             title="Income" 
             value={dailyData?.income || 0} 
@@ -43,12 +43,12 @@ export const StatisticsGrid = () => {
         </div>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-3 p-3 rounded-lg dark:bg-slate-900/50 bg-slate-50">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-medium">This Week</h3>
-          <Badge variant="outline" className="bg-purple-50">Weekly</Badge>
+          <h3 className="text-sm font-semibold">This Week</h3>
+          <Badge variant="outline" className="bg-purple-50 dark:bg-purple-900/20 text-xs">Weekly</Badge>
         </div>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           <StatisticsCard 
             title="Income" 
             value={weeklyData?.income || 0} 
@@ -76,12 +76,12 @@ export const StatisticsGrid = () => {
         </div>
       </div>
       
-      <div className="space-y-4">
+      <div className="space-y-3 p-3 rounded-lg dark:bg-slate-900/50 bg-slate-50">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-medium">This Month</h3>
-          <Badge variant="outline" className="bg-amber-50">Monthly</Badge>
+          <h3 className="text-sm font-semibold">This Month</h3>
+          <Badge variant="outline" className="bg-amber-50 dark:bg-amber-900/20 text-xs">Monthly</Badge>
         </div>
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           <StatisticsCard 
             title="Income" 
             value={monthlyData?.income || 0} 
