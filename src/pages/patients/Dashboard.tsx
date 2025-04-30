@@ -37,7 +37,7 @@ const PatientDashboard = () => {
               Dashboard Pasien
             </h1>
             <p className="text-blue-600/80 dark:text-blue-400/80">
-              Selamat datang, {userData?.displayName || userData?.email}
+              Selamat datang, {userData?.namaLengkap || userData?.email}
             </p>
           </div>
           <div className="mt-4 md:mt-0">
