@@ -119,10 +119,17 @@ const PatientSelector: React.FC<PatientSelectorProps> = ({ isOpen, onClose, onSe
         createdAt: serverTimestamp()
       });
       
-      // Get the newly created patient
+      // Create the new patient with required fields
+      // Fixed: Ensure we're assigning non-optional values to required fields
       const newPatient: Patient = {
         id: patientRef.id,
-        ...data,
+        nama: data.nama,
+        alamat: data.alamat,
+        usia: data.usia,
+        keluhan: data.keluhan || '',
+        telepon: data.telepon,
+        email: data.email,
+        riwayatMedis: data.riwayatMedis,
         createdAt: new Date()
       };
       

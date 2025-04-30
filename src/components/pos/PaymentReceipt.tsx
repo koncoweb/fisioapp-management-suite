@@ -17,6 +17,7 @@ interface Patient {
   telepon?: string;
   email?: string;
   riwayatMedis?: string;
+  createdAt: any;
 }
 
 interface PaymentReceiptProps {

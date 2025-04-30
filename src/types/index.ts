@@ -53,3 +53,15 @@ export interface PaymentRecord {
   createdAt: string;
   createdBy: string;
 }
+
+export interface Patient {
+  id: string;
+  nama: string;
+  alamat: string;
+  usia: number;
+  keluhan?: string;
+  telepon?: string;
+  email?: string;
+  riwayatMedis?: string;
+  createdAt: any;
+}
