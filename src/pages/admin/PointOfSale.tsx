@@ -32,13 +32,15 @@ const PointOfSale = () => {
   });
 
   const addToCart = (product: Product) => {
-    if (product.type === 'service') {
-      setSelectedProduct(product);
-      setShowPricePopup(true);
+    // For product type, directly add to cart
+    if (product.type === 'product') {
+      addItemToCart(product);
       return;
     }
     
-    addItemToCart(product);
+    // For service type, show price popup
+    setSelectedProduct(product);
+    setShowPricePopup(true);
   };
 
   const addItemToCart = (product: Product) => {
