@@ -59,6 +59,14 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Transactions collection rules - New collection for POS transactions
+    match /transactions/{transactionId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // Bookings collection rules - Updated to allow both admin and patient bookings
     match /bookings/{bookingId} {
       // Allow reading by involved parties (patient, therapist, or admin)

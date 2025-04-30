@@ -26,6 +26,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
       amount: 0,
       change: 0,
       discount: 0,
+      tax: 0, // Default tax rate of 0%
       loyaltyPoints: 0
     });
     
@@ -40,6 +41,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           amount: paymentAmount,
           change: changeAmount,
           discount: 0, // Default no discount
+          tax: 0, // Default no tax
           loyaltyPoints: earnedPoints
         });
         
@@ -74,7 +76,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
       setReceiptOpen(false);
       setSelectedPatient(null);
       clearCart();
-      setPaymentDetails({ amount: 0, change: 0, discount: 0, loyaltyPoints: 0 });
+      setPaymentDetails({ amount: 0, change: 0, discount: 0, tax: 0, loyaltyPoints: 0 });
     };
 
     return (
@@ -96,6 +98,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           paymentAmount={paymentDetails.amount}
           changeAmount={paymentDetails.change}
           discount={paymentDetails.discount}
+          tax={paymentDetails.tax}
           loyaltyPoints={paymentDetails.loyaltyPoints}
         />
       </>

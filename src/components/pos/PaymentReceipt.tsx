@@ -29,6 +29,7 @@ interface PaymentReceiptProps {
   paymentAmount?: number;
   changeAmount?: number;
   discount?: number;
+  tax?: number;
   loyaltyPoints?: number;
 }
 
@@ -41,6 +42,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   paymentAmount = 0,
   changeAmount = 0,
   discount = 0,
+  tax = 0,
   loyaltyPoints = 0
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
@@ -49,8 +51,12 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   const today = new Date();
   const receiptNo = `INV-${format(today, 'yyyyMMdd')}-${Math.floor(Math.random() * 1000)}`;
   
-  // Calculate final total after discount
-  const finalTotal = total - discount;
+  // Calculate tax amount
+  const subtotalAfterDiscount = total - discount;
+  const taxAmount = subtotalAfterDiscount * (tax / 100);
+  
+  // Calculate final total after discount and tax
+  const finalTotal = subtotalAfterDiscount + taxAmount;
   
   const handleCompletePayment = async () => {
     try {
@@ -73,6 +79,8 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
         total: finalTotal,
         originalTotal: total,
         discount: discount,
+        tax: tax,
+        taxAmount: taxAmount,
         paymentAmount,
         changeAmount,
         loyaltyPoints,
@@ -135,6 +143,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               <PaymentDetails 
                 total={total}
                 discount={discount}
+                tax={tax}
                 finalTotal={finalTotal}
                 paymentAmount={paymentAmount}
                 changeAmount={changeAmount}
