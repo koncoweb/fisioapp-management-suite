@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AppointmentSlot } from '@/types/pos';
 
 interface UseAppointmentStateProps {
@@ -23,7 +23,38 @@ export const useAppointmentState = ({
   const [tempDates, setTempDates] = useState<Date[]>([]);
   const [tempTimes, setTempTimes] = useState<string[]>([]);
   
+  // Fix: Use useCallback to memoize the date change handler to avoid dependency issues
+  const handleDateChange = useCallback((date: Date | undefined, index: number) => {
+    setTempDates(prev => {
+      const newDates = [...prev];
+      newDates[index] = date;
+      return newDates;
+    });
+    
+    // Check therapist availability when date changes
+    if (date && therapistId) {
+      checkAvailability(date);
+    }
+    
+    // Clear time when date changes
+    setTempTimes(prev => {
+      const newTimes = [...prev];
+      newTimes[index] = undefined;
+      return newTimes;
+    });
+  }, [therapistId, checkAvailability]);
+
+  const handleTimeChange = useCallback((time: string, index: number) => {
+    setTempTimes(prev => {
+      const newTimes = [...prev];
+      newTimes[index] = time;
+      return newTimes;
+    });
+  }, []);
+
   useEffect(() => {
+    if (!isOpen) return;
+    
     // Initialize arrays with existing appointment data or empty slots
     const initialDates: Date[] = [];
     const initialTimes: string[] = [];
@@ -37,38 +68,13 @@ export const useAppointmentState = ({
     setTempTimes(initialTimes);
     
     // Set active tab to current slot index when dialog opens
-    if (isOpen) {
-      setActiveTab(currentSlotIndex.toString());
-      
-      // If we have both a therapist and a date for the current slot, check availability
-      const currentTabIdx = parseInt(currentSlotIndex.toString());
-      if (therapistId && initialDates[currentTabIdx]) {
-        checkAvailability(initialDates[currentTabIdx]);
-      }
-    }
-  }, [isOpen, appointments, maxAppointments, currentSlotIndex, therapistId, checkAvailability]);
-
-  const handleDateChange = (date: Date | undefined, index: number) => {
-    const newDates = [...tempDates];
-    newDates[index] = date;
-    setTempDates(newDates);
+    setActiveTab(currentSlotIndex.toString());
     
-    // Check therapist availability when date changes
-    if (date && therapistId) {
-      checkAvailability(date);
+    // If we have both a therapist and a date for the current slot, check availability
+    if (therapistId && initialDates[currentSlotIndex]) {
+      checkAvailability(initialDates[currentSlotIndex]);
     }
-    
-    // Clear time when date changes
-    const newTimes = [...tempTimes];
-    newTimes[index] = undefined;
-    setTempTimes(newTimes);
-  };
-
-  const handleTimeChange = (time: string, index: number) => {
-    const newTimes = [...tempTimes];
-    newTimes[index] = time;
-    setTempTimes(newTimes);
-  };
+  }, [isOpen, appointments, maxAppointments, currentSlotIndex, therapistId]); // Remove checkAvailability from dependencies
 
   const currentTabIndex = parseInt(activeTab);
 

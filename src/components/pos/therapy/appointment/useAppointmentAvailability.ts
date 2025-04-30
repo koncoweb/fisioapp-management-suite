@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { format } from 'date-fns';
 import { collection, query, getDocs, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -9,7 +9,7 @@ export const useAppointmentAvailability = (therapistId: string | undefined) => {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>(generateTimeSlots());
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
 
-  const checkTherapistAvailability = async (date: Date | undefined) => {
+  const checkTherapistAvailability = useCallback(async (date: Date | undefined) => {
     if (!therapistId || !date) {
       setAvailableTimeSlots(generateTimeSlots());
       return;
@@ -49,7 +49,7 @@ export const useAppointmentAvailability = (therapistId: string | undefined) => {
     } finally {
       setIsCheckingAvailability(false);
     }
-  };
+  }, [therapistId]);
 
   return {
     availableTimeSlots,
