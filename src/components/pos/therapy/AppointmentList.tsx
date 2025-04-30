@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { AppointmentSlot } from '@/pages/admin/PointOfSale';
+import { AppointmentSlot } from '@/types/pos';
 
 interface AppointmentListProps {
   appointments: AppointmentSlot[];
