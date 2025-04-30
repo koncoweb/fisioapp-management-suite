@@ -16,7 +16,7 @@ interface PaymentProcessorProps {
 }
 
 export interface PaymentProcessorHandle {
-  handleProcessPayment: (paymentAmount: number, changeAmount: number) => void;
+  handleProcessPayment: (paymentAmount: number, changeAmount: number, discount: number, tax: number) => void;
 }
 
 const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProps>(
@@ -28,14 +28,14 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     const [paymentDetails, setPaymentDetails] = useState({
       amount: 0,
       change: 0,
-      discount: 0,
-      tax: 0, // Default tax rate of 0%
+      discount: 0, // Default discount of 0%
+      tax: 5,      // Default tax of 5%
       loyaltyPoints: 0
     });
     
     // Expose the handleProcessPayment method via ref
     useImperativeHandle(ref, () => ({
-      handleProcessPayment: (paymentAmount: number, changeAmount: number) => {
+      handleProcessPayment: (paymentAmount: number, changeAmount: number, discount: number, tax: number) => {
         // Calculate loyalty points (1 point per 10000 Rp spent)
         const earnedPoints = Math.floor(total / 10000);
         
@@ -43,8 +43,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         setPaymentDetails({
           amount: paymentAmount,
           change: changeAmount,
-          discount: 0, // Default no discount
-          tax: 0, // Default no tax
+          discount: discount,
+          tax: tax,
           loyaltyPoints: earnedPoints
         });
         
@@ -78,7 +78,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     const handleCloseReceipt = async () => {
       try {
         // Save transaction to Firestore
-        const subtotalAfterDiscount = total - paymentDetails.discount;
+        const discountAmount = (paymentDetails.discount / 100) * total;
+        const subtotalAfterDiscount = total - discountAmount;
         const taxAmount = subtotalAfterDiscount * (paymentDetails.tax / 100);
         const finalTotal = subtotalAfterDiscount + taxAmount;
         
@@ -102,6 +103,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           total: finalTotal,
           originalTotal: total,
           discount: paymentDetails.discount,
+          discountAmount: discountAmount,
           tax: paymentDetails.tax,
           taxAmount: taxAmount,
           paymentAmount: paymentDetails.amount,
@@ -159,7 +161,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         setReceiptOpen(false);
         setSelectedPatient(null);
         clearCart();
-        setPaymentDetails({ amount: 0, change: 0, discount: 0, tax: 0, loyaltyPoints: 0 });
+        setPaymentDetails({ amount: 0, change: 0, discount: 0, tax: 5, loyaltyPoints: 0 });
       }
     };
 

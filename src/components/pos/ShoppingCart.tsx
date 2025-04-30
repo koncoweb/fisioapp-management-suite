@@ -24,9 +24,9 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   const paymentProcessorRef = useRef<PaymentProcessorHandle>(null);
 
   // This will be called by CartFooter when payment process should start
-  const handleProcessPayment = (paymentAmount: number, changeAmount: number) => {
+  const handleProcessPayment = (paymentAmount: number, changeAmount: number, discount: number, tax: number) => {
     setIsProcessingPatient(true);
-    paymentProcessorRef.current?.handleProcessPayment(paymentAmount, changeAmount);
+    paymentProcessorRef.current?.handleProcessPayment(paymentAmount, changeAmount, discount, tax);
     // Reset the processing state after a delay
     setTimeout(() => setIsProcessingPatient(false), 600);
   };
