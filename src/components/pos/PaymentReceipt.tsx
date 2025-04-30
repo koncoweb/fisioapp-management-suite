@@ -17,6 +17,8 @@ import ServiceDetails from './receipt/ServiceDetails';
 import PaymentDetails from './receipt/PaymentDetails';
 import ReceiptActions from './receipt/ReceiptActions';
 import SuccessAnimation from './receipt/SuccessAnimation';
+import ReceiptQRCode from './receipt/ReceiptQRCode';
+import LoyaltyInfo from './receipt/LoyaltyInfo';
 
 interface PaymentReceiptProps {
   isOpen: boolean;
@@ -26,6 +28,8 @@ interface PaymentReceiptProps {
   patient?: Patient | null;
   paymentAmount?: number;
   changeAmount?: number;
+  discount?: number;
+  loyaltyPoints?: number;
 }
 
 const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
@@ -35,13 +39,18 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   total,
   patient,
   paymentAmount = 0,
-  changeAmount = 0
+  changeAmount = 0,
+  discount = 0,
+  loyaltyPoints = 0
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
   const today = new Date();
   const receiptNo = `INV-${format(today, 'yyyyMMdd')}-${Math.floor(Math.random() * 1000)}`;
+  
+  // Calculate final total after discount
+  const finalTotal = total - discount;
   
   const handleCompletePayment = async () => {
     try {
@@ -61,9 +70,12 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
           type: item.type,
           appointments: item.appointments ? JSON.parse(JSON.stringify(item.appointments)) : null
         })),
-        total,
+        total: finalTotal,
+        originalTotal: total,
+        discount: discount,
         paymentAmount,
         changeAmount,
+        loyaltyPoints,
         createdAt: serverTimestamp()
       };
       
@@ -122,8 +134,21 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               
               <PaymentDetails 
                 total={total}
+                discount={discount}
+                finalTotal={finalTotal}
                 paymentAmount={paymentAmount}
                 changeAmount={changeAmount}
+              />
+
+              <LoyaltyInfo
+                points={loyaltyPoints}
+                patientName={patient?.nama}
+              />
+              
+              <ReceiptQRCode 
+                receiptNo={receiptNo}
+                total={finalTotal}
+                date={format(today, 'yyyy-MM-dd')}
               />
             </div>
             

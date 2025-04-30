@@ -24,16 +24,23 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     const [isProcessingPatient, setIsProcessingPatient] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState({
       amount: 0,
-      change: 0
+      change: 0,
+      discount: 0,
+      loyaltyPoints: 0
     });
     
     // Expose the handleProcessPayment method via ref
     useImperativeHandle(ref, () => ({
       handleProcessPayment: (paymentAmount: number, changeAmount: number) => {
+        // Calculate loyalty points (1 point per 10000 Rp spent)
+        const earnedPoints = Math.floor(total / 10000);
+        
         // Store payment information
         setPaymentDetails({
           amount: paymentAmount,
-          change: changeAmount
+          change: changeAmount,
+          discount: 0, // Default no discount
+          loyaltyPoints: earnedPoints
         });
         
         // First open patient selector
@@ -67,7 +74,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
       setReceiptOpen(false);
       setSelectedPatient(null);
       clearCart();
-      setPaymentDetails({ amount: 0, change: 0 });
+      setPaymentDetails({ amount: 0, change: 0, discount: 0, loyaltyPoints: 0 });
     };
 
     return (
@@ -88,6 +95,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           patient={selectedPatient}
           paymentAmount={paymentDetails.amount}
           changeAmount={paymentDetails.change}
+          discount={paymentDetails.discount}
+          loyaltyPoints={paymentDetails.loyaltyPoints}
         />
       </>
     );
