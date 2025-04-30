@@ -16,9 +16,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
   const isMobile = useIsMobile();
   
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
       {products.length === 0 && (
-        <div className="col-span-full text-center py-6 text-muted-foreground text-sm">
+        <div className="col-span-full text-center py-4 text-muted-foreground text-xs">
           No products or services available
         </div>
       )}
@@ -31,27 +31,27 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
           transition={{ duration: 0.3, delay: index * 0.05 }}
         >
           <Card className="flex flex-col justify-between overflow-hidden hover:shadow-md transition-all duration-200 border-border glass-card h-full">
-            <CardContent className={`p-3 ${isMobile ? 'pb-1' : 'pb-2'}`}>
-              <div className="flex items-center justify-center h-20 bg-secondary/30 rounded-md mb-2">
+            <CardContent className={`p-2 ${isMobile ? 'pb-0.5' : 'pb-1'}`}>
+              <div className="flex items-center justify-center h-16 bg-secondary/30 rounded-md mb-1">
                 {product.type === 'product' ? (
-                  <Package className="h-10 w-10 text-primary opacity-70" />
+                  <Package className="h-8 w-8 text-primary opacity-70" />
                 ) : (
-                  <Clock className="h-10 w-10 text-accent opacity-70" />
+                  <Clock className="h-8 w-8 text-accent opacity-70" />
                 )}
               </div>
-              <h3 className="font-medium text-xs sm:text-sm truncate">{product.name}</h3>
-              <div className="mt-1">
-                <p className="text-sm font-semibold">Rp {product.price.toLocaleString('id-ID')}</p>
-                <p className="text-xs text-muted-foreground capitalize">{product.type}</p>
+              <h3 className="font-medium text-xs truncate">{product.name}</h3>
+              <div className="mt-0.5">
+                <p className="text-xs font-semibold">Rp {product.price.toLocaleString('id-ID')}</p>
+                <p className="text-[10px] text-muted-foreground capitalize">{product.type}</p>
                 {product.type === 'service' && product.duration && (
-                  <p className="text-xs text-muted-foreground">{product.duration} min</p>
+                  <p className="text-[10px] text-muted-foreground">{product.duration} min</p>
                 )}
               </div>
             </CardContent>
-            <CardFooter className="px-3 py-2 border-t bg-muted/30">
+            <CardFooter className="px-2 py-1 border-t bg-muted/30">
               <Button 
                 onClick={() => onAddToCart(product)} 
-                className="w-full h-8 text-xs"
+                className="w-full h-6 text-[10px]"
                 variant={product.type === 'service' ? "secondary" : "default"}
                 size="sm"
               >
