@@ -3,20 +3,20 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs, DocumentData } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs, DocumentData, Timestamp } from 'firebase/firestore';
 import type { BookingSession } from '@/types';
 import { DashboardStats } from '@/components/dashboard/StatsCards';
 import BookingsTable from '@/components/dashboard/BookingsTable';
 import TherapistView from '@/components/dashboard/TherapistView';
+import { startOfDay, endOfDay } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { userData } = useAuth();
   const [todayBookings, setTodayBookings] = useState<BookingSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
-    totalBookings: 0,
-    totalEmployees: 0,
-    totalRevenue: 0,
+    todayIncome: 0,
+    todayExpenses: 0,
   });
   const { toast } = useToast();
 
@@ -31,8 +31,6 @@ const Dashboard: React.FC = () => {
         if (userData) {
           let bookingsQuery;
           
-          // Fix: Remove orderBy from queries to prevent index requirements
-          // We'll sort the data after fetching it
           if (isAdmin) {
             bookingsQuery = query(
               collection(db, 'therapySessions'),
@@ -90,29 +88,52 @@ const Dashboard: React.FC = () => {
 
           if (isAdmin) {
             try {
-              const employeesSnapshot = await getDocs(collection(db, 'users'));
-              const totalEmployees = employeesSnapshot.size;
+              // Get today's start and end timestamps for financial data filtering
+              const todayStart = startOfDay(new Date());
+              const todayEnd = endOfDay(new Date());
               
-              const allBookingsSnapshot = await getDocs(collection(db, 'therapySessions'));
-              const totalBookings = allBookingsSnapshot.size;
+              // Fetch today's income (transactions)
+              const transactionsQuery = query(
+                collection(db, 'transactions'),
+                where('transactionDate', '>=', todayStart),
+                where('transactionDate', '<=', todayEnd)
+              );
               
-              const paymentsSnapshot = await getDocs(collection(db, 'payments'));
-              let totalRevenue = 0;
-              paymentsSnapshot.forEach((doc) => {
+              // Fetch today's expenses
+              const expensesQuery = query(
+                collection(db, 'expenses'),
+                where('date', '>=', todayStart),
+                where('date', '<=', todayEnd)
+              );
+              
+              const [transactionsSnapshot, expensesSnapshot] = await Promise.all([
+                getDocs(transactionsQuery),
+                getDocs(expensesQuery)
+              ]);
+              
+              // Calculate today's income
+              let todayIncome = 0;
+              transactionsSnapshot.forEach((doc) => {
                 const data = doc.data();
-                totalRevenue += data.amount || 0;
+                todayIncome += data.total || 0;
+              });
+              
+              // Calculate today's expenses
+              let todayExpenses = 0;
+              expensesSnapshot.forEach((doc) => {
+                const data = doc.data();
+                todayExpenses += data.amount || 0;
               });
               
               setStats({
-                totalBookings,
-                totalEmployees,
-                totalRevenue,
+                todayIncome,
+                todayExpenses,
               });
             } catch (error) {
-              console.error('Error fetching admin stats:', error);
+              console.error('Error fetching financial stats:', error);
               toast({
                 title: "Error",
-                description: "Failed to fetch statistics. Please check Firestore permissions.",
+                description: "Failed to fetch financial statistics.",
                 variant: "destructive",
               });
             }
@@ -154,8 +175,8 @@ const Dashboard: React.FC = () => {
     <div className="space-y-6">
       <DashboardStats
         todayBookings={todayBookings.length}
-        totalEmployees={stats.totalEmployees}
-        totalRevenue={stats.totalRevenue}
+        todayIncome={stats.todayIncome}
+        todayExpenses={stats.todayExpenses}
         isAdmin={isAdmin}
       />
       <div className="mt-6">

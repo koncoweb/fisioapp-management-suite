@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Users, Receipt } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 interface StatsCardProps {
   title: string;
@@ -29,12 +30,12 @@ const StatsCard = ({ title, value, description, icon: Icon }: StatsCardProps) =>
 
 interface DashboardStatsProps {
   todayBookings: number;
-  totalEmployees?: number;
-  totalRevenue?: number;
+  todayIncome?: number;
+  todayExpenses?: number;
   isAdmin: boolean;
 }
 
-export const DashboardStats = ({ todayBookings, totalEmployees, totalRevenue, isAdmin }: DashboardStatsProps) => {
+export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAdmin }: DashboardStatsProps) => {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <StatsCard
@@ -47,16 +48,16 @@ export const DashboardStats = ({ todayBookings, totalEmployees, totalRevenue, is
       {isAdmin && (
         <>
           <StatsCard
-            title="Total Karyawan"
-            value={totalEmployees || 0}
-            description="Anggota staf aktif"
-            icon={Users}
+            title="Pendapatan Hari Ini"
+            value={formatCurrency(todayIncome || 0)}
+            description="Total pendapatan hari ini"
+            icon={TrendingUp}
           />
           <StatsCard
-            title="Total Pendapatan"
-            value={`Rp ${(totalRevenue || 0).toLocaleString()}`}
-            description="Pendapatan keseluruhan"
-            icon={Receipt}
+            title="Pengeluaran Hari Ini"
+            value={formatCurrency(todayExpenses || 0)}
+            description="Total pengeluaran hari ini"
+            icon={TrendingDown}
           />
         </>
       )}
