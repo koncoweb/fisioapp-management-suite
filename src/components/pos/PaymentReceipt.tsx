@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -43,32 +44,32 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onClose();
     }}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[400px] p-3">
         {paymentCompleted ? (
           <motion.div 
-            className="flex flex-col items-center justify-center py-8"
+            className="flex flex-col items-center justify-center py-6"
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-            <h2 className="text-xl font-semibold">Pembayaran Berhasil</h2>
-            <p className="text-muted-foreground mt-2">Terima kasih telah berbelanja</p>
+            <CheckCircle2 className="h-12 w-12 text-green-500 mb-3" />
+            <h2 className="text-lg font-semibold">Pembayaran Berhasil</h2>
+            <p className="text-xs text-muted-foreground mt-1">Terima kasih telah berbelanja</p>
           </motion.div>
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-center text-xl">Struk Pembayaran</DialogTitle>
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-center text-base">Struk Pembayaran</DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-4">
-              <div className="text-center text-sm text-muted-foreground">
+            <div className="space-y-3">
+              <div className="text-center text-xs text-muted-foreground">
                 <p>Klinik Therapy & Relaxation</p>
                 <p>Jl. Kesehatan No. 123</p>
                 <p>Jakarta, Indonesia</p>
               </div>
               
-              <div className="text-sm">
+              <div className="text-xs">
                 <div className="flex justify-between">
                   <span>No. Struk:</span>
                   <span>{receiptNo}</span>
@@ -80,9 +81,9 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                 
                 {patient && (
                   <>
-                    <Separator className="my-2" />
-                    <div className="mb-1 font-medium">Data Pasien:</div>
-                    <div className="text-xs space-y-1 bg-secondary/20 p-2 rounded-md">
+                    <Separator className="my-1.5" />
+                    <div className="mb-0.5 font-medium text-xs">Data Pasien:</div>
+                    <div className="text-[10px] space-y-0.5 bg-secondary/20 p-1.5 rounded-md">
                       <div><span className="font-medium">Nama:</span> {patient.nama}</div>
                       <div><span className="font-medium">Alamat:</span> {patient.alamat}</div>
                       <div><span className="font-medium">Usia:</span> {patient.usia} tahun</div>
@@ -93,16 +94,16 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                 )}
               </div>
               
-              <Separator />
+              <Separator className="my-1" />
               
               <div>
-                <h3 className="font-medium mb-2">Detail Layanan:</h3>
-                <ul className="space-y-1.5 text-sm">
+                <h3 className="font-medium mb-1 text-xs">Detail Layanan:</h3>
+                <ul className="space-y-1 text-[10px]">
                   {items.map((item) => (
                     <li key={item.id} className="flex justify-between">
                       <div>
                         <span>{item.name}</span>
-                        <span className="text-xs text-muted-foreground"> x{item.quantity}</span>
+                        <span className="text-[9px] text-muted-foreground"> x{item.quantity}</span>
                       </div>
                       <span>Rp {(item.price * item.quantity).toLocaleString('id-ID')}</span>
                     </li>
@@ -110,24 +111,24 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
                 </ul>
               </div>
               
-              <Separator />
+              <Separator className="my-1" />
               
-              <div className="flex justify-between font-semibold">
+              <div className="flex justify-between font-semibold text-xs">
                 <span>Total</span>
                 <span>Rp {total.toLocaleString('id-ID')}</span>
               </div>
             </div>
             
-            <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <DialogFooter className="flex-col gap-1.5 sm:flex-col pt-2">
               <Button 
-                className="w-full" 
+                className="w-full h-7 text-xs" 
                 onClick={handleCompletePayment}
               >
                 Selesaikan Pembayaran
               </Button>
               <Button 
                 variant="outline" 
-                className="w-full" 
+                className="w-full h-7 text-xs" 
                 onClick={onClose}
               >
                 Batal

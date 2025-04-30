@@ -36,9 +36,9 @@ const PatientSelector: React.FC<PatientSelectorProps> = ({ isOpen, onClose, onSe
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onClose();
     }}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Pilih Pasien</DialogTitle>
+      <DialogContent className="sm:max-w-[450px] p-4">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-base">Pilih Pasien</DialogTitle>
         </DialogHeader>
         
         {!isAddingNew ? (
@@ -46,8 +46,8 @@ const PatientSelector: React.FC<PatientSelectorProps> = ({ isOpen, onClose, onSe
             <PatientSearch onSelectPatient={handleSelectExisting} />
             
             <DialogFooter>
-              <Button onClick={() => setIsAddingNew(true)} variant="outline" className="w-full">
-                <UserPlus className="h-4 w-4 mr-2" /> Tambah Pasien Baru
+              <Button onClick={() => setIsAddingNew(true)} variant="outline" className="w-full h-8 text-xs">
+                <UserPlus className="h-3 w-3 mr-1.5" /> Tambah Pasien Baru
               </Button>
             </DialogFooter>
           </>

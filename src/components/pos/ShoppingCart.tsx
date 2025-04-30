@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { Button } from "@/components/ui/button";
@@ -58,56 +59,56 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
     <div className="flex flex-col h-full">
       <div className="flex-grow overflow-auto max-h-[400px]">
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-4 text-center text-muted-foreground">
-            <CartIcon className="h-8 w-8 mb-1 opacity-20" />
-            <p className="text-sm">Your cart is empty</p>
+          <div className="flex flex-col items-center justify-center py-3 text-center text-muted-foreground">
+            <CartIcon className="h-6 w-6 mb-1 opacity-20" />
+            <p className="text-xs">Your cart is empty</p>
           </div>
         ) : (
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-1.5 text-xs">
             {items.map((item) => (
-              <li key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-2 rounded-md">
-                <div className="flex-grow min-w-0">
-                  <h4 className="font-medium text-xs truncate">{item.name}</h4>
-                  <p className="text-xs text-muted-foreground">
+              <li key={item.id} className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-1.5 rounded-md">
+                <div className="flex-grow min-w-0 pr-1">
+                  <h4 className="font-medium text-[10px] truncate">{item.name}</h4>
+                  <p className="text-[10px] text-muted-foreground">
                     Rp {item.price.toLocaleString('id-ID')} x {item.quantity}
                   </p>
                 </div>
-                <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
+                <div className="flex items-center space-x-1 flex-shrink-0">
                   <div className="flex items-center border rounded-md">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className="h-5 w-5 p-0"
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     >
-                      <Minus className="h-3 w-3" />
+                      <Minus className="h-2.5 w-2.5" />
                       <span className="sr-only">Decrease</span>
                     </Button>
                     <Input
                       type="text"
                       value={item.quantity}
                       onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                      className="h-6 w-8 text-center border-0 p-0 text-xs"
+                      className="h-5 w-6 text-center border-0 p-0 text-[10px]"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className="h-5 w-5 p-0"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     >
-                      <Plus className="h-3 w-3" />
+                      <Plus className="h-2.5 w-2.5" />
                       <span className="sr-only">Increase</span>
                     </Button>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-destructive hover:text-destructive"
+                    className="h-5 w-5 p-0 text-destructive hover:text-destructive"
                     onClick={() => removeItem(item.id)}
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Trash2 className="h-2.5 w-2.5" />
                     <span className="sr-only">Remove</span>
                   </Button>
                 </div>
@@ -118,18 +119,18 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
       </div>
 
       {items.length > 0 && (
-        <div className="mt-3">
-          <Separator className="my-2" />
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold text-sm">Total</span>
-            <span className="text-base font-bold">Rp {total.toLocaleString('id-ID')}</span>
+        <div className="mt-2">
+          <Separator className="my-1.5" />
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="font-semibold text-xs">Total</span>
+            <span className="text-sm font-bold">Rp {total.toLocaleString('id-ID')}</span>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             <Button 
               variant="default" 
               size="sm"
               onClick={handleProcessPayment}
-              className="w-full text-sm h-8"
+              className="w-full text-xs h-7"
             >
               Process Payment
             </Button>
@@ -137,7 +138,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
               variant="outline"
               size="sm"
               onClick={clearCart} 
-              className="w-full text-sm h-8"
+              className="w-full text-xs h-7"
             >
               Clear Cart
             </Button>

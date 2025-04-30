@@ -38,58 +38,58 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({
       transition={{ duration: 0.2 }}
     >
       <Card className="w-full glass-card shadow-md">
-        <CardHeader>
-          <CardTitle className="text-lg">Choose Therapy Variant</CardTitle>
+        <CardHeader className="py-2 px-3">
+          <CardTitle className="text-sm">Choose Therapy Variant</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-            <p className="text-sm font-medium mb-1">Selected Therapy:</p>
-            <p className="text-base font-semibold">{product.name}</p>
+        <CardContent className="p-2">
+          <div className="mb-2">
+            <p className="text-xs font-medium mb-0.5">Selected Therapy:</p>
+            <p className="text-xs font-semibold">{product.name}</p>
           </div>
 
           <RadioGroup
             value={selectedOption}
             onValueChange={(value) => setSelectedOption(value as 'visit' | 'package')}
-            className="space-y-3"
+            className="space-y-2"
           >
-            <label className="flex items-start space-x-3 space-y-0 rounded-md border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+            <label className="flex items-start space-x-2 space-y-0 rounded-md border p-2 cursor-pointer hover:bg-muted/50 transition-colors">
               <RadioGroupItem value="visit" id="visit" />
               <div className="flex flex-1 items-start justify-between">
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-1 text-primary" />
-                    <p className="text-sm font-medium">Single Visit</p>
+                    <Calendar className="h-3 w-3 mr-1 text-primary" />
+                    <p className="text-xs font-medium">Single Visit</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">One-time therapy session</p>
+                  <p className="text-[10px] text-muted-foreground">One-time therapy session</p>
                 </div>
-                <div className="text-sm font-semibold">
+                <div className="text-xs font-semibold">
                   Rp {product.price.toLocaleString('id-ID')}
                 </div>
               </div>
             </label>
             
-            <label className="flex items-start space-x-3 space-y-0 rounded-md border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
+            <label className="flex items-start space-x-2 space-y-0 rounded-md border p-2 cursor-pointer hover:bg-muted/50 transition-colors">
               <RadioGroupItem value="package" id="package" />
               <div className="flex flex-1 items-start justify-between">
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="flex items-center">
-                    <Package className="h-4 w-4 mr-1 text-accent" />
-                    <p className="text-sm font-medium">Package (4 Visits)</p>
+                    <Package className="h-3 w-3 mr-1 text-accent" />
+                    <p className="text-xs font-medium">Package (4 Visits)</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">Save Rp 200,000</p>
+                  <p className="text-[10px] text-muted-foreground">Save Rp 200,000</p>
                 </div>
-                <div className="text-sm font-semibold">
+                <div className="text-xs font-semibold">
                   Rp {packagePrice.toLocaleString('id-ID')}
                 </div>
               </div>
             </label>
           </RadioGroup>
         </CardContent>
-        <CardFooter className="flex justify-between border-t bg-muted/30 p-3">
-          <Button variant="outline" size="sm" onClick={onCancel}>
+        <CardFooter className="flex justify-between border-t bg-muted/30 p-2">
+          <Button variant="outline" size="sm" className="text-xs h-6 px-2" onClick={onCancel}>
             Cancel
           </Button>
-          <Button variant="default" size="sm" onClick={handleSelectVariant}>
+          <Button variant="default" size="sm" className="text-xs h-6 px-2" onClick={handleSelectVariant}>
             Add to Cart
           </Button>
         </CardFooter>
