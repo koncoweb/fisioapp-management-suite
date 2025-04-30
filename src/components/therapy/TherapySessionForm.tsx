@@ -39,6 +39,15 @@ const TherapySessionForm = () => {
 
   const onSubmit = async (data: TherapySessionFormData) => {
     try {
+      if (!userData?.uid) {
+        toast({
+          title: "Error",
+          description: "Therapist information is required. Please login first.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const therapySession = {
         ...data,
         therapistId: userData?.uid,

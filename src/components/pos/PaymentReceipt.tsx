@@ -81,6 +81,9 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
           price: item.price,
           quantity: item.quantity,
           type: item.type,
+          // Always include therapist information if available
+          therapistId: item.therapist?.id || null,
+          therapistName: item.therapist?.name || null,
           // Handle appointments safely by converting to plain objects
           appointments: item.appointments ? 
             item.appointments.map(a => ({
