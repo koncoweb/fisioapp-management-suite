@@ -29,11 +29,11 @@ export default function KeuanganPage() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-5">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Manajemen Keuangan</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-lg md:text-xl font-bold tracking-tight">Manajemen Keuangan</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">
             Kelola pendapatan, pengeluaran, dan buat laporan keuangan
           </p>
         </div>
@@ -44,8 +44,12 @@ export default function KeuanganPage() {
       
       <Tabs defaultValue="transactions">
         <TabsList>
-          <TabsTrigger value="transactions" className="text-sm">Transaksi</TabsTrigger>
-          <TabsTrigger value="reports" className="text-sm">Laporan</TabsTrigger>
+          <TabsTrigger value="transactions" className="text-xs md:text-sm font-medium bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Transaksi
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="text-xs md:text-sm font-medium bg-primary/10 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            Laporan
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="transactions" className="mt-4">
@@ -59,3 +63,4 @@ export default function KeuanganPage() {
     </div>
   );
 }
+
