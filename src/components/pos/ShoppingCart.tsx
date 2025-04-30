@@ -3,7 +3,7 @@ import React from 'react';
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
+import { Trash2, Plus, Minus, ShoppingCart as CartIcon } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 
 interface ShoppingCartProps {
@@ -33,7 +33,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
       <div className="flex-grow overflow-auto max-h-[500px]">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
-            <ShoppingCart className="h-12 w-12 mb-2 opacity-20" />
+            <CartIcon className="h-12 w-12 mb-2 opacity-20" />
             <p>Your cart is empty</p>
           </div>
         ) : (
@@ -99,10 +99,17 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
             <span className="text-lg font-bold">Rp {total.toLocaleString('id-ID')}</span>
           </div>
           <div className="flex flex-col gap-2">
-            <Button variant="default" className="w-full">
+            <Button 
+              variant="default" 
+              className="w-full"
+            >
               Process Payment
             </Button>
-            <Button variant="outline" onClick={clearCart} className="w-full">
+            <Button 
+              variant="outline" 
+              onClick={clearCart} 
+              className="w-full"
+            >
               Clear Cart
             </Button>
           </div>
