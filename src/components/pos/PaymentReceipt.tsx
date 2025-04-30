@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,18 +6,7 @@ import { CartItem } from '@/pages/admin/PointOfSale';
 import { formatISO, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
-
-interface Patient {
-  id: string;
-  nama: string;
-  alamat: string;
-  usia: number;
-  keluhan?: string;
-  telepon?: string;
-  email?: string;
-  riwayatMedis?: string;
-  createdAt: any;
-}
+import { Patient } from '@/types';
 
 interface PaymentReceiptProps {
   isOpen: boolean;
