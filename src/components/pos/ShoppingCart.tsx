@@ -49,48 +49,20 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
             <p className="text-sm">Your cart is empty</p>
           </div>
         ) : (
-          <ul className="space-y-2 text-sm">
+          <ul className="space-y-1 text-xs">
             {items.map((item) => (
               <li key={item.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-md">
                 <div className="flex-grow min-w-0">
                   <h4 className="font-medium text-xs truncate">{item.name}</h4>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground">
                     Rp {item.price.toLocaleString('id-ID')} x {item.quantity}
                   </p>
                 </div>
-                <div className="flex items-center space-x-1 flex-shrink-0 ml-2">
-                  <div className="flex items-center border rounded-md">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    >
-                      <Minus className="h-3 w-3" />
-                      <span className="sr-only">Decrease</span>
-                    </Button>
-                    <Input
-                      type="text"
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                      className="h-6 w-8 text-center border-0 p-0 text-xs"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                      <span className="sr-only">Increase</span>
-                    </Button>
-                  </div>
+                <div className="flex items-center space-x-1 flex-shrink-0 ml-1">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-destructive hover:text-destructive"
+                    className="h-5 w-5 text-destructive hover:text-destructive"
                     onClick={() => removeItem(item.id)}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -107,25 +79,32 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
         <div className="mt-3">
           <Separator className="my-2" />
           <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold text-sm">Total</span>
-            <span className="text-base font-bold">Rp {total.toLocaleString('id-ID')}</span>
+            <span className="font-semibold text-sm">Total:</span>
+            <span className="text-base font-bold">(Nominal Harga)</span>
           </div>
           <div className="flex flex-col gap-2">
             <Button 
               variant="default" 
               size="sm"
-              onClick={handleProcessPayment}
+              className="w-full text-sm h-8 bg-black text-white hover:bg-black/90"
+            >
+              Payment Method
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={handleProcessPayment} 
               className="w-full text-sm h-8"
             >
-              Process Payment
+              Print Receipt
             </Button>
             <Button 
               variant="outline"
               size="sm"
               onClick={clearCart} 
-              className="w-full text-sm h-8"
+              className="w-full text-sm h-8 mt-2"
             >
-              Clear Cart
+              Clear Scale
             </Button>
           </div>
         </div>
