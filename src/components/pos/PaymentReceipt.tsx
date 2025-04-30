@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { AppointmentSlot, CartItem } from '@/pages/admin/PointOfSale';
+import { AppointmentSlot, CartItem } from '@/types/pos';
 import { formatISO, format } from 'date-fns';
 import { motion } from 'framer-motion';
 import { CheckCircle2, Calendar, Clock } from 'lucide-react';

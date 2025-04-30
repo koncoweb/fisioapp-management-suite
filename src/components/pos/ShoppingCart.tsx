@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { CartItem } from '@/pages/admin/PointOfSale';
+import { CartItem } from '@/types/pos';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Minus, ShoppingCart as CartIcon, Calendar, Clock } from 'lucide-react';
