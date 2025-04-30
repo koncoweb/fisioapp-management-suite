@@ -37,6 +37,18 @@ export const saveTherapySession = async (
   transactionId?: string
 ) => {
   try {
+    if (!patient || !patient.id) {
+      throw new Error("Data pasien tidak valid");
+    }
+    
+    if (!therapist || !therapist.id) {
+      throw new Error("Data terapis tidak valid");
+    }
+    
+    if (!appointment || !appointment.date || !appointment.time) {
+      throw new Error("Data jadwal tidak lengkap");
+    }
+    
     const formattedDate = format(appointment.date, 'yyyy-MM-dd');
     
     // Check for conflicting appointments

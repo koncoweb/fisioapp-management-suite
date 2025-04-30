@@ -77,85 +77,55 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
 
     const handleCloseReceipt = async () => {
       try {
-        // Save transaction to Firestore
-        const discountAmount = (paymentDetails.discount / 100) * total;
-        const subtotalAfterDiscount = total - discountAmount;
-        const taxAmount = subtotalAfterDiscount * (paymentDetails.tax / 100);
-        const finalTotal = subtotalAfterDiscount + taxAmount;
-        
-        if (!selectedPatient) {
-          throw new Error("No patient selected");
+        // Hanya mencoba menyimpan terapi jika sudah ada data pasien
+        if (!selectedPatient || !selectedPatient.id) {
+          throw new Error("Tidak ada data pasien yang dipilih");
         }
         
-        // Save the transaction to Firestore
-        const transactionData = {
-          patientId: selectedPatient.id,
-          patientName: selectedPatient.nama,
-          date: serverTimestamp(),
-          items: items.map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            isPackage: item.isPackage || false,
-            type: item.type
-          })),
-          total: finalTotal,
-          originalTotal: total,
-          discount: paymentDetails.discount,
-          discountAmount: discountAmount,
-          tax: paymentDetails.tax,
-          taxAmount: taxAmount,
-          paymentAmount: paymentDetails.amount,
-          changeAmount: paymentDetails.change,
-          loyaltyPoints: paymentDetails.loyaltyPoints,
-          paymentMethod: 'cash'
-        };
-        
-        const docRef = await addDoc(collection(db, "transactions"), transactionData);
-        const transactionId = docRef.id;
-        
-        // Save therapy sessions for service items
+        // Simpan sesi terapi untuk item layanan
         const therapyItems = items.filter(item => 
           item.type === 'service' && item.appointments && item.therapist
         );
         
         for (const item of therapyItems) {
           if (item.appointments && item.therapist) {
-            if (item.isPackage) {
-              // For package items, create multiple therapy sessions
-              for (let i = 0; i < item.appointments.length; i++) {
+            try {
+              if (item.isPackage) {
+                // Untuk item paket, buat beberapa sesi terapi
+                for (let i = 0; i < item.appointments.length; i++) {
+                  await saveTherapySession(
+                    selectedPatient, 
+                    item.therapist, 
+                    item.id.split('-')[0], // Extract original product ID
+                    item.name.split('(')[0].trim(), // Extract original product name
+                    item.appointments[i],
+                    true,
+                    i
+                  );
+                }
+              } else {
+                // Untuk kunjungan tunggal
                 await saveTherapySession(
-                  selectedPatient, 
-                  item.therapist, 
+                  selectedPatient,
+                  item.therapist,
                   item.id.split('-')[0], // Extract original product ID
                   item.name.split('(')[0].trim(), // Extract original product name
-                  item.appointments[i],
-                  true,
-                  i,
-                  transactionId
+                  item.appointments[0],
+                  false,
+                  0
                 );
               }
-            } else {
-              // For single visit items
-              await saveTherapySession(
-                selectedPatient,
-                item.therapist,
-                item.id.split('-')[0], // Extract original product ID
-                item.name.split('(')[0].trim(), // Extract original product name
-                item.appointments[0],
-                false,
-                0,
-                transactionId
-              );
+            } catch (error) {
+              console.error("Error saving therapy session:", error);
+              toast.error(`Gagal menyimpan jadwal terapi: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
           }
         }
         
-        toast.success("Transaction saved successfully");
+        toast.success("Transaksi berhasil disimpan");
       } catch (error) {
-        console.error("Error saving transaction:", error);
-        toast.error("Failed to save transaction");
+        console.error("Error handling receipt close:", error);
+        toast.error(`Gagal menyelesaikan transaksi: ${error instanceof Error ? error.message : 'Unknown error'}`);
       } finally {
         // Close receipt and reset state
         setReceiptOpen(false);

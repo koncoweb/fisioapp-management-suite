@@ -62,7 +62,14 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
     try {
       setIsSaving(true);
       
-      // Save transaction data to Firestore
+      // Memastikan data pasien ada sebelum menyimpan transaksi
+      if (!patient) {
+        toast.error("Data pasien diperlukan untuk menyimpan transaksi");
+        setIsSaving(false);
+        return;
+      }
+      
+      // Persiapkan data untuk disimpan ke Firestore
       const transactionData = {
         receiptNo,
         transactionDate: serverTimestamp(),
@@ -78,30 +85,30 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
         })),
         total: finalTotal,
         originalTotal: total,
-        discount: discount,
-        tax: tax,
-        taxAmount: taxAmount,
+        discount,
+        tax,
+        taxAmount,
         paymentAmount,
         changeAmount,
         loyaltyPoints,
         createdAt: serverTimestamp()
       };
       
-      // Add document to 'transactions' collection
-      await addDoc(collection(db, "transactions"), transactionData);
+      // Simpan transaksi ke koleksi 'transactions' di Firestore
+      const docRef = await addDoc(collection(db, "transactions"), transactionData);
       
-      // Show success animation
+      // Tampilkan animasi sukses dan notifikasi
       setPaymentCompleted(true);
       toast.success("Pembayaran berhasil disimpan");
       
-      // Show print dialog after a short delay
+      // Tampilkan dialog print setelah beberapa saat
       setTimeout(() => {
         if (receiptRef.current) {
           window.print();
         }
       }, 500);
       
-      // Close dialog after success
+      // Tutup dialog setelah berhasil
       setTimeout(() => {
         setPaymentCompleted(false);
         onClose();
