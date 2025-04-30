@@ -2,7 +2,7 @@
 import React from 'react';
 import { CartItem as CartItemType } from '@/types/pos';
 import CartItem from './CartItem';
-import { CartIcon } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 
 interface CartItemListProps {
   items: CartItemType[];
@@ -18,7 +18,7 @@ const CartItemList: React.FC<CartItemListProps> = ({
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-3 text-center text-muted-foreground">
-        <CartIcon className="h-6 w-6 mb-1 opacity-20" />
+        <ShoppingCart className="h-6 w-6 mb-1 opacity-20" />
         <p className="text-xs">Your cart is empty</p>
       </div>
     );
