@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { CartItem } from '@/pages/admin/PointOfSale';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Plus, Minus, ShoppingCart as CartIcon } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
+import PaymentReceipt from './PaymentReceipt';
 
 interface ShoppingCartProps {
   items: CartItem[];
@@ -21,11 +22,22 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
   clearCart,
   total
 }) => {
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  
   const handleQuantityChange = (id: string, value: string) => {
     const quantity = parseInt(value);
     if (!isNaN(quantity)) {
       updateQuantity(id, quantity);
     }
+  };
+
+  const handleProcessPayment = () => {
+    setReceiptOpen(true);
+  };
+
+  const handleCloseReceipt = () => {
+    setReceiptOpen(false);
+    clearCart();
   };
 
   return (
@@ -102,6 +114,7 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
             <Button 
               variant="default" 
               size="sm"
+              onClick={handleProcessPayment}
               className="w-full text-sm h-8"
             >
               Process Payment
@@ -117,6 +130,13 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({
           </div>
         </div>
       )}
+
+      <PaymentReceipt
+        isOpen={receiptOpen}
+        onClose={handleCloseReceipt}
+        items={items}
+        total={total}
+      />
     </div>
   );
 };
