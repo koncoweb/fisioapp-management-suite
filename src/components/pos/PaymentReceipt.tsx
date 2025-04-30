@@ -100,7 +100,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
         </head>
         <body>
           <div class="header">
-            FIT FACTORY BANDUNG
+            THERAPY CENTER
           </div>
           <div class="info">
             <div>Transaction ID: ${transactionId}</div>
@@ -153,7 +153,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
         </DialogHeader>
         
         <div ref={receiptRef} className="bg-white p-4 rounded-md border text-sm">
-          <div className="text-center font-semibold mb-2">FIT FACTORY BANDUNG</div>
+          <div className="text-center font-semibold mb-2">THERAPY CENTER</div>
           
           <div className="text-xs mb-3">
             <div>Transaction ID: {transactionId}</div>
