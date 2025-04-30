@@ -9,6 +9,7 @@ import ProductGrid from '@/components/pos/ProductGrid';
 import ShoppingCart from '@/components/pos/ShoppingCart';
 import TherapyVariantSelector from '@/components/pos/TherapyVariantSelector';
 import { toast } from "@/components/ui/sonner";
+import { motion } from 'framer-motion';
 
 export interface CartItem extends Product {
   quantity: number;
@@ -125,10 +126,15 @@ const PointOfSale = () => {
   }
 
   return (
-    <div className="w-full">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="w-full"
+    >
       <div className="flex flex-col md:flex-row gap-6">
         {/* Product Grid */}
-        <Card className="w-full md:w-2/3">
+        <Card className="w-full md:w-2/3 glass-card">
           <CardHeader>
             <CardTitle>Products & Services</CardTitle>
           </CardHeader>
@@ -151,7 +157,7 @@ const PointOfSale = () => {
           )}
           
           {/* Shopping Cart */}
-          <Card className="w-full">
+          <Card className="w-full glass-card">
             <CardHeader>
               <CardTitle>Shopping Cart</CardTitle>
             </CardHeader>
@@ -167,7 +173,7 @@ const PointOfSale = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

@@ -1,10 +1,10 @@
+
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { 
-  SidebarTrigger, 
-} from '@/components/ui/sidebar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from '@/components/ThemeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,17 +42,19 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="border-b sticky top-0 z-10 bg-white px-4 py-3 flex items-center justify-between">
+    <header className="border-b border-border sticky top-0 z-10 bg-background px-4 py-3 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <SidebarTrigger />
-        <h1 className="text-xl font-semibold">{getPageTitle()}</h1>
+        <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
       </div>
       
       <div className="flex items-center space-x-2">
+        <ThemeToggle />
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 {userData?.namaLengkap ? userData.namaLengkap.charAt(0).toUpperCase() : <User />}
               </div>
             </Button>
@@ -74,7 +76,7 @@ const Header: React.FC = () => {
               Profil
             </DropdownMenuItem>
             <DropdownMenuItem 
-              className="cursor-pointer text-red-500"
+              className="cursor-pointer text-destructive"
               onClick={() => signOut()}
             >
               Keluar

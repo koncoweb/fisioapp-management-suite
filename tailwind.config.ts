@@ -26,16 +26,16 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#2563eb',
-					foreground: '#ffffff'
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-foreground))'
 				},
 				secondary: {
-					DEFAULT: '#10b981',
-					foreground: '#ffffff'
+					DEFAULT: 'hsl(var(--secondary))',
+					foreground: 'hsl(var(--secondary-foreground))'
 				},
 				accent: {
-					DEFAULT: '#f59e0b', 
-					foreground: '#ffffff'
+					DEFAULT: 'hsl(var(--accent))', 
+					foreground: 'hsl(var(--accent-foreground))'
 				},
 				destructive: {
 					DEFAULT: 'hsl(var(--destructive))',
@@ -54,14 +54,14 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				sidebar: {
-					DEFAULT: '#f8fafc',
-					foreground: '#0f172a',
-					primary: '#2563eb',
-					'primary-foreground': '#ffffff',
-					accent: '#f1f5f9',
-					'accent-foreground': '#0f172a',
-					border: '#e2e8f0',
-					ring: '#2563eb'
+					DEFAULT: 'hsl(var(--sidebar-background))',
+					foreground: 'hsl(var(--sidebar-foreground))',
+					primary: 'hsl(var(--sidebar-primary))',
+					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+					accent: 'hsl(var(--sidebar-accent))',
+					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+					border: 'hsl(var(--sidebar-border))',
+					ring: 'hsl(var(--sidebar-ring))'
 				}
 			},
 			borderRadius: {
@@ -85,13 +85,44 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }) {
+			addUtilities({
+				'.scrollbar-thin': {
+					'scrollbarWidth': 'thin',
+					'&::-webkit-scrollbar': {
+						width: '6px',
+						height: '6px',
+					},
+					'&::-webkit-scrollbar-thumb': {
+						backgroundColor: 'hsl(var(--muted))',
+						borderRadius: '9999px',
+					},
+					'&::-webkit-scrollbar-track': {
+						backgroundColor: 'transparent',
+					},
+				},
+			})
+		}
+	],
 } satisfies Config;
