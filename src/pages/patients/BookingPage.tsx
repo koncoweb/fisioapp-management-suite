@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -173,7 +174,14 @@ const BookingPage: React.FC = () => {
     if (!bookingData) return;
     
     try {
-      await addDoc(collection(db, 'therapySessions'), bookingData);
+      // Create bookingData without the transactionId field
+      const bookingDataToSave = {
+        ...bookingData,
+        // Only include transactionId if it exists and is not undefined
+        ...(bookingData.transactionId ? { transactionId: bookingData.transactionId } : {})
+      };
+      
+      await addDoc(collection(db, 'therapySessions'), bookingDataToSave);
       
       toast({
         title: "Berhasil",

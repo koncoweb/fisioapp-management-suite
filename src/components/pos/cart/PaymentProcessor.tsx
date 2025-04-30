@@ -1,4 +1,3 @@
-
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { Patient } from '@/types';
 import { toast } from "sonner";
@@ -6,7 +5,7 @@ import PatientSelector from '../PatientSelector';
 import PaymentReceipt from '../PaymentReceipt';
 import { CartItem } from '@/types/pos';
 import { saveTherapySession } from '@/services/therapySessionService';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 interface PaymentProcessorProps {
@@ -28,8 +27,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     const [paymentDetails, setPaymentDetails] = useState({
       amount: 0,
       change: 0,
-      discount: 0, // Default discount of 0%
-      tax: 5,      // Default tax of 5%
+      discount: 0,
+      tax: 5,
       loyaltyPoints: 0
     });
     
@@ -103,7 +102,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                       item.appointments[i],
                       true,
                       i,
-                      undefined, // We'll handle transaction ID separately
+                      null, // Pass null explicitly instead of undefined
                       item.duration // Pass the duration from the product
                     );
                   }
@@ -117,7 +116,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                     item.appointments[0],
                     false,
                     0,
-                    undefined, // We'll handle transaction ID separately
+                    null, // Pass null explicitly instead of undefined
                     item.duration // Pass the duration from the product
                   );
                 }

@@ -14,9 +14,9 @@ export interface TherapySessionData {
   serviceId: string;
   date: string;
   time: string;
-  duration: number; // Added duration field
+  duration: number;
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
-  transactionId?: string;
+  transactionId?: string | null; // Changed to accept null as well
   isPackage?: boolean;
   packageIndex?: number;
   createdAt: Date;
@@ -36,7 +36,7 @@ export const saveTherapySession = async (
   isPackage = false,
   packageIndex = 0,
   transactionId?: string,
-  duration?: number // Added duration parameter
+  duration?: number
 ) => {
   try {
     if (!patient || !patient.id) {
@@ -68,7 +68,7 @@ export const saveTherapySession = async (
       throw new Error(`Terapis ${therapist.name} sudah memiliki jadwal pada ${formattedDate} pukul ${appointment.time}`);
     }
     
-    // Create the therapy session with duration included
+    // Create the therapy session data object
     const sessionData: TherapySessionData = {
       patientId: patient.id,
       patientName: patient.nama,
@@ -78,13 +78,17 @@ export const saveTherapySession = async (
       serviceName,
       date: formattedDate,
       time: appointment.time,
-      duration: duration || 60, // Default to 60 minutes if not provided
+      duration: duration || 60,
       status: 'scheduled',
-      transactionId,
       isPackage,
       packageIndex: isPackage ? packageIndex : undefined,
       createdAt: new Date()
     };
+    
+    // Only add transactionId if it exists and is not undefined
+    if (transactionId) {
+      sessionData.transactionId = transactionId;
+    }
     
     const docRef = await addDoc(collection(db, "therapySessions"), sessionData);
     return { id: docRef.id, ...sessionData };
