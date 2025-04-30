@@ -1,3 +1,4 @@
+
 export interface TherapyBooking {
   id: string;
   patientId: string;
@@ -23,9 +24,10 @@ export interface TherapySession {
   serviceId: string;
   serviceName: string;
   date: string;
-  startTime: string;
-  endTime: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  time?: string; // Adding time property to match what's used
+  startTime?: string;
+  endTime?: string;
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled'; // Added 'scheduled' to match what's used
   notes?: string;
   createdAt: string;
   statusDiupdate?: {

@@ -49,7 +49,7 @@ const TherapySessionsTable: React.FC<TherapySessionsTableProps> = ({
                 <TableCell>{session.therapistName}</TableCell>
                 <TableCell>{session.serviceName}</TableCell>
                 <TableCell>{session.date}</TableCell>
-                <TableCell>{session.time}</TableCell>
+                <TableCell>{session.time || (session.startTime && `${session.startTime} - ${session.endTime}`)}</TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium
                     ${session.status === 'scheduled' ? 'bg-green-100 text-green-800' :
@@ -72,7 +72,7 @@ const TherapySessionsTable: React.FC<TherapySessionsTableProps> = ({
                 <TableCell>
                   {session.status !== 'cancelled' && session.status !== 'completed' && (
                     <div className="space-x-2">
-                      {session.status !== 'scheduled' && (
+                      {session.status !== 'confirmed' && (
                         <Button 
                           variant="outline" 
                           size="sm"

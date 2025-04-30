@@ -14,7 +14,7 @@ export interface TherapySessionData {
   serviceId: string;
   date: string;
   time: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   transactionId?: string;
   isPackage?: boolean;
   packageIndex?: number;
