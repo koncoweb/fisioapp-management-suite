@@ -5,6 +5,9 @@ import { toast } from "sonner";
 import PatientSelector from '../PatientSelector';
 import PaymentReceipt from '../PaymentReceipt';
 import { CartItem } from '@/types/pos';
+import { saveTherapySession } from '@/services/therapySessionService';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface PaymentProcessorProps {
   items: CartItem[];
@@ -72,11 +75,92 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
       }
     };
 
-    const handleCloseReceipt = () => {
-      setReceiptOpen(false);
-      setSelectedPatient(null);
-      clearCart();
-      setPaymentDetails({ amount: 0, change: 0, discount: 0, tax: 0, loyaltyPoints: 0 });
+    const handleCloseReceipt = async () => {
+      try {
+        // Save transaction to Firestore
+        const subtotalAfterDiscount = total - paymentDetails.discount;
+        const taxAmount = subtotalAfterDiscount * (paymentDetails.tax / 100);
+        const finalTotal = subtotalAfterDiscount + taxAmount;
+        
+        if (!selectedPatient) {
+          throw new Error("No patient selected");
+        }
+        
+        // Save the transaction to Firestore
+        const transactionData = {
+          patientId: selectedPatient.id,
+          patientName: selectedPatient.nama,
+          date: serverTimestamp(),
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            isPackage: item.isPackage || false,
+            type: item.type
+          })),
+          total: finalTotal,
+          originalTotal: total,
+          discount: paymentDetails.discount,
+          tax: paymentDetails.tax,
+          taxAmount: taxAmount,
+          paymentAmount: paymentDetails.amount,
+          changeAmount: paymentDetails.change,
+          loyaltyPoints: paymentDetails.loyaltyPoints,
+          paymentMethod: 'cash'
+        };
+        
+        const docRef = await addDoc(collection(db, "transactions"), transactionData);
+        const transactionId = docRef.id;
+        
+        // Save therapy sessions for service items
+        const therapyItems = items.filter(item => 
+          item.type === 'service' && item.appointments && item.therapist
+        );
+        
+        for (const item of therapyItems) {
+          if (item.appointments && item.therapist) {
+            if (item.isPackage) {
+              // For package items, create multiple therapy sessions
+              for (let i = 0; i < item.appointments.length; i++) {
+                await saveTherapySession(
+                  selectedPatient, 
+                  item.therapist, 
+                  item.id.split('-')[0], // Extract original product ID
+                  item.name.split('(')[0].trim(), // Extract original product name
+                  item.appointments[i],
+                  true,
+                  i,
+                  transactionId
+                );
+              }
+            } else {
+              // For single visit items
+              await saveTherapySession(
+                selectedPatient,
+                item.therapist,
+                item.id.split('-')[0], // Extract original product ID
+                item.name.split('(')[0].trim(), // Extract original product name
+                item.appointments[0],
+                false,
+                0,
+                transactionId
+              );
+            }
+          }
+        }
+        
+        toast.success("Transaction saved successfully");
+      } catch (error) {
+        console.error("Error saving transaction:", error);
+        toast.error("Failed to save transaction");
+      } finally {
+        // Close receipt and reset state
+        setReceiptOpen(false);
+        setSelectedPatient(null);
+        clearCart();
+        setPaymentDetails({ amount: 0, change: 0, discount: 0, tax: 0, loyaltyPoints: 0 });
+      }
     };
 
     return (

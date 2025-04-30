@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import { Product } from '@/types/product';
 import { AppointmentSlot, CartItem } from '@/types/pos';
+import { Employee } from '@/types';
 import { format } from 'date-fns';
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 export const useShoppingCart = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -11,7 +12,8 @@ export const useShoppingCart = () => {
   const handleVariantSelect = (
     product: Product, 
     isPackage: boolean, 
-    appointments: AppointmentSlot[]
+    appointments: AppointmentSlot[],
+    therapist: Employee
   ) => {
     const customProduct = { ...product };
     
@@ -38,13 +40,14 @@ export const useShoppingCart = () => {
       }
     }
     
-    addToCart(customProduct, isPackage, appointments);
+    addToCart(customProduct, isPackage, appointments, therapist);
   };
 
   const addToCart = (
     product: Product, 
     isPackage = false, 
-    appointments: AppointmentSlot[] = []
+    appointments: AppointmentSlot[] = [],
+    therapist?: Employee
   ) => {
     setCart(currentCart => {
       // Generate a unique ID for the cart item
@@ -75,6 +78,7 @@ export const useShoppingCart = () => {
           appointments,
           appointmentDate,  // For backward compatibility
           appointmentTime,  // For backward compatibility
+          therapist,        // Add therapist to the cart item
           id: uniqueId
         };
         return [...currentCart, newItem];

@@ -8,10 +8,13 @@ import AppointmentDialog from './therapy/AppointmentDialog';
 import TherapyOptions from './therapy/TherapyOptions';
 import ConfirmationDialog from './therapy/ConfirmationDialog';
 import AppointmentList from './therapy/AppointmentList';
+import TherapistSelector from './therapy/TherapistSelector';
+import { Employee } from '@/types';
+import { toast } from 'sonner';
 
 interface TherapyVariantSelectorProps {
   product: Product;
-  onSelectVariant: (product: Product, isPackage: boolean, appointments: AppointmentSlot[]) => void;
+  onSelectVariant: (product: Product, isPackage: boolean, appointments: AppointmentSlot[], therapist: Employee) => void;
   onCancel: () => void;
 }
 
@@ -21,6 +24,7 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
   const [appointments, setAppointments] = useState<AppointmentSlot[]>([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
+  const [selectedTherapist, setSelectedTherapist] = useState<Employee | null>(null);
 
   const handleAppointmentConfirm = (selectedAppointments: AppointmentSlot[]) => {
     setAppointments(selectedAppointments);
@@ -29,7 +33,12 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
     // Open confirmation dialog only when switching between visit/package types
     if (confirmationDialogOpen) {
       setConfirmationDialogOpen(false);
-      onSelectVariant(product, isPackage, selectedAppointments);
+      
+      if (selectedTherapist) {
+        onSelectVariant(product, isPackage, selectedAppointments, selectedTherapist);
+      } else {
+        toast.error("Please select a therapist");
+      }
     }
   };
 
@@ -44,9 +53,14 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
   };
 
   const handleSelectVariant = () => {
+    if (!selectedTherapist) {
+      toast.error("Please select a therapist first");
+      return;
+    }
+    
     // For both package and single visit, ensure appointments are selected
     if (appointments.length > 0) {
-      onSelectVariant(product, isPackage, appointments);
+      onSelectVariant(product, isPackage, appointments, selectedTherapist);
     } else {
       // Open the appointment dialog if no appointments are set
       setAppointmentDialogOpen(true);
@@ -74,6 +88,10 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
     }
   };
 
+  const handleTherapistSelect = (therapist: Employee) => {
+    setSelectedTherapist(therapist);
+  };
+
   return (
     <>
       <Card className="w-full glass-card">
@@ -82,6 +100,12 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
           <p className="text-sm text-muted-foreground mb-4">
             {product.description || `${product.name} - ${product.type}`}
           </p>
+
+          {/* Therapist selector */}
+          <TherapistSelector 
+            selectedTherapist={selectedTherapist}
+            onTherapistSelect={handleTherapistSelect}
+          />
 
           <TherapyOptions 
             isPackage={isPackage} 
@@ -133,7 +157,11 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
               size="sm" 
               className="h-8 text-xs" 
               onClick={handleSelectVariant}
-              disabled={appointments.length === 0 || (isPackage && appointments.length < 4)}
+              disabled={
+                !selectedTherapist || 
+                appointments.length === 0 || 
+                (isPackage && appointments.length < 4)
+              }
             >
               Add to Cart
             </Button>
@@ -149,6 +177,7 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
         currentSlotIndex={currentSlotIndex}
         appointments={appointments}
         maxAppointments={isPackage ? 4 : 1}
+        therapistId={selectedTherapist?.id}
       />
 
       <ConfirmationDialog

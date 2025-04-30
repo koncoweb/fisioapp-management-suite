@@ -9,6 +9,8 @@ import { disabledDates, generateTimeSlots } from './timeUtils';
 import { AppointmentSlot } from '@/types/pos';
 import { format } from 'date-fns';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { collection, query, getDocs, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 interface AppointmentDialogProps {
   isOpen: boolean;
@@ -19,6 +21,7 @@ interface AppointmentDialogProps {
   currentSlotIndex?: number;
   appointments?: AppointmentSlot[];
   maxAppointments?: number;
+  therapistId?: string;
 }
 
 const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
@@ -29,14 +32,15 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
   selectedOption = 'visit',
   currentSlotIndex = 0,
   appointments = [],
-  maxAppointments = 1
+  maxAppointments = 1,
+  therapistId
 }) => {
   const [activeTab, setActiveTab] = useState<string>("0");
   const [tempDates, setTempDates] = useState<Date[]>([]);
   const [tempTimes, setTempTimes] = useState<string[]>([]);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>(generateTimeSlots());
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   
-  const timeSlots = generateTimeSlots();
-
   useEffect(() => {
     // Initialize arrays with existing appointment data or empty slots
     const initialDates: Date[] = [];
@@ -53,8 +57,80 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
     // Set active tab to current slot index when dialog opens
     if (isOpen) {
       setActiveTab(currentSlotIndex.toString());
+      
+      // Reset available time slots when dialog opens
+      setAvailableTimeSlots(generateTimeSlots());
+      
+      // If we have both a therapist and a date for the current slot, check availability
+      if (therapistId && tempDates[currentTabIndex]) {
+        checkTherapistAvailability(therapistId, tempDates[currentTabIndex]);
+      }
     }
   }, [isOpen, appointments, maxAppointments, currentSlotIndex]);
+
+  const currentTabIndex = parseInt(activeTab);
+
+  // Check therapist availability for a given date
+  const checkTherapistAvailability = async (therapistId: string, date: Date) => {
+    if (!therapistId || !date) return;
+    
+    try {
+      setIsCheckingAvailability(true);
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
+      // Query Firestore for existing appointments on that date for that therapist
+      const sessionRef = collection(db, "therapySessions");
+      const q = query(
+        sessionRef, 
+        where("therapistId", "==", therapistId),
+        where("date", "==", formattedDate),
+        where("status", "!=", "cancelled")
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      // Get all time slots
+      const allTimeSlots = generateTimeSlots();
+      
+      // Filter out booked time slots
+      const bookedTimeSlots = new Set<string>();
+      querySnapshot.forEach((doc) => {
+        const sessionData = doc.data();
+        bookedTimeSlots.add(sessionData.time);
+      });
+      
+      // Set available time slots
+      const available = allTimeSlots.filter(slot => !bookedTimeSlots.has(slot));
+      setAvailableTimeSlots(available);
+    } catch (error) {
+      console.error("Error checking therapist availability:", error);
+      setAvailableTimeSlots(generateTimeSlots()); // Reset to all slots on error
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
+
+  const handleDateChange = (date: Date | undefined, index: number) => {
+    const newDates = [...tempDates];
+    newDates[index] = date;
+    setTempDates(newDates);
+    
+    // Check therapist availability when date changes
+    if (date && therapistId) {
+      checkTherapistAvailability(therapistId, date);
+    }
+    
+    // Clear time when date changes
+    const newTimes = [...tempTimes];
+    newTimes[index] = undefined;
+    setTempTimes(newTimes);
+  };
+
+  const handleTimeChange = (time: string, index: number) => {
+    const newTimes = [...tempTimes];
+    newTimes[index] = time;
+    setTempTimes(newTimes);
+  };
 
   const handleSaveAppointments = () => {
     // Filter out incomplete appointments (missing date or time)
@@ -79,19 +155,6 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
     onClose();
   };
 
-  const handleDateChange = (date: Date | undefined, index: number) => {
-    const newDates = [...tempDates];
-    newDates[index] = date;
-    setTempDates(newDates);
-  };
-
-  const handleTimeChange = (time: string, index: number) => {
-    const newTimes = [...tempTimes];
-    newTimes[index] = time;
-    setTempTimes(newTimes);
-  };
-
-  const currentTabIndex = parseInt(activeTab);
   const canNavigatePrevious = currentTabIndex > 0;
   const canNavigateNext = currentTabIndex < maxAppointments - 1;
 
@@ -173,21 +236,37 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
           
           {/* Time Selection */}
           <div>
-            <p className="text-[10px] text-muted-foreground mb-1">Time:</p>
+            <div className="flex justify-between items-center mb-1">
+              <p className="text-[10px] text-muted-foreground">Time:</p>
+              {isCheckingAvailability && (
+                <p className="text-[10px] text-muted-foreground">Checking availability...</p>
+              )}
+            </div>
             <Select 
               value={tempTimes[currentTabIndex]} 
               onValueChange={(value) => handleTimeChange(value, currentTabIndex)}
+              disabled={isCheckingAvailability || !tempDates[currentTabIndex]}
             >
               <SelectTrigger className="w-full h-8 text-xs">
                 <Clock className="h-3 w-3 mr-1.5" />
-                <SelectValue placeholder="Select time" />
+                <SelectValue placeholder={
+                  isCheckingAvailability ? "Checking availability..." :
+                  !tempDates[currentTabIndex] ? "Select date first" :
+                  availableTimeSlots.length === 0 ? "No available slots" :
+                  "Select time"
+                } />
               </SelectTrigger>
               <SelectContent>
-                {timeSlots.map((slot) => (
+                {availableTimeSlots.map((slot) => (
                   <SelectItem key={slot} value={slot} className="text-xs">
                     {slot}
                   </SelectItem>
                 ))}
+                {availableTimeSlots.length === 0 && !isCheckingAvailability && tempDates[currentTabIndex] && (
+                  <SelectItem value="" disabled className="text-xs text-muted-foreground">
+                    No available slots for this date
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>

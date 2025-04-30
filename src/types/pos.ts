@@ -1,15 +1,20 @@
 
-import { Product } from '@/types/product';
+import { Employee } from '.';
+import { Product } from './product';
 
 export interface AppointmentSlot {
   date: Date;
   time: string;
 }
 
-export interface CartItem extends Product {
+export interface CartItemBase extends Product {
   quantity: number;
   isPackage?: boolean;
+}
+
+export interface CartItem extends CartItemBase {
+  appointmentDate?: Date; // For backward compatibility
+  appointmentTime?: string; // For backward compatibility
   appointments?: AppointmentSlot[];
-  appointmentDate?: Date;  // Kept for backward compatibility
-  appointmentTime?: string; // Kept for backward compatibility
+  therapist?: Employee; // Added therapist field
 }
