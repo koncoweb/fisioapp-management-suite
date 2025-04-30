@@ -1,14 +1,17 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AppointmentSlot, CartItem } from '@/types/pos';
 import { formatISO, format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Calendar, Clock, Wallet } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock, Wallet, Printer } from 'lucide-react';
 import { Patient } from '@/types';
 import { formatRupiah } from '@/lib/utils';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { toast } from "sonner";
 
 interface PaymentReceiptProps {
   isOpen: boolean;
@@ -30,26 +33,67 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   changeAmount = 0
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
   const today = new Date();
   const receiptNo = `INV-${format(today, 'yyyyMMdd')}-${Math.floor(Math.random() * 1000)}`;
   
-  const handleCompletePayment = () => {
-    // Here you would normally process the payment
-    // For now, we'll just show a success animation
-    setPaymentCompleted(true);
-    
-    // After 2 seconds, close the dialog and reset
-    setTimeout(() => {
-      setPaymentCompleted(false);
-      onClose();
-    }, 2000);
+  const handleCompletePayment = async () => {
+    try {
+      setIsSaving(true);
+      
+      // Save transaction data to Firestore
+      const transactionData = {
+        receiptNo,
+        transactionDate: serverTimestamp(),
+        patientId: patient?.id || null,
+        patientName: patient?.nama || 'Guest',
+        items: items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          type: item.type,
+          appointments: item.appointments ? JSON.parse(JSON.stringify(item.appointments)) : null
+        })),
+        total,
+        paymentAmount,
+        changeAmount,
+        createdAt: serverTimestamp()
+      };
+      
+      // Add document to 'transactions' collection
+      await addDoc(collection(db, "transactions"), transactionData);
+      
+      // Show success animation
+      setPaymentCompleted(true);
+      toast.success("Pembayaran berhasil disimpan");
+      
+      // Show print dialog after a short delay
+      setTimeout(() => {
+        if (receiptRef.current) {
+          window.print();
+        }
+      }, 500);
+      
+      // Close dialog after success
+      setTimeout(() => {
+        setPaymentCompleted(false);
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      toast.error("Gagal menyimpan transaksi");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       if (!open) onClose();
     }}>
-      <DialogContent className="sm:max-w-[400px] p-3">
+      <DialogContent className="sm:max-w-[400px] p-3 print:shadow-none print:border-none print:p-0">
         {paymentCompleted ? (
           <motion.div 
             className="flex flex-col items-center justify-center py-6"
@@ -67,7 +111,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               <DialogTitle className="text-center text-base">Struk Pembayaran</DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-3">
+            <div className="space-y-3" ref={receiptRef}>
               <div className="text-center text-xs text-muted-foreground">
                 <p>Klinik Therapy & Relaxation</p>
                 <p>Jl. Kesehatan No. 123</p>
@@ -180,17 +224,29 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               </div>
             </div>
             
-            <DialogFooter className="flex-col gap-1.5 sm:flex-col pt-2">
+            <DialogFooter className="flex-col gap-1.5 sm:flex-col pt-2 print:hidden">
               <Button 
                 className="w-full h-7 text-xs" 
                 onClick={handleCompletePayment}
+                disabled={isSaving}
               >
-                Selesaikan Pembayaran
+                {isSaving ? (
+                  <>
+                    <div className="h-3 w-3 mr-1 animate-spin border-2 border-current border-t-transparent rounded-full"></div>
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <Printer className="h-3 w-3 mr-1" />
+                    Selesaikan Pembayaran
+                  </>
+                )}
               </Button>
               <Button 
                 variant="outline" 
                 className="w-full h-7 text-xs" 
                 onClick={onClose}
+                disabled={isSaving}
               >
                 Batal
               </Button>
