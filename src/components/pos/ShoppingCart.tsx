@@ -7,6 +7,7 @@ import { Trash2, Plus, Minus, ShoppingCart as CartIcon } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import PaymentReceipt from './PaymentReceipt';
 import PatientSelector from './PatientSelector';
+import { Patient } from '@/types';
 import { toast } from "sonner";
 
 interface ShoppingCartProps {
