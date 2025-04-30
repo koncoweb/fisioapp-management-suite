@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { 
@@ -30,6 +29,8 @@ const Header: React.FC = () => {
     if (path === '/bookings') return 'Jadwal Sesi';
     if (path === '/payments') return 'Catatan Pembayaran';
     if (path === '/profile') return 'Profil Saya';
+    if (path === '/pos') return 'Point of Sale';
+    if (path === '/settings') return 'Pengaturan';
     
     // Extract dynamic paths
     if (path.startsWith('/employees/')) return 'Detail Karyawan';

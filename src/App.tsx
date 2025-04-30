@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +22,7 @@ import PatientDashboard from "./pages/patients/Dashboard";
 import BookingPage from "./pages/patients/BookingPage";
 import BookingManagement from "./pages/admin/BookingManagement";
 import Settings from "./pages/admin/Settings";
+import PointOfSale from "./pages/admin/PointOfSale"; // Add this import
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,11 @@ const App = () => (
               <Route path="/bookings" element={
                 <ProtectedRoute allowedRoles={['admin']}>
                   <BookingManagement />
+                </ProtectedRoute>
+              } />
+              <Route path="/pos" element={ // Add this route
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <PointOfSale />
                 </ProtectedRoute>
               } />
               <Route path="/messages" element={<div>Messages (Coming soon)</div>} />

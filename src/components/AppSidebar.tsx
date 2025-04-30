@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +24,7 @@ import {
   Receipt,
   LogOut,
   Bell,
+  ShoppingCart,
 } from 'lucide-react';
 
 const AppSidebar: React.FC = () => {
@@ -40,6 +40,7 @@ const AppSidebar: React.FC = () => {
     { path: '/products', label: 'Produk', icon: Package },
     { path: '/services', label: 'Layanan', icon: Settings },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
     { path: '/payments', label: 'Pembayaran', icon: Receipt },
     { path: '/notifications', label: 'Notifikasi', icon: Bell },
