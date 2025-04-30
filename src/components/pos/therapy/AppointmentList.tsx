@@ -5,14 +5,14 @@ import { AppointmentSlot } from '@/types/pos';
 
 interface AppointmentListProps {
   appointments: AppointmentSlot[];
-  selectedOption: 'visit' | 'package';
-  onEditAppointment: (index: number) => void;
-  onRemoveAppointment: (index: number) => void;
+  selectedOption?: 'visit' | 'package';
+  onEditAppointment?: (index: number) => void;
+  onRemoveAppointment?: (index: number) => void;
 }
 
 const AppointmentList: React.FC<AppointmentListProps> = ({
   appointments,
-  selectedOption,
+  selectedOption = 'visit',
   onEditAppointment,
   onRemoveAppointment
 }) => {
@@ -30,20 +30,26 @@ const AppointmentList: React.FC<AppointmentListProps> = ({
             </span>
             {format(appointment.date, "dd MMM yyyy")} at {appointment.time}
           </div>
-          <div className="flex gap-1">
-            <button 
-              onClick={() => onEditAppointment(index)}
-              className="text-primary hover:text-primary/80 transition-colors"
-            >
-              Edit
-            </button>
-            <button 
-              onClick={() => onRemoveAppointment(index)}
-              className="text-destructive hover:text-destructive/80 transition-colors"
-            >
-              Remove
-            </button>
-          </div>
+          {(onEditAppointment || onRemoveAppointment) && (
+            <div className="flex gap-1">
+              {onEditAppointment && (
+                <button 
+                  onClick={() => onEditAppointment(index)}
+                  className="text-primary hover:text-primary/80 transition-colors"
+                >
+                  Edit
+                </button>
+              )}
+              {onRemoveAppointment && (
+                <button 
+                  onClick={() => onRemoveAppointment(index)}
+                  className="text-destructive hover:text-destructive/80 transition-colors"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>

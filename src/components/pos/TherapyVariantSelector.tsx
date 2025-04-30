@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Product } from '@/types/product';
 import { Card, CardContent } from "@/components/ui/card";
@@ -49,9 +50,15 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
       <Card className="w-full glass-card">
         <CardContent className="p-4">
           <h3 className="font-semibold mb-2">{product.name}</h3>
-          <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            {(product as any).description || `${product.name} - ${product.type}`}
+          </p>
 
-          <TherapyOptions isPackage={isPackage} setIsPackage={setIsPackage} />
+          <TherapyOptions 
+            isPackage={isPackage} 
+            setIsPackage={setIsPackage}
+            product={product}
+          />
 
           {isPackage ? (
             <p className="text-sm text-muted-foreground mb-4">
@@ -69,7 +76,12 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
           )}
           
           {appointments.length > 0 && !isPackage && (
-            <AppointmentList appointments={appointments} />
+            <AppointmentList 
+              appointments={appointments} 
+              selectedOption="visit"
+              onEditAppointment={() => setAppointmentDialogOpen(true)}
+              onRemoveAppointment={() => setAppointments([])}
+            />
           )}
 
           <div className="flex justify-between mt-4">
@@ -87,12 +99,14 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
         isOpen={appointmentDialogOpen}
         onClose={() => setAppointmentDialogOpen(false)}
         onConfirm={handleAppointmentConfirm}
+        selectedOption={isPackage ? 'package' : 'visit'}
       />
 
       <ConfirmationDialog
         isOpen={confirmationDialogOpen}
         onClose={() => setConfirmationDialogOpen(false)}
         onConfirm={handleConfirmation}
+        selectedOption={isPackage ? 'package' : 'visit'}
       />
     </>
   );

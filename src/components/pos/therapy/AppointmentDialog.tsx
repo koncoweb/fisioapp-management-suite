@@ -1,41 +1,59 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock } from 'lucide-react';
-import { disabledDates } from './timeUtils';
+import { disabledDates, generateTimeSlots } from './timeUtils';
+import { AppointmentSlot } from '@/types/pos';
 
 interface AppointmentDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedOption: 'visit' | 'package';
-  currentSlotIndex: number;
-  tempDate: Date | undefined;
-  setTempDate: (date: Date | undefined) => void;
-  tempTime: string | undefined;
-  setTempTime: (time: string) => void;
-  onAddAppointment: () => void;
-  timeSlots: string[];
-  appointments: { date: Date; time: string }[];
+  onClose: () => void;
+  onConfirm: (selectedAppointments: AppointmentSlot[]) => void;
+  onOpenChange?: (open: boolean) => void;
+  selectedOption?: 'visit' | 'package';
+  currentSlotIndex?: number;
+  appointments?: AppointmentSlot[];
 }
 
 const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
   isOpen,
+  onClose,
+  onConfirm,
   onOpenChange,
-  selectedOption,
-  currentSlotIndex,
-  tempDate,
-  setTempDate,
-  tempTime,
-  setTempTime,
-  onAddAppointment,
-  timeSlots,
-  appointments
+  selectedOption = 'visit',
+  currentSlotIndex = 0,
+  appointments = []
 }) => {
+  const [tempDate, setTempDate] = useState<Date | undefined>(undefined);
+  const [tempTime, setTempTime] = useState<string | undefined>(undefined);
+  
+  const timeSlots = generateTimeSlots();
+
+  const handleAddAppointment = () => {
+    if (!tempDate || !tempTime) return;
+    
+    const newAppointment: AppointmentSlot = { date: tempDate, time: tempTime };
+    const updatedAppointments = [...appointments];
+    
+    if (currentSlotIndex < updatedAppointments.length) {
+      updatedAppointments[currentSlotIndex] = newAppointment;
+    } else {
+      updatedAppointments.push(newAppointment);
+    }
+    
+    onConfirm(updatedAppointments);
+    setTempDate(undefined);
+    setTempTime(undefined);
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (onOpenChange) onOpenChange(open);
+      if (!open) onClose();
+    }}>
       <DialogContent className="sm:max-w-[350px] p-3">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-center text-sm">
@@ -85,7 +103,7 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
           <Button 
             className="w-full h-7 text-xs" 
             disabled={!tempDate || !tempTime}
-            onClick={onAddAppointment}
+            onClick={handleAddAppointment}
           >
             {currentSlotIndex < appointments.length ? 'Update Appointment' : 'Add Appointment'}
           </Button>

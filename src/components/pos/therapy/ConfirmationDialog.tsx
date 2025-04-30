@@ -4,19 +4,27 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedOption: 'visit' | 'package';
-  onConfirm: () => void;
+  onClose: () => void;
+  onConfirm: (confirmed: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
+  selectedOption?: 'visit' | 'package';
 }
 
 const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   isOpen,
+  onClose,
+  onConfirm,
   onOpenChange,
-  selectedOption,
-  onConfirm
+  selectedOption = 'visit'
 }) => {
   return (
-    <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
+    <AlertDialog 
+      open={isOpen} 
+      onOpenChange={(open) => {
+        if (onOpenChange) onOpenChange(open);
+        if (!open) onClose();
+      }}
+    >
       <AlertDialogContent className="p-3">
         <AlertDialogHeader>
           <AlertDialogTitle className="text-sm">Change appointment type?</AlertDialogTitle>
@@ -25,8 +33,8 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="pt-2">
-          <AlertDialogCancel className="text-xs h-7">Cancel</AlertDialogCancel>
-          <AlertDialogAction className="text-xs h-7" onClick={onConfirm}>Confirm</AlertDialogAction>
+          <AlertDialogCancel className="text-xs h-7" onClick={() => onConfirm(false)}>Cancel</AlertDialogCancel>
+          <AlertDialogAction className="text-xs h-7" onClick={() => onConfirm(true)}>Confirm</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

@@ -5,22 +5,23 @@ import { Calendar, Package } from 'lucide-react';
 import { Product } from '@/types/product';
 
 interface TherapyOptionsProps {
-  product: Product;
-  selectedOption: 'visit' | 'package';
-  onOptionChange: (value: 'visit' | 'package') => void;
+  isPackage: boolean;
+  setIsPackage: (isPackage: boolean) => void;
+  product?: Product; // Made optional since the original component didn't require it
 }
 
 const TherapyOptions: React.FC<TherapyOptionsProps> = ({
-  product,
-  selectedOption,
-  onOptionChange
+  isPackage,
+  setIsPackage,
+  product
 }) => {
-  const packagePrice = (product.price * 4) - 200000;
+  // Calculate package price only if product is available
+  const packagePrice = product ? (product.price * 4) - 200000 : 0;
   
   return (
     <RadioGroup
-      value={selectedOption}
-      onValueChange={(value) => onOptionChange(value as 'visit' | 'package')}
+      value={isPackage ? "package" : "visit"}
+      onValueChange={(value) => setIsPackage(value === "package")}
       className="space-y-1.5"
     >
       <label className="flex items-start space-x-2 space-y-0 rounded-md border p-1.5 cursor-pointer hover:bg-muted/50 transition-colors">
@@ -34,7 +35,7 @@ const TherapyOptions: React.FC<TherapyOptionsProps> = ({
             <p className="text-[9px] text-muted-foreground">One-time therapy session</p>
           </div>
           <div className="text-[10px] font-semibold">
-            Rp {product.price.toLocaleString('id-ID')}
+            {product && `Rp ${product.price.toLocaleString('id-ID')}`}
           </div>
         </div>
       </label>
@@ -50,7 +51,7 @@ const TherapyOptions: React.FC<TherapyOptionsProps> = ({
             <p className="text-[9px] text-muted-foreground">Save Rp 200,000</p>
           </div>
           <div className="text-[10px] font-semibold">
-            Rp {packagePrice.toLocaleString('id-ID')}
+            {product && `Rp ${packagePrice.toLocaleString('id-ID')}`}
           </div>
         </div>
       </label>
