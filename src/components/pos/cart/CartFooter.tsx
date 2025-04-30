@@ -23,7 +23,7 @@ const CartFooter: React.FC<CartFooterProps> = ({
     <div className="mt-4 space-y-3">
       <div className="flex justify-between items-center font-semibold">
         <span>Total</span>
-        <span>Rp {total.toLocaleString('id-ID')}</span>
+        <span>{formatRupiah(total)}</span>
       </div>
       
       <div className="flex gap-2">
