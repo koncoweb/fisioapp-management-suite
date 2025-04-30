@@ -49,7 +49,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, onAddToCart }) => {
               size="sm"
             >
               <ShoppingCart className="mr-1 h-3 w-3" />
-              Add
+              {product.type === 'service' ? 'Select' : 'Add'}
             </Button>
           </CardFooter>
         </Card>

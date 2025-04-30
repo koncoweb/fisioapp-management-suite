@@ -7,14 +7,17 @@ import { Product } from '@/types/product';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ProductGrid from '@/components/pos/ProductGrid';
 import ShoppingCart from '@/components/pos/ShoppingCart';
+import TherapyVariantSelector from '@/components/pos/TherapyVariantSelector';
 import { toast } from "@/components/ui/sonner";
 
 export interface CartItem extends Product {
   quantity: number;
+  isPackage?: boolean;
 }
 
 const PointOfSale = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   const { data: products, isLoading } = useQuery({
     queryKey: ['products'],
@@ -27,10 +30,41 @@ const PointOfSale = () => {
     }
   });
 
-  const addToCart = (product: Product) => {
+  const handleProductSelect = (product: Product) => {
+    // Only show variant selector for service (therapy) products
+    if (product.type === 'service') {
+      setSelectedProduct(product);
+    } else {
+      // For regular products, add directly to cart
+      addToCart(product);
+    }
+  };
+
+  const handleVariantSelect = (product: Product, isPackage: boolean) => {
+    const customProduct = { ...product };
+    
+    if (isPackage) {
+      // For package: 4 times the price - 200,000
+      const packagePrice = (product.price * 4) - 200000;
+      customProduct.name = `${product.name} (Package - 4 visits)`;
+      customProduct.price = packagePrice;
+    } else {
+      customProduct.name = `${product.name} (Single visit)`;
+    }
+    
+    addToCart(customProduct, isPackage);
+    setSelectedProduct(null);
+  };
+
+  const addToCart = (product: Product, isPackage = false) => {
     setCart(currentCart => {
+      // For packages, we treat them as different products
+      const cartItemId = isPackage ? `${product.id}-package` : product.id;
+      
       // Check if product is already in cart
-      const existingItemIndex = currentCart.findIndex(item => item.id === product.id);
+      const existingItemIndex = currentCart.findIndex(item => 
+        isPackage ? item.id === cartItemId : item.id === product.id && !item.isPackage
+      );
       
       if (existingItemIndex > -1) {
         // Update quantity if product exists
@@ -42,7 +76,13 @@ const PointOfSale = () => {
         return newCart;
       } else {
         // Add new product with quantity 1
-        return [...currentCart, { ...product, quantity: 1 }];
+        const newItem = { 
+          ...product, 
+          quantity: 1, 
+          isPackage,
+          id: cartItemId // Use modified ID for packages
+        };
+        return [...currentCart, newItem];
       }
     });
     
@@ -95,26 +135,37 @@ const PointOfSale = () => {
           <CardContent>
             <ProductGrid 
               products={products || []} 
-              onAddToCart={addToCart} 
+              onAddToCart={handleProductSelect} 
             />
           </CardContent>
         </Card>
         
-        {/* Shopping Cart */}
-        <Card className="w-full md:w-1/3">
-          <CardHeader>
-            <CardTitle>Shopping Cart</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ShoppingCart 
-              items={cart}
-              updateQuantity={updateCartItemQuantity}
-              removeItem={removeFromCart}
-              clearCart={clearCart}
-              total={calculateTotal()}
+        <div className="w-full md:w-1/3 flex flex-col gap-4">
+          {/* Therapy Variant Selector */}
+          {selectedProduct && (
+            <TherapyVariantSelector 
+              product={selectedProduct} 
+              onSelectVariant={handleVariantSelect}
+              onCancel={() => setSelectedProduct(null)}
             />
-          </CardContent>
-        </Card>
+          )}
+          
+          {/* Shopping Cart */}
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle>Shopping Cart</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ShoppingCart 
+                items={cart}
+                updateQuantity={updateCartItemQuantity}
+                removeItem={removeFromCart}
+                clearCart={clearCart}
+                total={calculateTotal()}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
