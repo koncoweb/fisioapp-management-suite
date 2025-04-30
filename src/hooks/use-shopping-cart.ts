@@ -20,15 +20,22 @@ export const useShoppingCart = () => {
       const packagePrice = (product.price * 4) - 200000;
       customProduct.name = `${product.name} (Package - 4 visits)`;
       customProduct.price = packagePrice;
+      
+      // Format package name with first appointment date
+      if (appointments.length === 4) {
+        const { date } = appointments[0];
+        const formattedDate = format(date, "dd MMM yyyy");
+        customProduct.name = `${customProduct.name} - Starting ${formattedDate}`;
+      }
     } else {
       customProduct.name = `${product.name} (Single visit)`;
-    }
-    
-    // For single visit, format name with date/time
-    if (!isPackage && appointments.length === 1) {
-      const { date, time } = appointments[0];
-      const formattedDate = format(date, "dd MMM yyyy");
-      customProduct.name = `${customProduct.name} - ${formattedDate} at ${time}`;
+      
+      // For single visit, format name with date/time
+      if (appointments.length === 1) {
+        const { date, time } = appointments[0];
+        const formattedDate = format(date, "dd MMM yyyy");
+        customProduct.name = `${customProduct.name} - ${formattedDate} at ${time}`;
+      }
     }
     
     addToCart(customProduct, isPackage, appointments);

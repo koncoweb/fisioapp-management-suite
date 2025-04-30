@@ -20,28 +20,57 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
   const [appointments, setAppointments] = useState<AppointmentSlot[]>([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
 
   const handleAppointmentConfirm = (selectedAppointments: AppointmentSlot[]) => {
     setAppointments(selectedAppointments);
     setAppointmentDialogOpen(false);
-    setConfirmationDialogOpen(true); // Open confirmation dialog after appointments are set
+    
+    // Open confirmation dialog only when switching between visit/package types
+    if (confirmationDialogOpen) {
+      setConfirmationDialogOpen(false);
+      onSelectVariant(product, isPackage, selectedAppointments);
+    }
   };
 
   const handleConfirmation = (confirmed: boolean) => {
     setConfirmationDialogOpen(false);
     if (confirmed) {
-      onSelectVariant(product, isPackage, appointments);
-    } else {
+      // If confirmed, clear appointments and show appointment dialog for the new selection type
       setAppointments([]);
+      setCurrentSlotIndex(0);
+      setAppointmentDialogOpen(true);
     }
   };
 
   const handleSelectVariant = () => {
-    if (isPackage || appointments.length > 0) {
+    // For both package and single visit, ensure appointments are selected
+    if (appointments.length > 0) {
       onSelectVariant(product, isPackage, appointments);
     } else {
       // Open the appointment dialog if no appointments are set
       setAppointmentDialogOpen(true);
+    }
+  };
+
+  const handleEditAppointment = (index: number) => {
+    setCurrentSlotIndex(index);
+    setAppointmentDialogOpen(true);
+  };
+
+  const handleRemoveAppointment = (index: number) => {
+    setAppointments(prevAppointments => 
+      prevAppointments.filter((_, i) => i !== index)
+    );
+  };
+
+  const handlePackageToggle = (newIsPackage: boolean) => {
+    // If the user already has appointments and is changing the type, show confirmation
+    if (appointments.length > 0 && isPackage !== newIsPackage) {
+      setIsPackage(newIsPackage);
+      setConfirmationDialogOpen(true);
+    } else {
+      setIsPackage(newIsPackage);
     }
   };
 
@@ -51,36 +80,48 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
         <CardContent className="p-4">
           <h3 className="font-semibold mb-2">{product.name}</h3>
           <p className="text-sm text-muted-foreground mb-4">
-            {(product as any).description || `${product.name} - ${product.type}`}
+            {product.description || `${product.name} - ${product.type}`}
           </p>
 
           <TherapyOptions 
             isPackage={isPackage} 
-            setIsPackage={setIsPackage}
+            setIsPackage={handlePackageToggle}
             product={product}
           />
 
           {isPackage ? (
-            <p className="text-sm text-muted-foreground mb-4">
-              Pilih paket untuk 4 kali kunjungan dengan harga lebih hemat.
-            </p>
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground mb-2">
+                Pilih paket untuk 4 kali kunjungan dengan harga lebih hemat.
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full h-8 text-xs"
+                onClick={() => setAppointmentDialogOpen(true)}
+              >
+                {appointments.length === 0 
+                  ? "Pilih Jadwal 4 Kunjungan" 
+                  : `Edit Jadwal (${appointments.length}/4 dipilih)`}
+              </Button>
+            </div>
           ) : (
             <Button 
               variant="outline" 
               size="sm" 
-              className="w-full h-8 text-xs"
+              className="w-full h-8 text-xs mt-4"
               onClick={() => setAppointmentDialogOpen(true)}
             >
               Pilih Jadwal Kunjungan
             </Button>
           )}
           
-          {appointments.length > 0 && !isPackage && (
+          {appointments.length > 0 && (
             <AppointmentList 
               appointments={appointments} 
-              selectedOption="visit"
-              onEditAppointment={() => setAppointmentDialogOpen(true)}
-              onRemoveAppointment={() => setAppointments([])}
+              selectedOption={isPackage ? 'package' : 'visit'}
+              onEditAppointment={handleEditAppointment}
+              onRemoveAppointment={handleRemoveAppointment}
             />
           )}
 
@@ -88,7 +129,12 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
             <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={onCancel}>
               Cancel
             </Button>
-            <Button size="sm" className="h-8 text-xs" onClick={handleSelectVariant}>
+            <Button 
+              size="sm" 
+              className="h-8 text-xs" 
+              onClick={handleSelectVariant}
+              disabled={appointments.length === 0 || (isPackage && appointments.length < 4)}
+            >
               Add to Cart
             </Button>
           </div>
@@ -100,6 +146,9 @@ const TherapyVariantSelector: React.FC<TherapyVariantSelectorProps> = ({ product
         onClose={() => setAppointmentDialogOpen(false)}
         onConfirm={handleAppointmentConfirm}
         selectedOption={isPackage ? 'package' : 'visit'}
+        currentSlotIndex={currentSlotIndex}
+        appointments={appointments}
+        maxAppointments={isPackage ? 4 : 1}
       />
 
       <ConfirmationDialog
