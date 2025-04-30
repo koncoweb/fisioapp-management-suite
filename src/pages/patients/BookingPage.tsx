@@ -51,7 +51,9 @@ const BookingPage: React.FC = () => {
         status: 'pending',
         notes: values.notes || '',
         createdAt: new Date().toISOString(),
-        duration: service.duration
+        duration: service.duration,
+        isPackage: false, // Explicitly set isPackage
+        packageIndex: null // Use null instead of undefined
       };
 
       setBookingData({
@@ -75,9 +77,11 @@ const BookingPage: React.FC = () => {
     if (!bookingData) return;
     
     try {
-      // Create bookingData without the transactionId field
+      // Ensure we don't have any undefined values that Firebase will reject
       const bookingDataToSave = {
         ...bookingData,
+        isPackage: bookingData.isPackage || false,
+        packageIndex: bookingData.packageIndex ?? null, // Use null instead of undefined
         // Only include transactionId if it exists and is not undefined
         ...(bookingData.transactionId ? { transactionId: bookingData.transactionId } : {})
       };

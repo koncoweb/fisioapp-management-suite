@@ -1,3 +1,4 @@
+
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import { Patient } from '@/types';
 import { toast } from "sonner";
@@ -101,7 +102,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                       item.name.split('(')[0].trim(), // Extract original product name
                       item.appointments[i],
                       true,
-                      i,
+                      i, // Pass the package index
                       null, // Pass null explicitly instead of undefined
                       item.duration // Pass the duration from the product
                     );
@@ -115,7 +116,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                     item.name.split('(')[0].trim(), // Extract original product name
                     item.appointments[0],
                     false,
-                    0,
+                    0, // Non-package sessions get index 0
                     null, // Pass null explicitly instead of undefined
                     item.duration // Pass the duration from the product
                   );

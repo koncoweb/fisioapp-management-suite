@@ -18,7 +18,7 @@ export interface TherapySessionData {
   status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
   transactionId?: string | null; // Changed to accept null as well
   isPackage?: boolean;
-  packageIndex?: number;
+  packageIndex?: number | null; // Changed to accept null as well
   createdAt: Date;
   statusDiupdate?: {
     nama: string;
@@ -81,9 +81,15 @@ export const saveTherapySession = async (
       duration: duration || 60,
       status: 'scheduled',
       isPackage,
-      packageIndex: isPackage ? packageIndex : undefined,
       createdAt: new Date()
     };
+    
+    // Only add packageIndex if it's a package
+    if (isPackage) {
+      sessionData.packageIndex = packageIndex;
+    } else {
+      sessionData.packageIndex = null; // Use null instead of undefined for Firestore
+    }
     
     // Only add transactionId if it exists and is not undefined
     if (transactionId) {

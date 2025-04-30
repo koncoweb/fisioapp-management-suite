@@ -44,6 +44,8 @@ const TherapySessionForm = () => {
         therapistId: userData?.uid,
         therapistName: userData?.namaLengkap,
         timestamp: new Date().toISOString(),
+        isPackage: false,  // Explicitly set to false
+        packageIndex: null // Use null instead of undefined
       };
 
       await addDoc(collection(db, 'therapySessions'), therapySession);
