@@ -42,6 +42,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Patients collection rules - Added for patient management
+    match /patients/{patientId} {
+      allow read: if isSignedIn();
+      // Allow admins, therapists, and authenticated users to create patients
+      allow create: if isSignedIn();
+      // Allow admins and therapists to update patient data
+      allow update: if isAdmin() || isTherapist();
+      // Only admins can delete patient records
+      allow delete: if isAdmin();
+    }
+
     // Services collection rules
     match /services/{serviceId} {
       allow read: if isSignedIn();
