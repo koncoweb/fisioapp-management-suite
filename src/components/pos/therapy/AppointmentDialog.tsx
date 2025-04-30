@@ -37,6 +37,7 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
   const { 
     availableTimeSlots, 
     isCheckingAvailability, 
+    conflictError,
     checkTherapistAvailability 
   } = useAppointmentAvailability(therapistId);
   
@@ -119,6 +120,7 @@ const AppointmentDialog: React.FC<AppointmentDialogProps> = ({
             availableTimeSlots={availableTimeSlots}
             isCheckingAvailability={isCheckingAvailability}
             isDateSelected={!!tempDates[currentTabIndex]}
+            conflictError={conflictError}
           />
         </div>
         

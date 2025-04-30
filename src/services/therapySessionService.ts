@@ -46,7 +46,7 @@ export const saveTherapySession = async (
     
     const conflictingSnapshot = await getDocs(q);
     if (!conflictingSnapshot.empty) {
-      throw new Error("Therapist already has an appointment at this time");
+      throw new Error(`Terapis ${therapist.name} sudah memiliki jadwal pada ${formattedDate} pukul ${appointment.time}`);
     }
     
     // Create the therapy session

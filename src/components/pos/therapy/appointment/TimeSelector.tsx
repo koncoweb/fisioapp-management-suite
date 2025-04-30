@@ -2,6 +2,8 @@
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Clock } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface TimeSelectorProps {
   selectedTime: string | undefined;
@@ -9,6 +11,7 @@ interface TimeSelectorProps {
   availableTimeSlots: string[];
   isCheckingAvailability: boolean;
   isDateSelected: boolean;
+  conflictError?: string | null;
 }
 
 const TimeSelector: React.FC<TimeSelectorProps> = ({
@@ -16,7 +19,8 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({
   onTimeChange,
   availableTimeSlots,
   isCheckingAvailability,
-  isDateSelected
+  isDateSelected,
+  conflictError
 }) => {
   return (
     <div>
@@ -53,6 +57,21 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({
           )}
         </SelectContent>
       </Select>
+
+      {conflictError && isDateSelected && !isCheckingAvailability && (
+        <Alert variant="destructive" className="mt-2 py-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-xs ml-2">
+            {conflictError}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {availableTimeSlots.length === 0 && isDateSelected && !isCheckingAvailability && !conflictError && (
+        <p className="text-[10px] text-destructive mt-1">
+          Tidak ada jadwal tersedia untuk terapis pada tanggal ini.
+        </p>
+      )}
     </div>
   );
 };
