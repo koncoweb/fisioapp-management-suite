@@ -1,73 +1,93 @@
-# Welcome to your Lovable project
+# FisioApp Management Suite
 
-## Project info
+## Deskripsi Aplikasi
 
-**URL**: https://lovable.dev/projects/a0a55b00-d56c-48d8-aacb-eccf42393658
+FisioApp Management Suite adalah aplikasi manajemen klinik fisioterapi yang komprehensif, menyediakan fitur lengkap untuk mengelola pasien, jadwal, layanan, transaksi, dan administrasi klinik. Aplikasi ini dibangun dengan teknologi modern untuk memudahkan pengelolaan operasional klinik fisioterapi sehari-hari.
 
-## How can I edit this code?
+## Teknologi dan Dependensi Utama
 
-There are several ways of editing your application.
+### Framework dan Library Utama
+- React 18 dengan TypeScript
+- Vite sebagai build tool
+- React Router untuk navigasi
+- Firebase untuk backend dan database
+- TanStack React Query untuk data fetching dan state management
+- React Hook Form dengan Zod untuk validasi form
+- Shadcn UI (berbasis Radix UI) untuk komponen UI
 
-**Use Lovable**
+### Styling dan UI
+- TailwindCSS untuk styling
+- Lucide React untuk icon
+- Framer Motion untuk animasi
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a0a55b00-d56c-48d8-aacb-eccf42393658) and start prompting.
+## Struktur Aplikasi
 
-Changes made via Lovable will be committed automatically to this repo.
+### Struktur Folder
+- `/src/components`: Komponen UI reusable
+- `/src/contexts`: Context providers (Authentication, Theme)
+- `/src/hooks`: Custom hooks
+- `/src/lib`: Utilitas dan konfigurasi
+- `/src/pages`: Halaman-halaman aplikasi
+- `/src/services`: Layanan API
+- `/src/types`: Type definitions TypeScript
 
-**Use your preferred IDE**
+### Modul Utama Aplikasi
+- **Dashboard**: Panel kontrol utama
+- **Manajemen Pasien**: Pengelolaan data pasien
+- **Booking/Janji Temu**: Sistem penjadwalan
+- **Manajemen Produk**: Pengelolaan produk dan layanan
+- **Manajemen Karyawan**: Pengelolaan terapis dan staf
+- **Point of Sale (POS)**: Sistem kasir dan pembayaran
+- **Keuangan**: Manajemen keuangan klinik
+- **Settings**: Pengaturan aplikasi
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Cara Kerja Aplikasi
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Autentikasi dan Otorisasi
+- Sistem login dan registrasi
+- Role-based access control (admin, therapist, Pasien)
+- Protected routes untuk halaman yang memerlukan login
 
-Follow these steps:
+### Navigasi dan Routing
+- Rute publik: Login, Register
+- Rute terproteksi: Dashboard, Manajemen, dll (memerlukan login)
+- Rute berdasarkan peran: Beberapa halaman hanya dapat diakses oleh admin
+
+### Data Management
+- Database untuk penyimpanan data
+- React Query untuk state management dan data fetching
+- Model data meliputi users, products, bookings, dan lainnya
+
+### UI dan UX
+- Komponen Shadcn UI yang dibangun di atas Radix UI
+- Theme system dengan mode gelap/terang
+- Responsive design dengan TailwindCSS
+- Toast notifications untuk feedback user
+
+## Cara Menjalankan Proyek
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
+# atau
+yarn install
+# atau
+bun install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Menjalankan server development
 npm run dev
+# atau
+yarn dev
+# atau
+bun dev
 ```
 
-**Edit a file directly in GitHub**
+## Build untuk Production
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/a0a55b00-d56c-48d8-aacb-eccf42393658) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```sh
+npm run build
+# atau
+yarn build
+# atau
+bun build
+```
