@@ -8,6 +8,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { UserData } from '@/contexts/AuthContext';
+import { BiometricData, GeofenceSettings } from '@/types/biometric';
 import { 
   Sheet,
   SheetContent,
@@ -18,8 +19,15 @@ import {
 } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger
+} from "@/components/ui/tabs";
 import { BasicInfoFields } from './form/BasicInfoFields';
 import { PersonalInfoFields } from './form/PersonalInfoFields';
+import BiometricDataFields from './form/BiometricDataFields';
 
 export interface EmployeeFormData {
   namaLengkap: string;
@@ -29,6 +37,8 @@ export interface EmployeeFormData {
   jenisKelamin: string;
   usia: number;
   password?: string;
+  biometricData?: BiometricData;
+  geofenceSettings?: GeofenceSettings;
 }
 
 interface EmployeeFormProps {
@@ -45,6 +55,8 @@ const employeeFormSchema = z.object({
   jenisKelamin: z.string().min(1, 'Please select a gender'),
   usia: z.number().min(18, 'Age must be at least 18'),
   password: z.string().min(6, 'Password must be at least 6 characters').optional(),
+  biometricData: z.any().optional(),
+  geofenceSettings: z.any().optional(),
 });
 
 const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employee }) => {
@@ -62,6 +74,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employee }
       jenisKelamin: '',
       usia: 0,
       password: '',
+      biometricData: {
+        isActive: false
+      },
+      geofenceSettings: {
+        radius: 100,
+        isRequired: false,
+        locationName: '',
+        latitude: 0,
+        longitude: 0
+      }
     },
   });
 
@@ -74,6 +96,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employee }
         alamat: employee.alamat || '',
         jenisKelamin: employee.jenisKelamin || '',
         usia: employee.usia ? Number(employee.usia) : 0, // Ensure usia is a number
+        biometricData: employee.biometricData || {
+          isActive: false
+        },
+        geofenceSettings: employee.geofenceSettings || {
+          radius: 100,
+          isRequired: false,
+          locationName: '',
+          latitude: 0,
+          longitude: 0
+        }
       });
     } else {
       form.reset({
@@ -84,6 +116,16 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employee }
         jenisKelamin: '',
         usia: 0,
         password: '',
+        biometricData: {
+          isActive: false
+        },
+        geofenceSettings: {
+          radius: 100,
+          isRequired: false,
+          locationName: '',
+          latitude: 0,
+          longitude: 0
+        }
       });
     }
   }, [employee, form]);
@@ -172,32 +214,44 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ isOpen, onClose, employee }
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-6">
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Basic Information</h3>
-              <BasicInfoFields form={form} isExistingEmployee={isExistingEmployee} />
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Informasi Dasar</TabsTrigger>
+                <TabsTrigger value="personal">Informasi Pribadi</TabsTrigger>
+                <TabsTrigger value="biometric" disabled={!isExistingEmployee}>Data Biometrik</TabsTrigger>
+              </TabsList>
               
-              {!isExistingEmployee && (
-                <div className="form-field">
-                  <label htmlFor="password" className="block text-sm font-medium">
-                    Password
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    {...form.register("password")}
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
-                  />
-                  {form.formState.errors.password && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {form.formState.errors.password.message}
-                    </p>
-                  )}
-                </div>
-              )}
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <BasicInfoFields form={form} isExistingEmployee={isExistingEmployee} />
+                
+                {!isExistingEmployee && (
+                  <div className="form-field">
+                    <label htmlFor="password" className="block text-sm font-medium">
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      {...form.register("password")}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+                    />
+                    {form.formState.errors.password && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {form.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
               
-              <h3 className="text-lg font-medium">Personal Information</h3>
-              <PersonalInfoFields form={form} />
-            </div>
+              <TabsContent value="personal" className="space-y-4 mt-4">
+                <PersonalInfoFields form={form} />
+              </TabsContent>
+              
+              <TabsContent value="biometric" className="space-y-4 mt-4">
+                <BiometricDataFields form={form} employeeId={employee?.uid} />
+              </TabsContent>
+            </Tabs>
             
             <SheetFooter>
               <Button 

@@ -1,0 +1,382 @@
+import React, { useRef, useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Camera, Clock, MapPin, Check, X, RefreshCw } from 'lucide-react';
+import { checkAttendance, getTodayAttendance } from '@/services/attendanceService';
+import { getCurrentLocation } from '@/services/geofencingService';
+import { useToast } from '@/hooks/use-toast';
+import { Attendance } from '@/types/biometric';
+import { format } from 'date-fns';
+
+const AttendancePage = () => {
+  const { currentUser, userData } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [attendanceType, setAttendanceType] = useState<'check-in' | 'check-out'>('check-in');
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [processingAttendance, setProcessingAttendance] = useState(false);
+  const [attendanceResult, setAttendanceResult] = useState<Attendance | null>(null);
+  const [todayAttendance, setTodayAttendance] = useState<Attendance[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Memuat data absensi hari ini
+  useEffect(() => {
+    const loadTodayAttendance = async () => {
+      if (!currentUser || !userData) return;
+      
+      try {
+        const attendanceData = await getTodayAttendance(userData.uid);
+        setTodayAttendance(attendanceData);
+        
+        // Menentukan tipe absensi (check-in/check-out) berdasarkan data yang ada
+        const hasCheckIn = attendanceData.some(a => a.type === 'check-in' && a.status === 'valid');
+        const hasCheckOut = attendanceData.some(a => a.type === 'check-out' && a.status === 'valid');
+        
+        if (hasCheckIn && !hasCheckOut) {
+          setAttendanceType('check-out');
+        }
+      } catch (error) {
+        console.error('Error loading today attendance:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadTodayAttendance();
+  }, [currentUser, userData]);
+
+  // Inisialisasi kamera
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    
+    const setupCamera = async () => {
+      if (isCameraActive && videoRef.current) {
+        try {
+          // Gunakan pengaturan kamera yang sama dengan halaman biometrik
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+              facingMode: 'user',
+              frameRate: { ideal: 30 },
+              aspectRatio: { ideal: 4/3 }
+            }
+          });
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.error('Error accessing camera:', err);
+          toast({
+            title: "Error",
+            description: "Gagal mengakses kamera. Pastikan kamera Anda terhubung dan izin diberikan.",
+            variant: "destructive",
+          });
+          setIsCameraActive(false);
+        }
+      }
+    };
+    
+    setupCamera();
+    
+    // Cleanup function
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [isCameraActive, toast]);
+
+  // Mendapatkan lokasi pengguna
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        const location = await getCurrentLocation();
+        setUserLocation(location);
+      } catch (error) {
+        console.error('Error getting location:', error);
+        toast({
+          title: "Error",
+          description: "Gagal mendapatkan lokasi Anda. Mohon aktifkan layanan lokasi.",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    getLocation();
+  }, [toast]);
+
+  // Fungsi untuk mengambil gambar
+  const captureImage = async () => {
+    if (!videoRef.current || !canvasRef.current || !userLocation || !currentUser || !userData) {
+      toast({
+        title: "Error",
+        description: "Data pengguna, kamera, atau lokasi tidak tersedia. Silakan coba lagi.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const context = canvas.getContext('2d');
+
+    if (!context) return;
+
+    // Set ukuran canvas sesuai dengan video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    // Gambar frame video ke canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Konversi canvas ke file
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      const imageFile = new File([blob], "attendance.jpg", { type: "image/jpeg" });
+
+      try {
+        setProcessingAttendance(true);
+        
+        // Pastikan userData.uid tersedia
+        if (!userData.uid) {
+          throw new Error('User ID tidak tersedia');
+        }
+        
+        console.log('Processing attendance for user ID:', userData.uid);
+        
+        // Proses absensi
+        const result = await checkAttendance(
+          userData.uid,
+          attendanceType,
+          imageFile,
+          userLocation
+        );
+
+        setAttendanceResult(result);
+        setTodayAttendance(prev => [result, ...prev]);
+        
+        toast({
+          title: result.status === 'valid' ? "Berhasil" : "Verifikasi Diperlukan",
+          description: result.status === 'valid' 
+            ? `${attendanceType === 'check-in' ? 'Check-in' : 'Check-out'} berhasil` 
+            : "Absensi Anda memerlukan verifikasi manual",
+          variant: result.status === 'valid' ? "default" : "destructive",
+        });
+        
+        // Matikan kamera setelah mengambil foto
+        setIsCameraActive(false);
+        if (videoRef.current?.srcObject instanceof MediaStream) {
+          videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+        }
+      } catch (error: any) {
+        console.error('Error processing attendance:', error);
+        toast({
+          title: "Error",
+          description: error.message || "Gagal memproses absensi",
+          variant: "destructive",
+        });
+      } finally {
+        setProcessingAttendance(false);
+      }
+    }, "image/jpeg");
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Absensi</h1>
+        {userData?.role === 'admin' && (
+          <Button 
+            onClick={() => navigate('/attendance/biometric')} 
+            variant="outline"
+          >
+            Kelola Data Biometrik
+          </Button>
+        )}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Absensi</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex justify-center space-x-4">
+              <Button
+                variant={attendanceType === 'check-in' ? 'default' : 'outline'}
+                onClick={() => setAttendanceType('check-in')}
+                disabled={todayAttendance.some(a => a.type === 'check-in' && a.status === 'valid')}
+              >
+                Check In
+              </Button>
+              <Button
+                variant={attendanceType === 'check-out' ? 'default' : 'outline'}
+                onClick={() => setAttendanceType('check-out')}
+                disabled={
+                  todayAttendance.some(a => a.type === 'check-out' && a.status === 'valid') ||
+                  !todayAttendance.some(a => a.type === 'check-in')
+                }
+              >
+                Check Out
+              </Button>
+            </div>
+
+            <div className="flex flex-col items-center space-y-4">
+              <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden">
+                {isCameraActive ? (
+                  <div className="relative">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                    <Button
+                      disabled={!userLocation || processingAttendance}
+                      onClick={captureImage}
+                      className="absolute bottom-4 left-1/2 transform -translate-x-1/2"
+                    >
+                      {processingAttendance ? (
+                        <>
+                          <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                          Memproses...
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="mr-2 h-4 w-4" />
+                          Ambil Foto
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Button 
+                      onClick={() => setIsCameraActive(true)}
+                      disabled={
+                        (attendanceType === 'check-in' && todayAttendance.some(a => a.type === 'check-in' && a.status === 'valid')) ||
+                        (attendanceType === 'check-out' && todayAttendance.some(a => a.type === 'check-out' && a.status === 'valid'))
+                      }
+                    >
+                      <Camera className="mr-2 h-4 w-4" />
+                      Aktifkan Kamera
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <canvas ref={canvasRef} className="hidden" />
+
+              {userLocation ? (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  <span>Lokasi terdeteksi</span>
+                </div>
+              ) : (
+                <div className="flex items-center text-sm text-destructive">
+                  <MapPin className="mr-2 h-4 w-4" />
+                  <span>Lokasi tidak tersedia</span>
+                </div>
+              )}
+            </div>
+
+            {attendanceResult && (
+              <div className={`p-4 rounded-lg ${
+                attendanceResult.status === 'valid' 
+                  ? 'bg-green-50 text-green-700 border border-green-200' 
+                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+              }`}>
+                <div className="flex items-center space-x-2">
+                  {attendanceResult.status === 'valid' ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    <X className="h-5 w-5" />
+                  )}
+                  <span className="font-medium">
+                    {attendanceResult.status === 'valid' 
+                      ? 'Absensi Tercatat' 
+                      : 'Menunggu Verifikasi'}
+                  </span>
+                </div>
+                <div className="mt-2 text-sm">
+                  <div className="flex items-center">
+                    <Clock className="mr-2 h-4 w-4" />
+                    <span>
+                      {new Date(attendanceResult.timestamp).toLocaleString()}
+                    </span>
+                  </div>
+                  {attendanceResult.notes && (
+                    <p className="mt-1">{attendanceResult.notes}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Absensi Hari Ini</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {todayAttendance.length > 0 ? (
+              <div className="space-y-4">
+                {todayAttendance.map((record, index) => (
+                  <div 
+                    key={index} 
+                    className={`p-3 rounded-lg border ${
+                      record.status === 'valid' 
+                        ? 'border-green-200 bg-green-50' 
+                        : 'border-amber-200 bg-amber-50'
+                    }`}
+                  >
+                    <div className="flex justify-between">
+                      <div className="font-medium">
+                        {record.type === 'check-in' ? 'Check In' : 'Check Out'}
+                      </div>
+                      <div className={`text-xs px-2 py-1 rounded-full ${
+                        record.status === 'valid' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-amber-100 text-amber-800'
+                      }`}>
+                        {record.status === 'valid' ? 'Valid' : 'Menunggu'}
+                      </div>
+                    </div>
+                    <div className="text-sm mt-1">
+                      {format(new Date(record.timestamp), 'HH:mm:ss')}
+                    </div>
+                    {record.notes && (
+                      <div className="text-xs mt-1 text-muted-foreground">
+                        {record.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-muted-foreground">
+                Belum ada catatan absensi hari ini
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
+export default AttendancePage;

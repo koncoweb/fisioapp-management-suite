@@ -25,6 +25,8 @@ import BookingManagement from "./pages/admin/BookingManagement";
 import Settings from "./pages/admin/Settings";
 import PointOfSale from "./pages/admin/PointOfSale";
 import KeuanganPage from "./pages/keuangan";
+import AttendancePage from "./pages/AttendancePage";
+import BiometricDataPage from "./pages/BiometricDataPage";
 
 const queryClient = new QueryClient();
 
@@ -70,6 +72,16 @@ const App = () => (
                 <Route path="/keuangan" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <KeuanganPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/attendance" element={
+                  <ProtectedRoute allowedRoles={['admin', 'therapist', 'karyawan']}>
+                    <AttendancePage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/attendance/biometric" element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <BiometricDataPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/messages" element={<div>Messages (Coming soon)</div>} />

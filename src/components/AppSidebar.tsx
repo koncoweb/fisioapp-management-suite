@@ -25,6 +25,7 @@ import {
   Bell,
   ShoppingCart,
   DollarSign,
+  Fingerprint,
 } from 'lucide-react';
 
 const AppSidebar: React.FC = () => {
@@ -39,6 +40,7 @@ const AppSidebar: React.FC = () => {
     { path: '/employees', label: 'Karyawan', icon: Users },
     { path: '/products', label: 'Produk', icon: Package },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
     { path: '/keuangan', label: 'Keuangan', icon: DollarSign },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
@@ -48,6 +50,7 @@ const AppSidebar: React.FC = () => {
   const therapistMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
   ];
 

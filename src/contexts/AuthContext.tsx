@@ -9,8 +9,9 @@ import {
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
+import { BiometricData, GeofenceSettings } from '@/types/biometric';
 
-export type UserRole = 'admin' | 'therapist' | 'Pasien';
+export type UserRole = 'admin' | 'therapist' | 'Pasien' | 'karyawan';
 
 export interface AdditionalUserData {
   alamat?: string;
@@ -28,10 +29,12 @@ export interface UserData {
   role: UserRole;
   alamat?: string;
   jenisKelamin?: string;
-  usia?: string;
+  usia?: string | number;
   pekerjaan?: string;
   nomorBPJS?: string;
   nomorAsuransiLain?: string;
+  biometricData?: BiometricData;
+  geofenceSettings?: GeofenceSettings;
 }
 
 interface AuthContextType {
