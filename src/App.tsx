@@ -27,6 +27,7 @@ import PointOfSale from "./pages/admin/PointOfSale";
 import KeuanganPage from "./pages/keuangan";
 import AttendancePage from "./pages/AttendancePage";
 import BiometricDataPage from "./pages/BiometricDataPage";
+import AttendanceRekapPage from "./pages/AttendanceRekapPage";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,11 @@ const App = () => (
                 <Route path="/attendance/biometric" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <BiometricDataPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/attendance/rekap" element={
+                  <ProtectedRoute allowedRoles={['admin', 'therapist', 'karyawan']}>
+                    <AttendanceRekapPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/messages" element={<div>Messages (Coming soon)</div>} />

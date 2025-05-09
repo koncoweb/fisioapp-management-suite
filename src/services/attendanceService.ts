@@ -129,19 +129,36 @@ export const getUserAttendanceHistory = async (
     );
     
     if (startDate && endDate) {
+      // Pastikan endDate mencakup hingga akhir hari
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      // Pastikan startDate dimulai dari awal hari
+      const startOfDay = new Date(startDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
       q = query(
         attendanceRef,
-        where('timestamp', '>=', startDate.toISOString()),
-        where('timestamp', '<=', endDate.toISOString()),
+        where('timestamp', '>=', startOfDay.toISOString()),
+        where('timestamp', '<=', endOfDay.toISOString()),
         orderBy('timestamp', 'desc')
       );
+      
+      console.log('Fetching attendance with date range:', {
+        userId,
+        startDate: startOfDay.toISOString(),
+        endDate: endOfDay.toISOString()
+      });
     }
     
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({
+    const results = querySnapshot.docs.map(doc => ({
       ...doc.data(),
       id: doc.id
     })) as Attendance[];
+    
+    console.log(`Found ${results.length} attendance records for user ${userId}`);
+    return results;
   } catch (error) {
     console.error('Error fetching attendance history:', error);
     throw error;
