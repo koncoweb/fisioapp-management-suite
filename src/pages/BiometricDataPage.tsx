@@ -173,22 +173,8 @@ const BiometricDataPage: React.FC = () => {
       ctx.scale(-1, 1);
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      // Detect face dengan @vladmandic/face-api
-      // Menggunakan SSD MobileNet untuk deteksi wajah dengan parameter yang dioptimalkan
-      const detectionOptions = new faceapi.SsdMobilenetv1Options({ 
-        minConfidence: 0.5, 
-        maxResults: 1 
-      });
-      
-      const detections = await faceapi.detectSingleFace(canvas, detectionOptions)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-      
-      if (!detections) {
-        setCaptureSuccess(false);
-        setCaptureMessage('Tidak ada wajah terdeteksi. Pastikan wajah Anda terlihat jelas.');
-        return;
-      }
+      // Restore canvas context untuk menghindari masalah transformasi
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
       
       // Convert canvas to blob
       canvas.toBlob(async (blob) => {
@@ -202,8 +188,11 @@ const BiometricDataPage: React.FC = () => {
         const imageFile = new File([blob], `face-${selectedUser.uid}.jpg`, { type: 'image/jpeg' });
         
         try {
-          // Save biometric data
+          // Import biometric service yang sudah dioptimalkan
           const biometricService = await import('@/services/biometricService');
+          
+          // Gunakan service untuk memproses dan menyimpan data biometrik
+          // Service ini sudah termasuk deteksi wajah yang dioptimalkan dengan preprocessing
           await biometricService.saveBiometricData(selectedUser.uid, imageFile);
           
           // Refresh user data
@@ -228,26 +217,32 @@ const BiometricDataPage: React.FC = () => {
             title: "Sukses",
             description: "Data biometrik berhasil disimpan",
           });
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error saving biometric data:', error);
           setCaptureSuccess(false);
-          setCaptureMessage('Gagal menyimpan data biometrik');
+          
+          // Tampilkan pesan error yang lebih spesifik
+          const errorMessage = error.message || 'Gagal menyimpan data biometrik';
+          setCaptureMessage(errorMessage);
           
           toast({
             title: "Error",
-            description: "Gagal menyimpan data biometrik",
+            description: errorMessage,
             variant: "destructive",
           });
         }
-      }, 'image/jpeg', 0.9);
-    } catch (error) {
+      }, 'image/jpeg', 0.95); // Tingkatkan kualitas gambar menjadi 95%
+    } catch (error: any) {
       console.error('Error capturing image:', error);
       setCaptureSuccess(false);
-      setCaptureMessage('Gagal memproses gambar');
+      
+      // Tampilkan pesan error yang lebih spesifik
+      const errorMessage = error.message || 'Gagal memproses gambar';
+      setCaptureMessage(errorMessage);
       
       toast({
         title: "Error",
-        description: "Gagal memproses gambar",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -498,6 +493,17 @@ const BiometricDataPage: React.FC = () => {
                     Pastikan wajah terlihat jelas dan pencahayaan baik
                   </CardDescription>
                 </CardHeader>
+                {isCameraActive && (
+                  <div className="px-6 py-2 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm">
+                    <h4 className="font-medium mb-1">Tips untuk hasil terbaik:</h4>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>Pastikan wajah berada di tengah frame</li>
+                      <li>Gunakan pencahayaan yang cukup (hindari backlight/cahaya dari belakang)</li>
+                      <li>Lepaskan masker, kacamata, atau aksesoris yang menutupi wajah</li>
+                      <li>Jaga posisi kepala tegak dan ekspresi netral</li>
+                    </ul>
+                  </div>
+                )}
                 <CardContent className="space-y-4">
                   <div className="flex justify-center">
                     <Button 

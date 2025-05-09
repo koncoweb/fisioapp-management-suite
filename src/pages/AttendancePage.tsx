@@ -124,7 +124,7 @@ const AttendancePage = () => {
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const context = canvas.getContext('2d');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
 
     if (!context) return;
 
@@ -132,12 +132,25 @@ const AttendancePage = () => {
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    // Gambar frame video ke canvas
+    // Gambar frame video ke canvas dengan efek mirror untuk konsistensi dengan BiometricDataPage
+    // Flip horizontally for mirror effect
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
     context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Restore canvas context untuk menghindari masalah transformasi
+    context.setTransform(1, 0, 0, 1, 0, 0);
 
-    // Konversi canvas ke file
+    // Konversi canvas ke file dengan kualitas yang lebih tinggi
     canvas.toBlob(async (blob) => {
-      if (!blob) return;
+      if (!blob) {
+        toast({
+          title: "Error",
+          description: "Gagal mengambil gambar. Silakan coba lagi.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       const imageFile = new File([blob], "attendance.jpg", { type: "image/jpeg" });
 
@@ -151,7 +164,8 @@ const AttendancePage = () => {
         
         console.log('Processing attendance for user ID:', userData.uid);
         
-        // Proses absensi
+        // Proses absensi menggunakan service yang sudah dioptimalkan
+        // checkAttendance akan memanggil verifyFace yang sudah dioptimalkan di biometricService
         const result = await checkAttendance(
           userData.uid,
           attendanceType,
@@ -185,7 +199,7 @@ const AttendancePage = () => {
       } finally {
         setProcessingAttendance(false);
       }
-    }, "image/jpeg");
+    }, "image/jpeg", 0.95); // Tingkatkan kualitas gambar menjadi 95%
   };
 
   if (isLoading) {
@@ -238,13 +252,21 @@ const AttendancePage = () => {
             <div className="flex flex-col items-center space-y-4">
               <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden">
                 {isCameraActive ? (
-                  <div className="relative">
+                  <>
                     <video
                       ref={videoRef}
                       autoPlay
                       playsInline
-                      className="w-full h-full object-cover"
+                      muted
+                      className="w-full h-auto"
+                      style={{ transform: 'scaleX(-1)' }} // Mirror effect
                     />
+                    <div className="absolute top-0 left-0 right-0 bg-black/50 text-white text-xs p-2">
+                      <div className="flex items-center">
+                        <span className="mr-1">•</span>
+                        <span>Pastikan wajah terlihat jelas dan di tengah frame</span>
+                      </div>
+                    </div>
                     <Button
                       disabled={!userLocation || processingAttendance}
                       onClick={captureImage}
@@ -262,15 +284,12 @@ const AttendancePage = () => {
                         </>
                       )}
                     </Button>
-                  </div>
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Button 
                       onClick={() => setIsCameraActive(true)}
-                      disabled={
-                        (attendanceType === 'check-in' && todayAttendance.some(a => a.type === 'check-in' && a.status === 'valid')) ||
-                        (attendanceType === 'check-out' && todayAttendance.some(a => a.type === 'check-out' && a.status === 'valid'))
-                      }
+                      disabled={processingAttendance}
                     >
                       <Camera className="mr-2 h-4 w-4" />
                       Aktifkan Kamera
@@ -278,6 +297,17 @@ const AttendancePage = () => {
                   </div>
                 )}
               </div>
+              
+              {isCameraActive && (
+                <div className="px-4 py-2 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm w-full">
+                  <h4 className="font-medium mb-1">Tips untuk hasil terbaik:</h4>
+                  <ul className="list-disc list-inside space-y-1">
+                    <li>Gunakan pencahayaan yang cukup (hindari backlight)</li>
+                    <li>Lepaskan masker atau aksesoris yang menutupi wajah</li>
+                    <li>Jaga posisi kepala tegak dan ekspresi netral</li>
+                  </ul>
+                </div>
+              )}
 
               <canvas ref={canvasRef} className="hidden" />
 

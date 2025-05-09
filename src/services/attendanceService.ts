@@ -1,4 +1,4 @@
-import { collection, doc, setDoc, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, query, where, getDocs, getDoc, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Attendance } from '@/types/biometric';
 import { UserData } from '@/contexts/AuthContext';
@@ -15,15 +15,17 @@ export const checkAttendance = async (
 ): Promise<Attendance> => {
   try {
     // 1. Ambil data pengguna langsung dari dokumen user berdasarkan ID
-    const userDoc = await doc(db, 'users', userId);
-    const userSnapshot = await getDocs(query(collection(db, 'users'), where('uid', '==', userId)));
+    // Gunakan getDoc untuk mengambil dokumen berdasarkan ID
+    const userDocRef = doc(db, 'users', userId);
+    const userDocSnap = await getDoc(userDocRef);
     
-    if (userSnapshot.empty) {
+    if (!userDocSnap.exists()) {
       console.error('User not found with uid:', userId);
       throw new Error('User not found');
     }
     
-    const userData = userSnapshot.docs[0].data() as UserData;
+    const userData = userDocSnap.data() as UserData;
+    userData.uid = userId; // Pastikan uid tersedia
     
     // 2. Verifikasi wajah menggunakan @vladmandic/face-api melalui biometricService
     console.log('Memulai verifikasi wajah dengan @vladmandic/face-api...');

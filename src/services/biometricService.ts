@@ -47,7 +47,7 @@ export const loadFaceApiModels = async () => {
 };
 
 // Fungsi untuk mengekstrak fitur wajah dari gambar
-export const extractFaceFeatures = async (imageElement: HTMLImageElement): Promise<Float32Array | null> => {
+export const extractFaceFeatures = async (imageElement: HTMLImageElement): Promise<Float32Array> => {
   try {
     await loadFaceApiModels();
     
@@ -56,52 +56,111 @@ export const extractFaceFeatures = async (imageElement: HTMLImageElement): Promi
       throw new Error('Image is too small. Minimum size is 100x100 pixels');
     }
     
-    // Gunakan SSD MobileNet dengan parameter yang dioptimalkan untuk @vladmandic/face-api
-    const ssdOptions = new faceapi.SsdMobilenetv1Options({ 
-      minConfidence: 0.1, // Turunkan threshold confidence lebih rendah
-      maxResults: 5 // Izinkan lebih banyak hasil deteksi
+    // Ukuran gambar untuk deteksi (dari besar ke kecil)
+    const sizes = [
+      { width: 640, height: 480 },  // Ukuran standar
+      { width: 480, height: 360 },  // Ukuran lebih kecil
+      { width: 320, height: 240 }   // Ukuran terkecil
+    ];
+    
+    // Buat canvas untuk menggambar gambar
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    
+    if (!context) {
+      throw new Error('Failed to create canvas context');
+    }
+    
+    // Opsi deteksi wajah yang lebih sensitif
+    const ssdOptions = new faceapi.SsdMobilenetv1Options({
+      minConfidence: 0.4,  // Turunkan confidence untuk deteksi yang lebih sensitif
+      maxResults: 1
     });
     
-    // Coba deteksi dengan SSD MobileNet
-    let detections = await faceapi.detectSingleFace(imageElement, ssdOptions)
-      .withFaceLandmarks()
-      .withFaceDescriptor();
+    let detections = null;
     
-    // Jika tidak ada deteksi, coba dengan ukuran gambar yang berbeda
-    if (!detections) {
-      console.log('Trying with resized image...');
+    // Coba deteksi dengan berbagai ukuran gambar dan pengaturan
+    for (const size of sizes) {
+      console.log(`Mencoba deteksi dengan ukuran ${size.width}x${size.height}...`);
       
-      // Buat canvas untuk mengubah ukuran gambar
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
+      // Atur ukuran canvas
+      canvas.width = size.width;
+      canvas.height = size.height;
       
-      if (!context) {
-        throw new Error('Failed to create canvas context');
-      }
+      // Gambar gambar ke canvas dengan ukuran yang diinginkan
+      context.drawImage(imageElement, 0, 0, size.width, size.height);
       
-      // Ubah ukuran gambar menjadi 640x480 (ukuran umum untuk deteksi wajah)
-      canvas.width = 640;
-      canvas.height = 480;
-      context.drawImage(imageElement, 0, 0, 640, 480);
-      
-      // Coba deteksi lagi dengan gambar yang diubah ukurannya
+      // Coba deteksi dengan gambar normal
       detections = await faceapi.detectSingleFace(canvas, ssdOptions)
         .withFaceLandmarks()
         .withFaceDescriptor();
+        
+      if (detections) {
+        console.log(`Deteksi berhasil dengan ukuran ${size.width}x${size.height}`);
+        break;
+      }
       
-      // Jika masih tidak ada deteksi, coba dengan ukuran yang lebih kecil
-      if (!detections) {
-        console.log('Trying with smaller resized image...');
+      // Jika tidak ada deteksi, coba dengan berbagai peningkatan kontras dan kecerahan
+      const contrastSettings = [
+        { contrast: 1.3, brightness: 10 },  // Sedikit peningkatan
+        { contrast: 1.5, brightness: 15 },  // Peningkatan sedang
+        { contrast: 1.7, brightness: 20 }   // Peningkatan tinggi
+      ];
+      
+      let detected = false;
+      
+      for (const setting of contrastSettings) {
+        const imageData = context.getImageData(0, 0, size.width, size.height);
+        const data = imageData.data;
         
-        // Ubah ukuran gambar menjadi 320x240 (ukuran lebih kecil)
-        canvas.width = 320;
-        canvas.height = 240;
-        context.drawImage(imageElement, 0, 0, 320, 240);
+        // Tingkatkan kontras dan kecerahan sesuai pengaturan
+        for (let i = 0; i < data.length; i += 4) {
+          // Meningkatkan kontras dan kecerahan untuk setiap piksel
+          data[i] = Math.min(255, Math.max(0, (data[i] - 128) * setting.contrast + 128 + setting.brightness));
+          data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * setting.contrast + 128 + setting.brightness));
+          data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * setting.contrast + 128 + setting.brightness));
+        }
         
-        // Coba deteksi lagi dengan gambar yang diubah ukurannya
+        context.putImageData(imageData, 0, 0);
+        
+        // Coba deteksi dengan gambar yang ditingkatkan kontrasnya
+        console.log(`Mencoba dengan kontras ${setting.contrast} dan kecerahan ${setting.brightness} pada ukuran ${size.width}x${size.height}...`);
         detections = await faceapi.detectSingleFace(canvas, ssdOptions)
           .withFaceLandmarks()
           .withFaceDescriptor();
+          
+        if (detections) {
+          console.log(`Deteksi berhasil dengan kontras ${setting.contrast} dan kecerahan ${setting.brightness} pada ukuran ${size.width}x${size.height}`);
+          detected = true;
+          break;
+        }
+      }
+      
+      if (detected) break;
+      
+      // Jika masih tidak ada deteksi, coba dengan gambar grayscale
+      const grayImageData = context.getImageData(0, 0, size.width, size.height);
+      const grayData = grayImageData.data;
+      
+      for (let i = 0; i < grayData.length; i += 4) {
+        // Konversi ke grayscale menggunakan formula standar
+        const gray = 0.299 * grayData[i] + 0.587 * grayData[i+1] + 0.114 * grayData[i+2];
+        grayData[i] = gray;
+        grayData[i+1] = gray;
+        grayData[i+2] = gray;
+      }
+      
+      context.putImageData(grayImageData, 0, 0);
+      
+      // Coba deteksi dengan gambar grayscale
+      console.log(`Mencoba dengan gambar grayscale pada ukuran ${size.width}x${size.height}...`);
+      detections = await faceapi.detectSingleFace(canvas, ssdOptions)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+        
+      if (detections) {
+        console.log(`Deteksi berhasil dengan gambar grayscale pada ukuran ${size.width}x${size.height}`);
+        break;
       }
     }
     
@@ -126,62 +185,84 @@ export const processImageLocally = async (imageFile: File): Promise<Float32Array
       throw new Error('File must be an image (JPEG, PNG, etc.)');
     }
     
-    // Validasi ukuran file (max 5MB)
-    if (imageFile.size > 5 * 1024 * 1024) {
-      throw new Error('Image is too large. Maximum size is 5MB');
+    // Validasi ukuran file (max 10MB - ditingkatkan dari 5MB)
+    if (imageFile.size > 10 * 1024 * 1024) {
+      throw new Error('File size exceeds 10MB limit');
     }
     
     // Buat URL objek dari file gambar
     const imageUrl = URL.createObjectURL(imageFile);
     
-    // Buat elemen gambar
-    const img = new Image();
-    img.crossOrigin = 'anonymous'; // Menghindari masalah CORS
-    
-    // Tunggu gambar dimuat dengan timeout
-    const imageLoaded = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Image loading timed out'));
-      }, 10000); // 10 detik timeout
-      
-      img.onload = () => {
-        clearTimeout(timeout);
+    try {
+      // Buat elemen gambar dan tunggu hingga dimuat
+      const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
         
-        // Validasi gambar yang dimuat
-        if (img.width === 0 || img.height === 0) {
-          reject(new Error('Image has invalid dimensions'));
-          return;
-        }
-        
-        // Jika gambar terlalu kecil, berikan pesan yang jelas
-        if (img.width < 100 || img.height < 100) {
-          reject(new Error('Image is too small. Minimum size is 100x100 pixels'));
-          return;
-        }
-        
-        resolve(img);
-      };
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Failed to load image'));
+        image.src = imageUrl;
+      });
       
-      img.onerror = () => {
-        clearTimeout(timeout);
-        reject(new Error('Failed to load image. The image might be corrupted or in an unsupported format.'));
-      };
+      console.log(`Image loaded with dimensions: ${img.width}x${img.height}`);
       
-      img.src = imageUrl;
-    });
-    
-    console.log(`Image loaded with dimensions: ${img.width}x${img.height}`);
-    
-    // Pra-pemrosesan gambar untuk meningkatkan deteksi wajah
-    const processedImg = await preprocessImage(img);
-    
-    // Ekstrak fitur wajah dari gambar yang telah diproses
-    const faceVector = await extractFaceFeatures(processedImg || img);
-    
-    // Bersihkan URL objek
-    URL.revokeObjectURL(imageUrl);
-    
-    return faceVector;
+      // Coba ekstrak fitur wajah dari gambar asli terlebih dahulu
+      try {
+        console.log('Mencoba ekstraksi fitur dari gambar asli...');
+        const descriptor = await extractFaceFeatures(img);
+        console.log('Ekstraksi fitur berhasil dari gambar asli');
+        return descriptor;
+      } catch (originalError) {
+        console.log('Ekstraksi dari gambar asli gagal, mencoba dengan preprocessing...');
+      }
+      
+      // Jika ekstraksi dari gambar asli gagal, coba dengan preprocessing
+      // Buat canvas untuk preprocessing
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      
+      if (!ctx) {
+        throw new Error('Failed to create canvas context');
+      }
+      
+      // Ubah ukuran gambar ke 640x480 untuk konsistensi
+      canvas.width = 640;
+      canvas.height = 480;
+      ctx.drawImage(img, 0, 0, 640, 480);
+      
+      // Tingkatkan kontras dan kecerahan
+      const imageData = ctx.getImageData(0, 0, 640, 480);
+      const data = imageData.data;
+      
+      const contrast = 1.3;  // Nilai kontras (1.0 adalah normal)
+      const brightness = 10;  // Nilai kecerahan (-255 hingga 255)
+      
+      for (let i = 0; i < data.length; i += 4) {
+        // Meningkatkan kontras dan kecerahan untuk setiap piksel
+        data[i] = Math.min(255, Math.max(0, (data[i] - 128) * contrast + 128 + brightness));
+        data[i+1] = Math.min(255, Math.max(0, (data[i+1] - 128) * contrast + 128 + brightness));
+        data[i+2] = Math.min(255, Math.max(0, (data[i+2] - 128) * contrast + 128 + brightness));
+      }
+      
+      ctx.putImageData(imageData, 0, 0);
+      
+      // Buat gambar baru dari canvas yang telah diproses
+      const processedImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = () => reject(new Error('Failed to load processed image'));
+        image.src = canvas.toDataURL('image/jpeg', 0.95);
+      });
+      
+      console.log('Mencoba ekstraksi fitur dari gambar yang diproses...');
+      const descriptor = await extractFaceFeatures(processedImg);
+      console.log('Ekstraksi fitur berhasil dari gambar yang diproses');
+      
+      return descriptor;
+    } finally {
+      // Bersihkan URL objek
+      URL.revokeObjectURL(imageUrl);
+    }
   } catch (error) {
     console.error('Error processing image locally:', error);
     throw error;
@@ -384,21 +465,48 @@ export const verifyFace = async (
     // 4. Konversi array ke Float32Array jika perlu
     const storedVector = new Float32Array(userData.biometricData.faceVector as number[]);
     
-    // 5. Hitung skor kemiripan menggunakan @vladmandic/face-api
-    // Menggunakan euclideanDistance untuk menghitung jarak antara dua vektor wajah
-    const distance = faceapi.euclideanDistance(capturedVector, storedVector);
+    // 5. Hitung skor kemiripan dengan algoritma yang ditingkatkan
+    // Menggunakan kombinasi euclideanDistance dan cosine similarity untuk hasil yang lebih baik
+    const euclideanDistance = faceapi.euclideanDistance(capturedVector, storedVector);
     
-    // 6. Konversi jarak ke skor kemiripan (jarak yang lebih kecil = kemiripan yang lebih tinggi)
-    // Gunakan threshold yang sedikit lebih rendah (0.55) untuk mengakomodasi perbedaan kamera
-    const score = Math.max(0, 1 - distance);
+    // Hitung cosine similarity (dot product dari vektor yang dinormalisasi)
+    // Ini memberikan pengukuran sudut antara dua vektor, yang sering kali lebih baik untuk pengenalan wajah
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
     
-    console.log(`Face verification score: ${score.toFixed(2)}`);
+    for (let i = 0; i < capturedVector.length; i++) {
+      dotProduct += capturedVector[i] * storedVector[i];
+      normA += capturedVector[i] * capturedVector[i];
+      normB += storedVector[i] * storedVector[i];
+    }
     
-    // 7. Kembalikan hasil verifikasi dengan threshold yang disesuaikan
-    // Threshold diturunkan sedikit untuk mengakomodasi perbedaan kamera
+    const cosineSimilarity = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+    
+    // 6. Kombinasikan kedua metrik untuk skor akhir yang lebih kuat
+    // Konversi euclidean distance ke similarity score (1 - distance)
+    const euclideanSimilarity = Math.max(0, 1 - euclideanDistance);
+    
+    // Berikan bobot lebih pada cosine similarity (70%) karena lebih handal untuk pengenalan wajah
+    const weightedScore = (euclideanSimilarity * 0.3) + (cosineSimilarity * 0.7);
+    
+    // Normalisasi skor ke rentang 0-1
+    const normalizedScore = Math.max(0, Math.min(1, weightedScore));
+    
+    console.log(`Face verification details:`);
+    console.log(`- Euclidean similarity: ${euclideanSimilarity.toFixed(3)}`);
+    console.log(`- Cosine similarity: ${cosineSimilarity.toFixed(3)}`);
+    console.log(`- Combined score: ${normalizedScore.toFixed(3)}`);
+    
+    // 7. Gunakan threshold yang lebih rendah (0.5) dengan algoritma yang lebih kuat
+    const threshold = 0.5;
+    const isMatch = normalizedScore > threshold;
+    
+    console.log(`Match result: ${isMatch ? 'MATCH' : 'NO MATCH'} (threshold: ${threshold})`);
+    
     return {
-      isMatch: score > 0.55, // Threshold kemiripan 55% (lebih toleran)
-      score
+      isMatch: isMatch,
+      score: normalizedScore
     };
   } catch (error) {
     console.error('Error verifying face:', error);
