@@ -1,10 +1,10 @@
-// Konfigurasi Cloudinary
-const CLOUD_NAME = 'dgotxtr3f';
-const API_KEY = '719462345218577';
+// Konfigurasi Cloudinary dari variabel lingkungan atau nilai default
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dgotxtr3f';
+const API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY || '719462345218577';
 // API Secret tidak digunakan di browser untuk keamanan
 
 // Nama upload preset untuk upload unsigned
-const UPLOAD_PRESET = 'fisioapp_unsigned';
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'fisioapp_unsigned';
 
 // Tipe untuk hasil upload
 export interface CloudinaryUploadResult {
