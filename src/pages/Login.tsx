@@ -49,12 +49,19 @@ const Login: React.FC = () => {
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
-      // Check user role from context after login
-      if (userData?.role === 'admin') {
-        navigate('/products'); // Redirect admin to products management page
-      } else {
-        navigate('/'); // Redirect other users to main dashboard
-      }
+      
+      // Delay navigation to allow userData to be updated
+      setTimeout(() => {
+        // Check user role from context after login
+        if (userData?.role === 'admin') {
+          navigate('/products'); // Redirect admin to products management page
+        } else if (userData?.role === 'therapist') {
+          navigate('/therapy-sessions'); // Redirect therapists to therapy sessions page
+        } else {
+          navigate('/'); // Redirect other users to main dashboard
+        }
+      }, 500); // Small delay to ensure userData is updated
+      
     } catch (error) {
       console.error('Login error:', error);
     } finally {

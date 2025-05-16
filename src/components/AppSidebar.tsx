@@ -26,6 +26,10 @@ import {
   ShoppingCart,
   DollarSign,
   Fingerprint,
+  ClipboardCheck,
+  ClipboardList,
+  Receipt,
+  BarChart,
 } from 'lucide-react';
 
 const AppSidebar: React.FC = () => {
@@ -41,6 +45,10 @@ const AppSidebar: React.FC = () => {
     { path: '/products', label: 'Produk', icon: Package },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
+    { path: '/therapy-sessions-management', label: 'Konfirmasi Terapi', icon: ClipboardCheck },
+    { path: '/therapy-payments', label: 'Pembayaran Terapi', icon: Receipt },
+    { path: '/therapist-salary', label: 'Gaji Terapis', icon: DollarSign },
+    { path: '/therapy-reports', label: 'Laporan Terapi', icon: BarChart },
     { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
     { path: '/keuangan', label: 'Keuangan', icon: DollarSign },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
@@ -51,6 +59,7 @@ const AppSidebar: React.FC = () => {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
+    { path: '/therapy-sessions', label: 'Catat Terapi', icon: ClipboardList },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
   ];
 

@@ -153,6 +153,43 @@ service cloud.firestore {
       }
     }
 
+    // TherapyPayments collection rules
+    match /therapyPayments/{paymentId} {
+      // Semua user yang login dapat melihat data pembayaran terapi
+      allow read: if isSignedIn();
+      // Hanya admin yang dapat membuat, mengupdate, atau menghapus data pembayaran
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // TherapySessions collection rules
+    match /therapySessions/{sessionId} {
+      // Semua user yang login dapat melihat data sesi terapi
+      allow read: if isSignedIn();
+      // Terapis dapat membuat sesi terapi
+      allow create: if isSignedIn() && (isTherapist() || isAdmin());
+      // Terapis yang membuat sesi atau admin dapat mengupdate sesi
+      allow update: if isSignedIn() && 
+        (resource.data.therapistId == request.auth.uid || isAdmin());
+      // Hanya admin yang dapat menghapus sesi terapi
+      allow delete: if isAdmin();
+    }
+    
+    // TherapistSalary collection rules
+    match /therapistSalary/{salaryId} {
+      // Semua user yang login dapat melihat data gaji terapis
+      allow read: if isSignedIn();
+      // Hanya admin yang dapat membuat, mengupdate, atau menghapus data gaji terapis
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+      
+      // Terapis hanya dapat melihat data gaji mereka sendiri
+      allow read: if isSignedIn() && isTherapist() && 
+        resource.data.therapistId == request.auth.uid;
+    }
+
     // Deny access to all other collections by default
     match /{document=**} {
       allow read, write: if false;

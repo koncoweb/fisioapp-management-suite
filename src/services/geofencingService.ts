@@ -57,7 +57,7 @@ export const calculateDistance = (
 export const createGeofenceBuffer = (
   center: { latitude: number; longitude: number },
   radius: number
-): GeoJSON.Feature<GeoJSON.Polygon> => {
+): GeoJSON.Feature<GeoJSON.Polygon | GeoJSON.MultiPolygon> => {
   const centerPoint = turf.point([center.longitude, center.latitude]);
   // Konversi radius dari meter ke kilometer untuk turf.buffer
   const radiusInKm = radius / 1000;

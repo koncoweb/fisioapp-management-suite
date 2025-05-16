@@ -108,8 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       console.error(error);
       let message = "Failed to log in";
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        message = "Invalid email or password";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        message = "Email atau password tidak valid";
       }
       toast({
         title: "Error",
