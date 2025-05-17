@@ -16,26 +16,47 @@ const ReceiptInfo: React.FC<ReceiptInfoProps> = ({
   patient 
 }) => {
   return (
-    <div className="text-xs">
+    <div className="text-xs print:text-sm">
       <div className="flex justify-between">
-        <span>No. Struk:</span>
-        <span>{receiptNo}</span>
+        <span>No. Struk</span>
+        <span className="font-medium">{receiptNo}</span>
       </div>
-      <div className="flex justify-between">
-        <span>Tanggal:</span>
+      <div className="flex justify-between mb-1">
+        <span>Tanggal</span>
         <span>{format(transactionDate, 'dd/MM/yyyy HH:mm')}</span>
       </div>
       
       {patient && (
         <>
-          <Separator className="my-1.5" />
-          <div className="mb-0.5 font-medium text-xs">Data Pasien:</div>
-          <div className="text-[10px] space-y-0.5 bg-secondary/20 p-1.5 rounded-md">
-            <div><span className="font-medium">Nama:</span> {patient.nama}</div>
-            <div><span className="font-medium">Alamat:</span> {patient.alamat}</div>
-            <div><span className="font-medium">Usia:</span> {patient.usia} tahun</div>
-            {patient.telepon && <div><span className="font-medium">Telepon:</span> {patient.telepon}</div>}
-            <div><span className="font-medium">Keluhan:</span> {patient.keluhan}</div>
+          <Separator className="my-1" />
+          <div className="mb-1 font-bold text-xs print:text-sm">DATA PASIEN</div>
+          <div className="text-[10px] print:text-xs space-y-0.5 bg-secondary/5 p-1 rounded-sm print:border print:border-gray-200">
+            <div className="flex justify-between">
+              <span className="font-medium">Nama</span>
+              <span>{patient.nama}</span>
+            </div>
+            {patient.alamat && (
+              <div className="flex justify-between">
+                <span className="font-medium">Alamat</span>
+                <span className="text-right">{patient.alamat}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="font-medium">Usia</span>
+              <span>{patient.usia} tahun</span>
+            </div>
+            {patient.telepon && (
+              <div className="flex justify-between">
+                <span className="font-medium">Telepon</span>
+                <span>{patient.telepon}</span>
+              </div>
+            )}
+            {patient.keluhan && (
+              <div className="flex justify-between">
+                <span className="font-medium">Keluhan</span>
+                <span className="text-right">{patient.keluhan}</span>
+              </div>
+            )}
           </div>
         </>
       )}

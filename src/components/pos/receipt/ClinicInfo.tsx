@@ -25,11 +25,11 @@ const ClinicInfo: React.FC = () => {
   }, []);
   
   return (
-    <div className="text-center text-xs text-muted-foreground">
-      <p className="font-medium">{appTitle}</p>
-      <p>{appDescription}</p>
-      <p>Jl. Kesehatan No. 123</p>
-      <p>Jakarta, Indonesia</p>
+    <div className="text-center text-xs print:text-sm text-black border-b pb-1 mb-1">
+      <p className="font-bold">{appTitle}</p>
+      <p className="font-medium text-[10px] print:text-xs">{appDescription}</p>
+      <p className="text-[10px] print:text-xs">Jl. Kesehatan No. 123</p>
+      <p className="text-[10px] print:text-xs">Jakarta, Indonesia</p>
     </div>
   );
 };

@@ -115,6 +115,44 @@
 
 /* Print styles for receipt */
 @media print {
+  @page {
+    /* Mendukung dua ukuran kertas receipt standar Indonesia */
+    size: 80mm auto !important; /* Default: 80mm, umum digunakan di restoran, toko retail, dll */
+    margin: 0 !important;
+    padding: 0 !important;
+    scale: 1 !important;
+  }
+  
+  /* Class khusus untuk printer 58mm */
+  .receipt-58mm {
+    width: 58mm !important;
+    max-width: 58mm !important;
+  }
+  
+  /* Memastikan ukuran kertas 80mm */
+  #receipt-content:not(.receipt-58mm) {
+    width: 80mm !important;
+    max-width: 80mm !important;
+  }
+  
+  /* Memastikan teks rata tengah */
+  #receipt-content {
+    text-align: center !important;
+  }
+  
+  /* Memastikan header rata tengah */
+  .DialogHeader, .DialogTitle {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  
+  html, body {
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+  
   body * {
     visibility: hidden;
   }
@@ -124,26 +162,91 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    overflow: visible;
   }
   
   .DialogContent * {
     visibility: visible;
   }
   
-  .print\\:hidden {
+  #receipt-content {
+    width: 80mm;
+    padding: 0mm 2mm;
+    margin: 0;
+    page-break-after: always;
+    page-break-inside: avoid;
+    max-height: fit-content;
+  }
+  
+  /* Mengurangi spacing untuk receipt */
+  #receipt-content .space-y-1,
+  #receipt-content .space-y-2,
+  #receipt-content .space-y-3 {
+    margin-top: 1mm !important;
+    margin-bottom: 1mm !important;
+  }
+  
+  #receipt-content .my-1,
+  #receipt-content .my-2,
+  #receipt-content .mt-1,
+  #receipt-content .mt-2,
+  #receipt-content .mb-1,
+  #receipt-content .mb-2 {
+    margin-top: 1mm !important;
+    margin-bottom: 1mm !important;
+  }
+  
+  #receipt-content .py-1,
+  #receipt-content .py-2,
+  #receipt-content .pt-1,
+  #receipt-content .pt-2,
+  #receipt-content .pb-1,
+  #receipt-content .pb-2 {
+    padding-top: 0.5mm !important;
+    padding-bottom: 0.5mm !important;
+  }
+  
+  /* Memperjelas teks */
+  p, span, div {
+    color: black !important;
+  }
+  
+  /* Memperbesar font untuk receipt */
+  .text-xs, .text-sm {
+    font-size: 11pt !important;
+  }
+  
+  .text-base {
+    font-size: 13pt !important;
+  }
+  
+  .text-lg, .text-xl {
+    font-size: 15pt !important;
+  }
+  
+  /* Memperjelas batas */
+  .border, .border-t, .border-b {
+    border-color: #000 !important;
+    border-width: 1px !important;
+  }
+  
+  .print\:hidden {
     display: none !important;
   }
   
-  .print\\:shadow-none {
+  .print\:shadow-none {
     box-shadow: none !important;
   }
   
-  .print\\:border-none {
+  .print\:border-none {
     border: none !important;
   }
   
-  .print\\:p-0 {
+  .print\:p-0 {
     padding: 0 !important;
   }
 }
