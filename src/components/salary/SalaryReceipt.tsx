@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Printer, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import AppConfigHeader from '@/components/receipt/AppConfigHeader';
 
 interface SalaryReceiptProps {
   salary: TherapistSalary;
@@ -132,12 +133,8 @@ const SalaryReceipt: React.FC<SalaryReceiptProps> = ({ salary, onClose }) => {
         className="bg-white p-6 border rounded-md shadow-sm"
         style={{ color: 'black' }}
       >
+        <AppConfigHeader type="salary" />
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-black">Fisioapp Clinic</h2>
-          <p className="text-base text-black">Jl. Contoh No. 123, Jakarta</p>
-          <p className="text-base text-black">Telp: (021) 1234-5678</p>
-          <div className="border-t border-dashed my-4 border-black"></div>
-          <h3 className="font-bold text-xl text-black">SLIP GAJI TERAPIS</h3>
           <p className="text-base text-black">Periode: {formatMonth(salary.periodMonth)} {salary.periodYear}</p>
         </div>
         

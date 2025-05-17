@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { Printer, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import AppConfigHeader from '@/components/receipt/AppConfigHeader';
 
 interface PaymentReceiptProps {
   payment: TherapyPayment;
@@ -101,12 +102,8 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => 
         className="bg-white p-4 border rounded-md shadow-sm"
         style={{ width: '80mm', margin: '0 auto', color: 'black' }}
       >
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-bold text-black">Fisioapp Clinic</h2>
-          <p className="text-sm text-black">Jl. Contoh No. 123, Jakarta</p>
-          <p className="text-sm text-black">Telp: (021) 1234-5678</p>
-          <div className="border-t border-dashed my-2 border-black"></div>
-          <h3 className="font-bold text-lg text-black">BUKTI PEMBAYARAN</h3>
+        <AppConfigHeader type="payment" />
+        <div className="text-center">
           <p className="text-sm text-black font-medium">No: {payment.receiptNumber || payment.id.substring(0, 8)}</p>
           <p className="text-sm text-black">Tanggal: {format(new Date(payment.paymentDate || payment.createdAt), 'dd/MM/yyyy HH:mm')}</p>
         </div>

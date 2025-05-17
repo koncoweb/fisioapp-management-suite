@@ -67,7 +67,7 @@ const AppSidebar: React.FC = () => {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/employees', label: 'Karyawan', icon: Users },
     { path: '/products', label: 'Produk', icon: Package },
-    { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    // { path: '/bookings', label: 'Jadwal', icon: Calendar }, // Disembunyikan sesuai permintaan
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/therapy-sessions-management', label: 'Konfirmasi Terapi', icon: ClipboardCheck },
     { path: '/therapy-payments', label: 'Pembayaran Terapi', icon: Receipt },
@@ -75,17 +75,17 @@ const AppSidebar: React.FC = () => {
     { path: '/therapy-reports', label: 'Laporan Terapi', icon: BarChart },
     { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
     { path: '/keuangan', label: 'Keuangan', icon: DollarSign },
-    { path: '/messages', label: 'Pesan', icon: MessageSquare },
-    { path: '/notifications', label: 'Notifikasi', icon: Bell },
+    // { path: '/messages', label: 'Pesan', icon: MessageSquare }, // Disembunyikan sesuai permintaan
+    // { path: '/notifications', label: 'Notifikasi', icon: Bell }, // Disembunyikan sesuai permintaan
     { path: '/settings', label: 'Pengaturan', icon: Settings },
   ];
 
   const therapistMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/bookings', label: 'Jadwal', icon: Calendar },
+    // { path: '/bookings', label: 'Jadwal', icon: Calendar }, // Disembunyikan sesuai permintaan
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/therapy-sessions', label: 'Catat Terapi', icon: ClipboardList },
-    { path: '/messages', label: 'Pesan', icon: MessageSquare },
+    // { path: '/messages', label: 'Pesan', icon: MessageSquare }, // Disembunyikan sesuai permintaan
   ];
 
   const menuItems = isAdmin ? adminMenuItems : therapistMenuItems;
