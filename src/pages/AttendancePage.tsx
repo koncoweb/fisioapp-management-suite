@@ -3,12 +3,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Camera, Clock, MapPin, Check, X, RefreshCw } from 'lucide-react';
+import { Camera, Clock, MapPin, Check, X, RefreshCw, Menu } from 'lucide-react';
 import { checkAttendance, getTodayAttendance } from '@/services/attendanceService';
 import { getCurrentLocation } from '@/services/geofencingService';
 import { useToast } from '@/hooks/use-toast';
 import { Attendance } from '@/types/biometric';
 import { format } from 'date-fns';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 const AttendancePage = () => {
   const { currentUser, userData } = useAuth();
@@ -204,17 +209,20 @@ const AttendancePage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8 flex items-center justify-center h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="container mx-auto px-4 py-6 sm:py-8 flex items-center justify-center h-[50vh] sm:h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Absensi</h1>
-        <div className="flex space-x-2">
+    <div className="container mx-auto px-4 py-4 sm:py-6 max-w-screen-lg">
+      {/* Header dengan menu mobile */}
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold">Absensi</h1>
+        
+        {/* Menu desktop */}
+        <div className="hidden sm:flex space-x-2">
           <Button variant="outline" asChild>
             <Link to="/attendance/rekap">Lihat Rekap Absensi</Link>
           </Button>
@@ -227,20 +235,51 @@ const AttendancePage = () => {
             </Button>
           )}
         </div>
+        
+        {/* Menu mobile */}
+        <div className="sm:hidden">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[240px] sm:w-[385px]">
+              <div className="flex flex-col space-y-3 mt-6">
+                <Button variant="outline" asChild className="justify-start">
+                  <Link to="/attendance/rekap">Lihat Rekap Absensi</Link>
+                </Button>
+                {userData?.role === 'admin' && (
+                  <Button 
+                    onClick={() => navigate('/attendance/biometric')} 
+                    variant="outline"
+                    className="justify-start"
+                  >
+                    Kelola Data Biometrik
+                  </Button>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      {/* Konten utama - Responsif untuk mobile dan desktop */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card className="w-full">
-          <CardHeader>
+          <CardHeader className="px-4 py-4 sm:px-6 sm:py-5">
             <CardTitle>Absensi</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex justify-center space-x-4">
+          <CardContent className="space-y-4 sm:space-y-6 px-4 pb-4 sm:px-6 sm:pb-6">
+            <div className="flex justify-center space-x-3 sm:space-x-4">
               <Button
                 variant={attendanceType === 'check-in' ? 'default' : 'outline'}
                 onClick={() => setAttendanceType('check-in')}
                 disabled={
                   todayAttendance.some(a => a.type === 'check-in' && a.status === 'valid')
                 }
+                className="flex-1 sm:flex-none h-10 px-3 sm:h-10 sm:px-4"
+                size="sm"
               >
                 Check In
               </Button>
@@ -250,13 +289,15 @@ const AttendancePage = () => {
                 disabled={
                   !todayAttendance.some(a => a.type === 'check-in')
                 }
+                className="flex-1 sm:flex-none h-10 px-3 sm:h-10 sm:px-4"
+                size="sm"
               >
                 Check Out
               </Button>
             </div>
 
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative w-full aspect-video bg-muted rounded-lg overflow-hidden">
+            <div className="flex flex-col items-center space-y-3 sm:space-y-4">
+              <div className="relative w-full aspect-[4/3] sm:aspect-video bg-muted rounded-lg overflow-hidden">
                 {isCameraActive ? (
                   <>
                     <video
@@ -272,16 +313,17 @@ const AttendancePage = () => {
                         disabled={!userLocation || processingAttendance}
                         className={`${
                           processingAttendance ? 'bg-gray-500' : 'bg-primary'
-                        } text-white px-4 py-2 rounded-full shadow-lg`}
+                        } text-white px-3 py-2 sm:px-4 rounded-full shadow-lg text-sm sm:text-base h-10`}
+                        size="sm"
                       >
                         {processingAttendance ? (
                           <>
-                            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                            <RefreshCw className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
                             Memproses...
                           </>
                         ) : (
                           <>
-                            <Camera className="mr-2 h-4 w-4" />
+                            <Camera className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             Ambil Foto
                           </>
                         )}
@@ -302,9 +344,9 @@ const AttendancePage = () => {
               </div>
               
               {isCameraActive && (
-                <div className="px-4 py-2 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-sm w-full">
+                <div className="px-3 py-2 sm:px-4 bg-amber-50 border-l-4 border-amber-500 text-amber-700 text-xs sm:text-sm w-full rounded-r-sm">
                   <p className="font-medium mb-1">Tips untuk foto absensi yang baik:</p>
-                  <ul className="list-disc pl-5 space-y-1">
+                  <ul className="list-disc pl-4 sm:pl-5 space-y-0.5 sm:space-y-1">
                     <li>Pastikan wajah terlihat jelas dan pencahayaan cukup</li>
                     <li>Lepaskan masker atau aksesoris yang menutupi wajah</li>
                     <li>Jaga posisi kepala tegak dan ekspresi netral</li>
@@ -315,45 +357,45 @@ const AttendancePage = () => {
               <canvas ref={canvasRef} className="hidden" />
 
               {userLocation ? (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <MapPin className="mr-2 h-4 w-4" />
+                <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                  <MapPin className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span>Lokasi terdeteksi</span>
                 </div>
               ) : (
-                <div className="flex items-center text-sm text-destructive">
-                  <MapPin className="mr-2 h-4 w-4" />
+                <div className="flex items-center text-xs sm:text-sm text-destructive">
+                  <MapPin className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   <span>Lokasi tidak tersedia</span>
                 </div>
               )}
             </div>
 
             {attendanceResult && (
-              <div className={`p-4 rounded-lg ${
+              <div className={`p-3 sm:p-4 rounded-lg ${
                 attendanceResult.status === 'valid' 
                   ? 'bg-green-50 text-green-700 border border-green-200' 
                   : 'bg-amber-50 text-amber-700 border border-amber-200'
               }`}>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
                   {attendanceResult.status === 'valid' ? (
-                    <Check className="h-5 w-5" />
+                    <Check className="h-4 w-4 sm:h-5 sm:w-5" />
                   ) : (
-                    <X className="h-5 w-5" />
+                    <X className="h-4 w-4 sm:h-5 sm:w-5" />
                   )}
-                  <span className="font-medium">
+                  <span className="font-medium text-sm sm:text-base">
                     {attendanceResult.status === 'valid' 
                       ? 'Absensi Tercatat' 
                       : 'Menunggu Verifikasi'}
                   </span>
                 </div>
-                <div className="mt-2 text-sm">
+                <div className="mt-1.5 sm:mt-2 text-xs sm:text-sm">
                   <div className="flex items-center">
-                    <Clock className="mr-2 h-4 w-4" />
+                    <Clock className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>
                       {new Date(attendanceResult.timestamp).toLocaleString()}
                     </span>
                   </div>
                   {attendanceResult.notes && (
-                    <p className="mt-1">{attendanceResult.notes}</p>
+                    <p className="mt-0.5 sm:mt-1">{attendanceResult.notes}</p>
                   )}
                 </div>
               </div>
@@ -362,26 +404,26 @@ const AttendancePage = () => {
         </Card>
 
         <Card className="w-full">
-          <CardHeader>
+          <CardHeader className="px-4 py-4 sm:px-6 sm:py-5">
             <CardTitle>Absensi Hari Ini</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4 sm:px-6 sm:pb-6">
             {todayAttendance.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {todayAttendance.map((record, index) => (
                   <div 
                     key={index} 
-                    className={`p-3 rounded-lg border ${
+                    className={`p-2.5 sm:p-3 rounded-lg border ${
                       record.status === 'valid' 
                         ? 'border-green-200 bg-green-50' 
                         : 'border-amber-200 bg-amber-50'
                     }`}
                   >
-                    <div className="flex justify-between">
-                      <div className="font-medium">
+                    <div className="flex justify-between items-center">
+                      <div className="font-medium text-sm sm:text-base">
                         {record.type === 'check-in' ? 'Check In' : 'Check Out'}
                       </div>
-                      <div className={`text-xs px-2 py-1 rounded-full ${
+                      <div className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full ${
                         record.status === 'valid' 
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-amber-100 text-amber-800'
@@ -389,11 +431,11 @@ const AttendancePage = () => {
                         {record.status === 'valid' ? 'Valid' : 'Menunggu'}
                       </div>
                     </div>
-                    <div className="text-sm mt-1">
+                    <div className="text-xs sm:text-sm mt-0.5 sm:mt-1">
                       {format(new Date(record.timestamp), 'HH:mm:ss')}
                     </div>
                     {record.notes && (
-                      <div className="text-xs mt-1 text-muted-foreground">
+                      <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 text-muted-foreground">
                         {record.notes}
                       </div>
                     )}
@@ -401,7 +443,7 @@ const AttendancePage = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 text-muted-foreground">
+              <div className="text-center py-4 sm:py-6 text-sm text-muted-foreground">
                 Belum ada catatan absensi hari ini
               </div>
             )}

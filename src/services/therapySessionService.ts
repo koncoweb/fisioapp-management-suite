@@ -69,11 +69,14 @@ export const saveTherapySession = async (
     }
     
     // Create the therapy session data object
+    // Gunakan email sebagai alternatif jika nama terapis tidak tersedia
+    const therapistName = therapist.name || therapist.email || 'Terapis'; // Fallback ke email atau 'Terapis' jika keduanya tidak ada
+    
     const sessionData: TherapySessionData = {
       patientId: patient.id,
       patientName: patient.nama,
       therapistId: therapist.id,
-      therapistName: therapist.name,
+      therapistName: therapistName,
       serviceId,
       serviceName,
       date: formattedDate,

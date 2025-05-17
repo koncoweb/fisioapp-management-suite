@@ -40,7 +40,7 @@ const TherapistSelector: React.FC<TherapistSelectorProps> = ({
         <SelectContent>
           {therapists.map((therapist) => (
             <SelectItem key={therapist.id} value={therapist.id} className="text-xs">
-              {therapist.name}
+              {therapist.name || therapist.email || 'Terapis'}
             </SelectItem>
           ))}
         </SelectContent>

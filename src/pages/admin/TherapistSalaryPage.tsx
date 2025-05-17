@@ -381,7 +381,7 @@ const TherapistSalaryPage: React.FC = () => {
                   {therapists.length > 0 ? (
                     therapists.map((therapist) => (
                       <SelectItem key={therapist.id} value={therapist.id}>
-                        {therapist.name || 'Nama tidak tersedia'}
+                        {therapist.name || therapist.email || 'Nama tidak tersedia'}
                       </SelectItem>
                     ))
                   ) : (
