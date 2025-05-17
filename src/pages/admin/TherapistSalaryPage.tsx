@@ -152,7 +152,7 @@ const TherapistSalaryPage: React.FC = () => {
         const data = doc.data();
         therapistsData.push({ 
           id: doc.id, 
-          name: data.name || 'Nama tidak tersedia',
+          name: data.name || data.email || data.namaLengkap || 'Nama tidak tersedia',
           email: data.email || '',
           role: data.role || 'therapist',
           ...data 
