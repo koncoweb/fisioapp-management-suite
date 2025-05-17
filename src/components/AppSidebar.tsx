@@ -1,7 +1,9 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import {
   Sidebar,
   SidebarContent,
@@ -36,6 +38,27 @@ const AppSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { userData, signOut } = useAuth();
+  const [appTitle, setAppTitle] = useState('Fisioapp');
+  const [appDescription, setAppDescription] = useState('Klinik Fisioterapi');
+  const [logoUrl, setLogoUrl] = useState('');
+  
+  useEffect(() => {
+    const fetchAppConfig = async () => {
+      try {
+        const configDoc = await getDoc(doc(db, 'appConfig', 'general'));
+        if (configDoc.exists()) {
+          const data = configDoc.data();
+          setAppTitle(data.title || 'Fisioapp');
+          setAppDescription(data.description || 'Klinik Fisioterapi');
+          setLogoUrl(data.logoUrl || '');
+        }
+      } catch (error) {
+        console.error('Error fetching app config:', error);
+      }
+    };
+
+    fetchAppConfig();
+  }, []);
   
   const isAdmin = userData?.role === 'admin';
 
@@ -78,8 +101,16 @@ const AppSidebar: React.FC = () => {
     <Sidebar>
       <SidebarHeader className="py-4">
         <div className="flex flex-col items-center justify-center">
-          <h1 className="text-2xl font-bold text-primary">Fisioapp</h1>
-          <p className="text-xs text-muted-foreground">Klinik Fisioterapi</p>
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt={appTitle} 
+              className="h-12 w-auto mb-2" 
+            />
+          ) : (
+            <h1 className="text-2xl font-bold text-primary">{appTitle}</h1>
+          )}
+          <p className="text-xs text-muted-foreground">{appDescription}</p>
         </div>
       </SidebarHeader>
       

@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Dokumentasi Fitur Pengelolaan Terapi dan Gaji Terapis
 
 ## Daftar Isi
@@ -161,52 +165,3 @@ interface TherapyPayment {
   paymentMethod: string;
   paymentType: 'direct' | 'salary';
   status: 'pending' | 'paid' | 'cancelled';
-  date: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt?: string;
-  createdBy: {
-    userId: string;
-    name: string;
-  };
-}
-```
-
-### Gaji Terapis
-```typescript
-interface TherapistSalary {
-  id: string;
-  therapistId: string;
-  therapistName: string;
-  periodMonth: number; // 1-12 untuk bulan
-  periodYear: number; // tahun, misal 2025
-  therapyPayments: TherapyPaymentSalary[];
-  bonuses?: SalaryComponent[];
-  allowances?: SalaryComponent[];
-  deductions?: SalaryComponent[];
-  taxes?: SalaryComponent[];
-  cashAdvances?: SalaryComponent[];
-  totalAmount: number; // Total gaji setelah semua perhitungan
-  status: 'pending' | 'paid' | 'cancelled';
-  paidDate?: string;
-  createdAt: string;
-  updatedAt?: string;
-  notes?: string;
-}
-
-interface SalaryComponent {
-  amount: number;
-  description: string;
-  date: string;
-}
-
-interface TherapyPaymentSalary {
-  paymentId: string;
-  therapySessionId: string;
-  patientName: string;
-  serviceName: string;
-  amount: number;
-  date: string;
-  notes?: string;
-}
-```

@@ -1,8 +1,10 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { useAuth } from '@/contexts/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/ThemeToggle';
 import {
@@ -18,6 +20,23 @@ import { User } from 'lucide-react';
 const Header: React.FC = () => {
   const location = useLocation();
   const { userData, signOut } = useAuth();
+  const [appTitle, setAppTitle] = useState('Fisioapp');
+  
+  useEffect(() => {
+    const fetchAppConfig = async () => {
+      try {
+        const configDoc = await getDoc(doc(db, 'appConfig', 'general'));
+        if (configDoc.exists()) {
+          const data = configDoc.data();
+          setAppTitle(data.title || 'Fisioapp');
+        }
+      } catch (error) {
+        console.error('Error fetching app config:', error);
+      }
+    };
+
+    fetchAppConfig();
+  }, []);
 
   // Determine the page title based on the current route
   const getPageTitle = () => {
@@ -38,7 +57,7 @@ const Header: React.FC = () => {
     if (path.startsWith('/bookings/')) return 'Detail Jadwal';
     
     // Default title
-    return 'Fisioapp';
+    return appTitle;
   };
 
   return (
