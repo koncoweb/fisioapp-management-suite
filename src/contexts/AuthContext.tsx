@@ -73,6 +73,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<UserData, 'uid'>;
+            console.log('User data from Firestore:', userData);
+            console.log('User role from Firestore:', userData.role);
             setUserData({
               uid: user.uid,
               ...userData

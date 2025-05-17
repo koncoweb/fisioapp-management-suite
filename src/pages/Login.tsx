@@ -1,7 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,6 +38,27 @@ const Login: React.FC = () => {
   const { login, userData } = useAuth();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appTitle, setAppTitle] = useState('Fisioapp');
+  const [appDescription, setAppDescription] = useState('Klinik Fisioterapi');
+  const [logoUrl, setLogoUrl] = useState('');
+
+  useEffect(() => {
+    const fetchAppConfig = async () => {
+      try {
+        const configDoc = await getDoc(doc(db, 'appConfig', 'general'));
+        if (configDoc.exists()) {
+          const data = configDoc.data();
+          setAppTitle(data.title || 'Fisioapp');
+          setAppDescription(data.description || 'Klinik Fisioterapi');
+          setLogoUrl(data.logoUrl || '');
+        }
+      } catch (error) {
+        console.error('Error fetching app config:', error);
+      }
+    };
+
+    fetchAppConfig();
+  }, []);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -74,8 +97,13 @@ const Login: React.FC = () => {
       <div className="w-full max-w-md">
         <Card className="shadow-lg">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-primary">Fisioapp</CardTitle>
-            <CardDescription>Login to access your account</CardDescription>
+            {logoUrl ? (
+              <div className="flex justify-center mb-4">
+                <img src={logoUrl} alt="Logo" className="h-16 w-auto" />
+              </div>
+            ) : null}
+            <CardTitle className="text-2xl font-bold text-primary">{appTitle}</CardTitle>
+            <CardDescription>{appDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>

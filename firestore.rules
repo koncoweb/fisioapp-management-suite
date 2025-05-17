@@ -33,13 +33,19 @@ service cloud.firestore {
 
     // Users collection rules
     match /users/{userId} {
-      // Allow read of user profiles by authenticated users
+      // Allow read of user profiles by any authenticated user
       allow read: if isSignedIn();
       // Modified: Allow creation during registration when auth ID matches the document ID
       allow create: if isSignedIn() && request.auth.uid == userId;
-      // Allow updates only by the owner or admin
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+      // Allow updates by the owner
+      allow update: if isOwner(userId) || 
+        (isSignedIn() && 
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      // Allow deletion by admin
+      allow delete: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Patients collection rules - Added for patient management
@@ -127,12 +133,18 @@ service cloud.firestore {
     
     // App Configuration collection rules
     match /appConfig/{configId} {
-      // Allow all users to read app configuration
+      // Allow all users to read app configuration without checking role
       allow read: if isSignedIn();
       // Only admins can create, update, or delete app configuration
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow create: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow update: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Deny access to all other collections by default
