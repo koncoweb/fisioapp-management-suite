@@ -61,9 +61,7 @@ const AppSidebar: React.FC = () => {
     fetchAppConfig();
   }, []);
   
-  console.log('User Data in AppSidebar:', userData);
   const isAdmin = userData?.role === 'admin';
-  console.log('Is Admin:', isAdmin);
 
   const adminMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
