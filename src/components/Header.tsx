@@ -61,10 +61,10 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="border-b border-border sticky top-0 z-10 bg-background px-4 py-3 flex items-center justify-between">
+    <header className="supabase-header px-4 py-2 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <SidebarTrigger />
-        <h1 className="text-xl font-semibold text-foreground">{getPageTitle()}</h1>
+        <h1 className="page-title text-foreground">{getPageTitle()}</h1>
       </div>
       
       <div className="flex items-center space-x-2">

@@ -38,34 +38,35 @@
   }
  
   .dark {
-    --background: 0 0% 7%;
+    /* Supabase-like dark theme */
+    --background: 225 6% 13%; /* #1f2937 - Supabase-like background */
     --foreground: 210 40% 98%;
  
-    --muted: 0 0% 15%;
+    --muted: 220 8% 20%; /* Slightly lighter than background */
     --muted-foreground: 215 20.2% 65.1%;
  
-    --popover: 0 0% 9%;
+    --popover: 224 6% 16%; /* #1a202c - Slightly darker than background */
     --popover-foreground: 210 40% 98%;
  
-    --card: 0 0% 9%;
+    --card: 224 6% 16%; /* #1a202c - Same as popover */
     --card-foreground: 210 40% 98%;
  
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 220 8% 23%; /* Slightly lighter border */
+    --input: 220 8% 23%;
  
-    --primary: 217.4 91.2% 59.8%;
+    --primary: 204 94% 48%; /* #3ecf8e - Supabase green */
     --primary-foreground: 0 0% 9%;
  
-    --secondary: 0 0% 12%;
+    --secondary: 226 6% 18%; /* #2d3748 - Slightly lighter than background */
     --secondary-foreground: 210 40% 98%;
  
-    --accent: 0 0% 14%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 204 94% 48%; /* Same as primary but used for accents */
+    --accent-foreground: 0 0% 9%;
  
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
  
-    --ring: 0 0% 20%;
+    --ring: 204 94% 48%; /* Same as primary */
   }
 }
  
@@ -77,11 +78,39 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+  
+  /* Compact heading styles */
+  h1.page-title {
+    @apply text-xl font-medium tracking-tight leading-none;
+  }
+  
+  h2.section-title {
+    @apply text-base font-medium tracking-tight leading-tight;
+  }
+  
+  .card-title {
+    @apply text-base font-medium tracking-tight;
+  }
 }
 
 /* Glass card styling */
 .glass-card {
   @apply bg-white/90 dark:bg-black/60 backdrop-blur-md border-white/20 dark:border-white/10;
+}
+
+/* Supabase-like header styling */
+.supabase-header {
+  @apply bg-secondary border-b border-border sticky top-0 z-10;
+}
+
+/* Compact layout styles */
+.compact-layout {
+  @apply space-y-3;
+}
+
+/* Compact card styles */
+.compact-card {
+  @apply rounded-md shadow-sm border border-border;
 }
 
 /* Print styles for receipt */

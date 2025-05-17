@@ -32,6 +32,7 @@ import {
   ClipboardList,
   Receipt,
   BarChart,
+  Settings,
 } from 'lucide-react';
 
 const AppSidebar: React.FC = () => {
@@ -76,6 +77,7 @@ const AppSidebar: React.FC = () => {
     { path: '/keuangan', label: 'Keuangan', icon: DollarSign },
     { path: '/messages', label: 'Pesan', icon: MessageSquare },
     { path: '/notifications', label: 'Notifikasi', icon: Bell },
+    { path: '/settings', label: 'Pengaturan', icon: Settings },
   ];
 
   const therapistMenuItems = [

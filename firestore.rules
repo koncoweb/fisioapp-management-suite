@@ -124,6 +124,16 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
+    
+    // App Configuration collection rules
+    match /appConfig/{configId} {
+      // Allow all users to read app configuration
+      allow read: if isSignedIn();
+      // Only admins can create, update, or delete app configuration
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
 
     // Deny access to all other collections by default
     match /{document=**} {
