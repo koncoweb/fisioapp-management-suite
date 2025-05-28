@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { TherapySession } from '@/types/booking';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface TherapySessionsTableProps {
   sessions: TherapySession[] | undefined;
@@ -22,6 +23,8 @@ const TherapySessionsTable: React.FC<TherapySessionsTableProps> = ({
   isLoading,
   onUpdateStatus
 }) => {
+  const { userData } = useAuth();
+  const isAdmin = userData?.role === 'admin';
   if (isLoading) {
     return <div className="text-center py-8">Loading sessions...</div>;
   }
@@ -70,7 +73,7 @@ const TherapySessionsTable: React.FC<TherapySessionsTableProps> = ({
                   ) : null}
                 </TableCell>
                 <TableCell>
-                  {session.status !== 'cancelled' && session.status !== 'completed' && (
+                  {isAdmin && session.status !== 'cancelled' && session.status !== 'completed' && (
                     <div className="space-x-2">
                       {session.status !== 'confirmed' && (
                         <Button 
@@ -91,6 +94,9 @@ const TherapySessionsTable: React.FC<TherapySessionsTableProps> = ({
                         Cancel
                       </Button>
                     </div>
+                  )}
+                  {!isAdmin && (
+                    <span className="text-sm text-gray-500">View only</span>
                   )}
                 </TableCell>
               </TableRow>
