@@ -171,13 +171,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     try {
+      // Clear all caches before signing out
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(
+          cacheNames.map(cacheName => caches.delete(cacheName))
+        );
+      }
+      
+      // Clear all local storage and session storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Clear all indexedDB databases
+      if (window.indexedDB) {
+        const databases = await window.indexedDB.databases();
+        databases.forEach(db => {
+          if (db.name) {
+            window.indexedDB.deleteDatabase(db.name);
+          }
+        });
+      }
+      
+      // Sign out from Firebase
       await firebaseSignOut(auth);
+      
+      // Force reload to clear any remaining state
+      window.location.href = '/login';
+      
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
     } catch (error) {
-      console.error(error);
+      console.error('Logout error:', error);
       toast({
         title: "Error",
         description: "Failed to log out",

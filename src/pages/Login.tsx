@@ -73,20 +73,35 @@ const Login: React.FC = () => {
     try {
       await login(data.email, data.password);
       
-      // Delay navigation to allow userData to be updated
+      // Get the redirect URL from session storage if it exists
+      const redirectPath = sessionStorage.getItem('redirectAfterLogin') || '/';
+      
+      // Clear the redirect URL from session storage
+      if (sessionStorage.getItem('redirectAfterLogin')) {
+        sessionStorage.removeItem('redirectAfterLogin');
+      }
+      
+      // Use a small delay to ensure userData is updated
       setTimeout(() => {
-        // Check user role from context after login
-        if (userData?.role === 'admin') {
-          navigate('/products'); // Redirect admin to products management page
-        } else if (userData?.role === 'therapist') {
-          navigate('/therapy-sessions'); // Redirect therapists to therapy sessions page
+        // Navigate to the intended URL or default based on role
+        if (redirectPath && redirectPath !== '/login') {
+          navigate(redirectPath, { replace: true });
         } else {
-          navigate('/'); // Redirect other users to main dashboard
+          // Default redirects based on role
+          if (userData?.role === 'admin') {
+            navigate('/dashboard', { replace: true });
+          } else if (userData?.role === 'therapist') {
+            navigate('/therapy-sessions', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
         }
-      }, 500); // Small delay to ensure userData is updated
+      }, 100);
       
     } catch (error) {
       console.error('Login error:', error);
+      // Clear any cached credentials on error
+      sessionStorage.removeItem('redirectAfterLogin');
     } finally {
       setIsSubmitting(false);
     }
