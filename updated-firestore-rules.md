@@ -178,18 +178,13 @@ service cloud.firestore {
 
     // App Configuration collection rules
     match /appConfig/{configId} {
-      // Allow all users to read app configuration without checking role
-      allow read: if isSignedIn();
+      // Allow ALL users to read app configuration, even if not signed in
+      // This ensures logo and app settings are always accessible
+      allow read: if true;
       // Only admins can create, update, or delete app configuration
-      allow create: if isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      allow update: if isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-      allow delete: if isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     // Deny access to all other collections by default
