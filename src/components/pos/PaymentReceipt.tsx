@@ -41,8 +41,7 @@ interface PaymentReceiptProps {
   patient?: Patient | null;
   paymentAmount?: number;
   changeAmount?: number;
-  discount?: number;
-  tax?: number;
+  loyaltyPoints?: number;
 }
 
 const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
@@ -53,8 +52,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   patient,
   paymentAmount = 0,
   changeAmount = 0,
-  discount = 0,
-  tax = 0
+  loyaltyPoints = 0
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -62,12 +60,8 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   const today = new Date();
   const receiptNo = `INV-${format(today, 'yyyyMMdd')}-${Math.floor(Math.random() * 1000)}`;
   
-  // Calculate tax amount
-  const subtotalAfterDiscount = total - discount;
-  const taxAmount = subtotalAfterDiscount * (tax / 100);
-  
-  // Calculate final total after discount and tax
-  const finalTotal = subtotalAfterDiscount + taxAmount;
+  // Final total sama dengan total karena tidak ada diskon dan pajak
+  const finalTotal = total;
   
   // Fungsi untuk mencetak receipt
   const handlePrintReceipt = () => {
@@ -301,9 +295,6 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
         }),
         total: typeof finalTotal === 'number' ? finalTotal : 0,
         originalTotal: typeof total === 'number' ? total : 0,
-        discount: typeof discount === 'number' ? discount : 0,
-        tax: typeof tax === 'number' ? tax : 0,
-        taxAmount: typeof taxAmount === 'number' ? taxAmount : 0,
         paymentAmount: typeof paymentAmount === 'number' ? paymentAmount : 0,
         changeAmount: typeof changeAmount === 'number' ? changeAmount : 0,
         createdAt: serverTimestamp() // Gunakan serverTimestamp untuk konsistensi
@@ -380,8 +371,6 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
             
             <PaymentDetails 
               total={total}
-              discount={discount}
-              tax={tax}
               finalTotal={finalTotal}
               paymentAmount={paymentAmount}
               changeAmount={changeAmount}

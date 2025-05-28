@@ -16,7 +16,7 @@ interface PaymentProcessorProps {
 }
 
 export interface PaymentProcessorHandle {
-  handleProcessPayment: (paymentAmount: number, changeAmount: number, discount: number, tax: number) => void;
+  handleProcessPayment: (paymentAmount: number, changeAmount: number) => void;
 }
 
 const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProps>(
@@ -28,14 +28,12 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     const [paymentDetails, setPaymentDetails] = useState({
       amount: 0,
       change: 0,
-      discount: 0,
-      tax: 5,
       loyaltyPoints: 0
     });
     
     // Expose the handleProcessPayment method via ref
     useImperativeHandle(ref, () => ({
-      handleProcessPayment: (paymentAmount: number, changeAmount: number, discount: number, tax: number) => {
+      handleProcessPayment: (paymentAmount: number, changeAmount: number) => {
         // Calculate loyalty points (1 point per 10000 Rp spent)
         const earnedPoints = Math.floor(total / 10000);
         
@@ -43,8 +41,6 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         setPaymentDetails({
           amount: paymentAmount,
           change: changeAmount,
-          discount: discount,
-          tax: tax,
           loyaltyPoints: earnedPoints
         });
         
@@ -138,7 +134,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         setReceiptOpen(false);
         setSelectedPatient(null);
         clearCart();
-        setPaymentDetails({ amount: 0, change: 0, discount: 0, tax: 5, loyaltyPoints: 0 });
+        setPaymentDetails({ amount: 0, change: 0, loyaltyPoints: 0 });
       }
     };
 
@@ -160,8 +156,6 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           patient={selectedPatient}
           paymentAmount={paymentDetails.amount}
           changeAmount={paymentDetails.change}
-          discount={paymentDetails.discount}
-          tax={paymentDetails.tax}
           loyaltyPoints={paymentDetails.loyaltyPoints}
         />
       </>

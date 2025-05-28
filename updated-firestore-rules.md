@@ -37,17 +37,13 @@ service cloud.firestore {
     match /users/{userId} {
       // Allow read of user profiles by any authenticated user
       allow read: if isSignedIn();
-      // Modified: Allow creation during registration when auth ID matches the document ID
-      allow create: if isSignedIn() && request.auth.uid == userId;
-      // Allow updates by the owner
-      allow update: if isOwner(userId) || 
-        (isSignedIn() && 
-         exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      // Allow creation by: 1) self-registration, 2) admin, or 3) therapist (for patients)
+      allow create: if isSignedIn() && (request.auth.uid == userId || isAdmin() || isTherapist());
+      // Allow updates by the owner, admin, or therapist (for patients)
+      allow update: if isOwner(userId) || isAdmin() || 
+        (isTherapist() && request.resource.data.role == 'Pasien');
       // Allow deletion by admin
-      allow delete: if isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if isAdmin();
     }
 
     // Patients collection rules - Added for patient management
