@@ -1,6 +1,4 @@
-# Aturan Firebase yang Diperbarui untuk Fisioapp Management Suite
-
-## Aturan Firestore yang Diperbarui
+# Aturan Firestore yang Diperbarui untuk Fisioapp Management Suite
 
 ```
 rules_version = '2';
@@ -37,13 +35,19 @@ service cloud.firestore {
 
     // Users collection rules
     match /users/{userId} {
-      // Allow read of user profiles by authenticated users
+      // Allow read of user profiles by any authenticated user
       allow read: if isSignedIn();
       // Modified: Allow creation during registration when auth ID matches the document ID
       allow create: if isSignedIn() && request.auth.uid == userId;
-      // Allow updates only by the owner or admin
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
+      // Allow updates by the owner
+      allow update: if isOwner(userId) || 
+        (isSignedIn() && 
+         exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      // Allow deletion by admin
+      allow delete: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Patients collection rules - Added for patient management
@@ -109,16 +113,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Therapy Sessions collection rules - Updated to allow patient bookings
+    // Therapy Sessions collection rules - Updated to allow therapist access
     match /therapySessions/{sessionId} {
+      // Allow reading by any signed-in user
       allow read: if isSignedIn();
       
-      // Allow creation by any signed in user
-      allow create: if isSignedIn(); 
+      // Allow creation by therapists and admins
+      allow create: if isSignedIn() && (isTherapist() || isAdmin());
       
-      // Allow updates by therapist assigned to the session or admin
+      // Allow updates by therapist assigned to the session, any therapist, or admin
       allow update: if isSignedIn() && 
-        (resource.data.therapistId == request.auth.uid || isAdmin());
+        (resource.data.therapistId == request.auth.uid || isTherapist() || isAdmin());
         
       allow delete: if isAdmin();
     }
@@ -128,9 +133,14 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
-
-    // === ATURAN BARU UNTUK BIOMETRIK DAN ABSENSI ===
     
+    // Confirmed Therapy Sessions collection rules
+    match /confirmedTherapySessions/{sessionId} {
+      allow read: if isSignedIn();
+      allow create, update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     // Aturan untuk koleksi attendance
     match /attendance/{userId} {
       // Admin, pemilik data, atau terapis (untuk data mereka sendiri) dapat melihat catatan absensi
@@ -146,41 +156,40 @@ service cloud.firestore {
       }
     }
 
-    // TherapyPayments collection rules
+    // Therapy Payments collection rules
     match /therapyPayments/{paymentId} {
-      // Semua user yang login dapat melihat data pembayaran terapi
       allow read: if isSignedIn();
-      // Hanya admin yang dapat membuat, mengupdate, atau menghapus data pembayaran
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
-    // TherapySessions collection rules
-    match /therapySessions/{sessionId} {
-      // Semua user yang login dapat melihat data sesi terapi
-      allow read: if isSignedIn();
-      // Terapis dapat membuat sesi terapi
-      allow create: if isSignedIn() && (isTherapist() || isAdmin());
-      // Terapis yang membuat sesi atau admin dapat mengupdate sesi
-      allow update: if isSignedIn() && 
+    // Therapist Salaries collection rules
+    match /therapistSalaries/{salaryId} {
+      allow read: if isSignedIn() && 
         (resource.data.therapistId == request.auth.uid || isAdmin());
-      // Hanya admin yang dapat menghapus sesi terapi
-      allow delete: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
-    
-    // TherapistSalary collection rules
-    match /therapistSalary/{salaryId} {
-      // Semua user yang login dapat melihat data gaji terapis
+
+    // Therapist Salary Items collection (sub-collection of therapistSalaries)
+    match /therapistSalaries/{salaryId}/items/{itemId} {
+      allow read: if isSignedIn() && 
+        (get(/databases/$(database)/documents/therapistSalaries/$(salaryId)).data.therapistId == request.auth.uid || isAdmin());
+      allow create, update, delete: if isAdmin();
+    }
+
+    // App Configuration collection rules
+    match /appConfig/{configId} {
+      // Allow all users to read app configuration without checking role
       allow read: if isSignedIn();
-      // Hanya admin yang dapat membuat, mengupdate, atau menghapus data gaji terapis
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
-      
-      // Terapis hanya dapat melihat data gaji mereka sendiri
-      allow read: if isSignedIn() && isTherapist() && 
-        resource.data.therapistId == request.auth.uid;
+      // Only admins can create, update, or delete app configuration
+      allow create: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow update: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Deny access to all other collections by default
@@ -191,82 +200,26 @@ service cloud.firestore {
 }
 ```
 
-## Aturan Storage
+## Perubahan yang Dilakukan
 
-```
-rules_version = '2';
-service firebase.storage {
-  match /b/{bucket}/o {
-    // Fungsi untuk memeriksa apakah pengguna sudah login
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    // Fungsi untuk memeriksa apakah pengguna adalah admin
-    function isAdmin() {
-      return isSignedIn() && 
-             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Fungsi untuk memeriksa apakah pengguna adalah pemilik file
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
-    // Aturan untuk folder biometric
-    match /biometric/{userId}/{fileName} {
-      allow read: if isSignedIn() && (isAdmin() || isOwner(userId));
-      allow write: if isSignedIn() && (isAdmin() || isOwner(userId));
-      allow delete: if isSignedIn() && (isAdmin() || isOwner(userId));
-    }
-    
-    // Aturan untuk folder attendance
-    match /attendance/{userId}/{fileName} {
-      allow read: if isSignedIn() && (isAdmin() || isOwner(userId));
-      allow write: if isSignedIn() && (isAdmin() || isOwner(userId));
-      allow delete: if isSignedIn() && isAdmin();
-    }
-    
-    // Aturan untuk file lainnya
-    match /{allPaths=**} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-  }
-}
-```
+1. **Koleksi Bookings**: Diperbarui untuk memungkinkan terapis mengakses halaman jadwal
+   - Menambahkan `isTherapist()` ke kondisi `read` untuk memungkinkan semua terapis melihat jadwal
+   - Menambahkan `isTherapist()` ke kondisi `create` untuk memungkinkan terapis membuat jadwal baru
+   - Menambahkan `isTherapist()` ke kondisi `update` untuk memungkinkan terapis mengupdate jadwal
+
+2. **Koleksi Attendance**: Mempertahankan struktur yang sudah diperbarui sebelumnya
+   - Terapis dapat mengakses data absensi mereka sendiri
+
+3. **Mempertahankan Struktur Koleksi yang Ada**:
+   - `confirmedTherapySessions`
+   - `therapistSalaries` dan subkoleksi `items`
+   - Semua aturan lain yang sudah ada
 
 ## Cara Menerapkan Aturan
 
 1. Buka [Firebase Console](https://console.firebase.google.com/)
 2. Pilih project Anda
-3. Untuk Firestore:
-   - Klik "Firestore Database" di menu sidebar
-   - Klik tab "Rules"
-   - Salin dan tempel aturan Firestore di atas
-   - Klik "Publish"
-4. Untuk Storage:
-   - Klik "Storage" di menu sidebar
-   - Klik tab "Rules"
-   - Salin dan tempel aturan Storage di atas
-   - Klik "Publish"
-
-## Konfigurasi CORS untuk Firebase Storage
-
-Untuk mengatasi masalah CORS, Anda perlu mengonfigurasi CORS di Firebase Storage:
-
-1. Install Firebase CLI jika belum: `npm install -g firebase-tools`
-2. Login ke Firebase: `firebase login`
-3. Buat file `cors.json` dengan konten berikut:
-   ```json
-   [
-     {
-       "origin": ["http://localhost:8080", "https://tutorialappklinik.web.app", "https://tutorialappklinik.firebaseapp.com"],
-       "method": ["GET", "POST", "PUT", "DELETE"],
-       "maxAgeSeconds": 3600
-     }
-   ]
-   ```
-4. Terapkan konfigurasi CORS: `gsutil cors set cors.json gs://tutorialappklinik.appspot.com`
-
-Catatan: Ganti URL dan nama bucket dengan URL dan nama bucket aplikasi Anda yang sebenarnya.
+3. Klik "Firestore Database" di menu sidebar
+4. Klik tab "Rules"
+5. Salin dan tempel aturan Firestore di atas (bagian yang ada di dalam tanda ```)
+6. Klik "Publish"

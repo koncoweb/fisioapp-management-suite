@@ -8,12 +8,12 @@
   port = 8080
   publish = "dist"
 
+# Perbaikan untuk SPA routing - menghapus kondisi Role
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
   force = false
-  conditions = {Role = "admin"}
 
 # Cache control for static assets with hashed filenames
 [[headers]]
