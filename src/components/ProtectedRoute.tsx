@@ -19,6 +19,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   useEffect(() => {
+    console.log('ProtectedRoute - currentUser:', currentUser?.uid);
+    console.log('ProtectedRoute - userData:', userData);
+    console.log('ProtectedRoute - allowedRoles:', allowedRoles);
+    console.log('ProtectedRoute - current path:', location.pathname);
+    
     if (isLoading) return;
 
     // Check if user is logged in
@@ -37,7 +42,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     // Check if user has required role
+    console.log('ProtectedRoute - checking role:', userData?.role);
+    console.log('ProtectedRoute - role included in allowed roles?', userData && allowedRoles.includes(userData.role));
+    
     if (userData && allowedRoles.includes(userData.role)) {
+      console.log('ProtectedRoute - user authorized for this route');
       setIsAuthorized(true);
     } else {
       console.warn(`Access denied. Required roles: ${allowedRoles.join(', ')}. User role: ${userData?.role}`);

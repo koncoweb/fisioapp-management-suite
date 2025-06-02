@@ -11,6 +11,27 @@ import { auth, db } from '@/lib/firebase';
 import { useToast } from '@/components/ui/use-toast';
 import { BiometricData, GeofenceSettings } from '@/types/biometric';
 
+// Fungsi untuk menormalisasi role pengguna
+const normalizeRole = (role: string): UserRole => {
+  const roleMap: Record<string, UserRole> = {
+    'admin': 'admin',
+    'Admin': 'admin',
+    'ADMIN': 'admin',
+    'therapist': 'therapist',
+    'Therapist': 'therapist',
+    'terapis': 'therapist',
+    'Terapis': 'therapist',
+    'pasien': 'Pasien',
+    'Pasien': 'Pasien',
+    'patient': 'Pasien',
+    'Patient': 'Pasien',
+    'karyawan': 'karyawan',
+    'Karyawan': 'karyawan',
+  };
+  
+  return roleMap[role] || role as UserRole;
+};
+
 export type UserRole = 'admin' | 'therapist' | 'Pasien' | 'karyawan';
 
 export interface AdditionalUserData {
@@ -73,12 +94,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<UserData, 'uid'>;
+            console.log('User data from Firestore:', userData);
+            
+            // Normalisasi role pengguna
+            const normalizedRole = normalizeRole(userData.role);
+            console.log('Original role:', userData.role);
+            console.log('Normalized role:', normalizedRole);
+            console.log('Is admin?', normalizedRole === 'admin');
+            
             setUserData({
               uid: user.uid,
-              ...userData
+              ...userData,
+              role: normalizedRole // Gunakan role yang sudah dinormalisasi
             });
           } else {
-            console.log("User document does not exist in Firestore");
+            console.error("User document does not exist in Firestore for user ID:", user.uid);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);

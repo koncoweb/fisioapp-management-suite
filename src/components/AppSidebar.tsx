@@ -61,7 +61,10 @@ const AppSidebar: React.FC = () => {
     fetchAppConfig();
   }, []);
   
+  console.log('AppSidebar - userData:', userData);
+  console.log('AppSidebar - user role:', userData?.role);
   const isAdmin = userData?.role === 'admin';
+  console.log('AppSidebar - isAdmin:', isAdmin);
 
   const adminMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -82,7 +85,7 @@ const AppSidebar: React.FC = () => {
 
   const therapistMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    // { path: '/bookings', label: 'Jadwal', icon: Calendar }, // Disembunyikan sesuai permintaan
+    { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/therapy-sessions', label: 'Catat Terapi', icon: ClipboardList },
     // { path: '/messages', label: 'Pesan', icon: MessageSquare }, // Disembunyikan sesuai permintaan

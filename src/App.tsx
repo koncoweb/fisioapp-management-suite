@@ -68,7 +68,7 @@ const App = () => (
                   </ProtectedRoute>
                 } />
                 <Route path="/bookings" element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={['admin', 'therapist']}>
                     <BookingManagement />
                   </ProtectedRoute>
                 } />
@@ -100,6 +100,11 @@ const App = () => (
                 <Route path="/therapy-sessions" element={
                   <ProtectedRoute allowedRoles={['therapist']}>
                     <TherapySessionsPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/schedule" element={
+                  <ProtectedRoute allowedRoles={['admin', 'therapist']}>
+                    <BookingManagement />
                   </ProtectedRoute>
                 } />
                 <Route path="/therapy-sessions-management" element={
