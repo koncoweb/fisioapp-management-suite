@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, TrendingUp, TrendingDown } from 'lucide-react';
+import { AlertCircle, Calendar, TrendingUp, TrendingDown } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -42,24 +42,24 @@ const StatsCard = ({
 );
 
 interface DashboardStatsProps {
-  todayBookings: number;
+  pendingConfirmations: number;
   todayIncome?: number;
   todayExpenses?: number;
   isAdmin: boolean;
 }
 
-export const DashboardStats = ({ todayBookings, todayIncome, todayExpenses, isAdmin }: DashboardStatsProps) => {
+export const DashboardStats = ({ pendingConfirmations, todayIncome, todayExpenses, isAdmin }: DashboardStatsProps) => {
   const navigate = useNavigate();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <StatsCard
-        title="Jadwal Hari Ini"
-        value={todayBookings}
-        description={todayBookings === 0 ? "Tidak ada sesi terjadwal" : "Sesi terjadwal hari ini"}
-        icon={Calendar}
-        onClick={() => navigate('/admin/bookings')}
-        className="bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-800"
+        title="Terapi Perlu Dikonfirmasi"
+        value={pendingConfirmations}
+        description={pendingConfirmations === 0 ? "Tidak ada terapi yang perlu dikonfirmasi" : "Menunggu konfirmasi"}
+        icon={AlertCircle}
+        onClick={() => navigate('/admin/therapy-sessions?status=pending')}
+        className="bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 border-amber-200 dark:border-amber-800"
       />
       
       {isAdmin && (
