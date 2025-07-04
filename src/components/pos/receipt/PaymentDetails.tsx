@@ -9,6 +9,7 @@ interface PaymentDetailsProps {
   paymentAmount: number;
   changeAmount: number;
   category?: string;
+  paymentMethod?: string;
   note?: string;
 }
 
@@ -18,6 +19,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({
   paymentAmount, 
   changeAmount,
   category = 'Lain-lain',
+  paymentMethod = 'Tunai',
   note = ''
 }) => {
   
@@ -28,6 +30,14 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({
         <div className="flex justify-between items-center bg-muted/20 rounded-sm px-1 py-0.5">
           <span className="font-medium">Kategori:</span>
           <span>{category}</span>
+        </div>
+      )}
+      
+      {/* Metode Pembayaran */}
+      {paymentMethod && (
+        <div className="flex justify-between items-center bg-muted/20 rounded-sm px-1 py-0.5 mt-1">
+          <span className="font-medium">Metode:</span>
+          <span>{paymentMethod}</span>
         </div>
       )}
       
@@ -49,7 +59,7 @@ const PaymentDetails: React.FC<PaymentDetailsProps> = ({
       </div>
       
       <div className="flex justify-between items-center">
-        <span>Tunai</span>
+        <span>{paymentMethod}</span>
         <span>{formatRupiah(paymentAmount)}</span>
       </div>
       

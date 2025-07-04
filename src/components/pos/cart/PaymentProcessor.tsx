@@ -28,6 +28,16 @@ const TRANSACTION_CATEGORIES = [
   'Lain-lain'
 ];
 
+// Predefined payment methods
+const PAYMENT_METHODS = [
+  'Tunai',
+  'QRIS',
+  'Bank Transfer',
+  'Kartu Debit',
+  'Kartu Kredit',
+  'E-Wallet'
+];
+
 const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProps>(
   ({ items, total, clearCart }, ref) => {
     const [receiptOpen, setReceiptOpen] = useState(false);
@@ -39,6 +49,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     const [transactionCategory, setTransactionCategory] = useState('');
     const [transactionNote, setTransactionNote] = useState('');
     const [customCategory, setCustomCategory] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState('Tunai');
+    const [customPaymentMethod, setCustomPaymentMethod] = useState('');
     
     // Expose the handleProcessPayment method via ref
     useImperativeHandle(ref, () => ({
@@ -94,8 +106,9 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           changeAmount: paymentDetails.change,
           date: new Date(),
           createdAt: new Date(),
-          // Tambahkan kategori dan catatan transaksi
+          // Tambahkan kategori, metode pembayaran dan catatan transaksi
           category: customCategory || transactionCategory || 'Lain-lain',
+          paymentMethod: customPaymentMethod || paymentMethod || 'Tunai',
           note: transactionNote || '',
           receiptNo: `POS-${new Date().getTime()}`
         };
@@ -113,6 +126,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         setTransactionCategory('');
         setTransactionNote('');
         setCustomCategory('');
+        setPaymentMethod('Tunai');
+        setCustomPaymentMethod('');
       }
     };
 
@@ -159,6 +174,40 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
               </div>
               
               <div className="grid gap-2">
+                <Label htmlFor="payment-method">Metode Pembayaran</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {PAYMENT_METHODS.map((method) => (
+                    <Button
+                      key={method}
+                      type="button"
+                      variant={paymentMethod === method ? "default" : "outline"}
+                      onClick={() => {
+                        setPaymentMethod(method);
+                        setCustomPaymentMethod('');
+                      }}
+                      className="justify-start"
+                      size="sm"
+                    >
+                      {method}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="custom-payment">Metode Pembayaran Lain</Label>
+                <Input
+                  id="custom-payment"
+                  placeholder="Metode pembayaran lain"
+                  value={customPaymentMethod}
+                  onChange={(e) => {
+                    setCustomPaymentMethod(e.target.value);
+                    setPaymentMethod('');
+                  }}
+                />
+              </div>
+              
+              <div className="grid gap-2">
                 <Label htmlFor="note">Catatan Transaksi</Label>
                 <Input
                   id="note"
@@ -183,6 +232,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           paymentAmount={paymentDetails.amount}
           changeAmount={paymentDetails.change}
           category={customCategory || transactionCategory || 'Lain-lain'}
+          paymentMethod={customPaymentMethod || paymentMethod || 'Tunai'}
           note={transactionNote}
         />
       </>

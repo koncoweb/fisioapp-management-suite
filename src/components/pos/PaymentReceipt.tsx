@@ -37,6 +37,7 @@ interface PaymentReceiptProps {
   paymentAmount?: number;
   changeAmount?: number;
   category?: string;
+  paymentMethod?: string;
   note?: string;
 }
 
@@ -48,6 +49,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   paymentAmount = 0,
   changeAmount = 0,
   category = 'Lain-lain',
+  paymentMethod = 'Tunai',
   note = ''
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
@@ -256,17 +258,15 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
       
       // Struktur data transaksi (tanpa data pasien)
       const transactionData = {
-        items: transactionItems,
         receiptNo,
-        transactionDate: today,
-        total: finalTotal,
-        originalTotal: total,
-        discount: 0, // Tidak ada diskon
-        tax: 0, // Tidak ada pajak
-        taxAmount: 0, // Tidak ada pajak
-        paymentAmount: typeof paymentAmount === 'number' ? paymentAmount : 0,
-        changeAmount: typeof changeAmount === 'number' ? changeAmount : 0,
+        items: transactionItems,
+        total,
+        finalTotal,
+        paymentAmount,
+        changeAmount,
+        date: today, // Tanggal transaksi
         category, // Kategori transaksi
+        paymentMethod, // Metode pembayaran
         note, // Catatan transaksi
         createdAt: serverTimestamp() // Gunakan serverTimestamp untuk konsistensi
       };
@@ -345,6 +345,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               paymentAmount={paymentAmount}
               changeAmount={changeAmount}
               category={category}
+              paymentMethod={paymentMethod}
               note={note}
             />
             
