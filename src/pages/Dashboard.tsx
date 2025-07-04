@@ -12,12 +12,12 @@ import { startOfDay, endOfDay } from 'date-fns';
 
 const Dashboard: React.FC = () => {
   const { userData } = useAuth();
-  const [todayBookings, setTodayBookings] = useState<BookingSession[]>([]);
-  const [unconfirmedBookings, setUnconfirmedBookings] = useState<BookingSession[]>([]);
+  const [unconfirmedSessions, setUnconfirmedSessions] = useState<BookingSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     todayIncome: 0,
     todayExpenses: 0,
+    pendingConfirmations: 0,
   });
   const { toast } = useToast();
 
@@ -32,17 +32,21 @@ const Dashboard: React.FC = () => {
         if (userData) {
           let bookingsQuery;
           
-          if (isAdmin) {
+          // Query untuk mengambil sesi yang perlu dikonfirmasi (status 'pending' atau tidak ada status)
+          bookingsQuery = query(
+            collection(db, 'therapySessions'),
+            where('status', 'in', ['pending', '']),
+            orderBy('createdAt', 'desc'),
+            limit(10)
+          );
+          
+          // Hanya admin yang bisa melihat semua sesi yang perlu dikonfirmasi
+          if (!isAdmin) {
             bookingsQuery = query(
               collection(db, 'therapySessions'),
-              where('date', '==', today),
-              limit(10) // Increased limit to get more sessions for filtering
-            );
-          } else {
-            bookingsQuery = query(
-              collection(db, 'therapySessions'),
-              where('date', '==', today),
               where('therapistId', '==', userData?.uid || ''),
+              where('status', 'in', ['pending', '']),
+              orderBy('createdAt', 'desc'),
               limit(10)
             );
           }
@@ -77,14 +81,14 @@ const Dashboard: React.FC = () => {
               return 0;
             });
             
-            // Set all bookings for stats display
-            setTodayBookings(bookingsData);
+            // Set sessions that need confirmation
+            setUnconfirmedSessions(bookingsData);
             
-            // Filter for unconfirmed sessions to display in the table
-            const unconfirmedSessions = bookingsData.filter(
-              booking => booking.status === 'scheduled' || !booking.status
-            );
-            setUnconfirmedBookings(unconfirmedSessions);
+            // Update stats with count of pending confirmations
+            setStats(prev => ({
+              ...prev,
+              pendingConfirmations: bookingsData.length
+            }));
             
           } catch (error) {
             console.error('Error fetching therapy sessions:', error);
@@ -177,20 +181,20 @@ const Dashboard: React.FC = () => {
   }
 
   if (isTherapist) {
-    return <TherapistView todayBookings={todayBookings} today={today} />;
+    return <TherapistView todayBookings={unconfirmedSessions} today={today} />;
   }
 
   return (
     <div className="space-y-6">
       <DashboardStats
-        todayBookings={todayBookings.length}
+        pendingConfirmations={stats.pendingConfirmations}
         todayIncome={stats.todayIncome}
         todayExpenses={stats.todayExpenses}
         isAdmin={isAdmin}
       />
       <div className="mt-6">
         <BookingsTable
-          bookings={unconfirmedBookings}
+          bookings={unconfirmedSessions}
           date={today}
           isAdmin={isAdmin}
         />
