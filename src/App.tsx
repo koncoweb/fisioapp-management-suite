@@ -31,9 +31,7 @@ import BiometricDataPage from "./pages/BiometricDataPage";
 import AttendanceRekapPage from "./pages/AttendanceRekapPage";
 import TherapySessionsPage from "./pages/therapist/TherapySessionsPage";
 import TherapySessionsManagement from "./pages/admin/TherapySessionsManagement";
-import TherapyPaymentsPage from "./pages/admin/TherapyPaymentsPage";
 import TherapyReportsPage from "./pages/admin/TherapyReportsPage";
-import TherapistSalaryPage from "./pages/admin/TherapistSalaryPage";
 
 const queryClient = new QueryClient();
 
@@ -112,21 +110,13 @@ const App = () => (
                     <TherapySessionsManagement />
                   </ProtectedRoute>
                 } />
-                <Route path="/therapy-payments" element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <TherapyPaymentsPage />
-                  </ProtectedRoute>
-                } />
+
                 <Route path="/therapy-reports" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <TherapyReportsPage />
                   </ProtectedRoute>
                 } />
-                <Route path="/therapist-salary" element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <TherapistSalaryPage />
-                  </ProtectedRoute>
-                } />
+
                 <Route path="/messages" element={<div>Messages (Coming soon)</div>} />
                 <Route path="/notifications" element={<div>Notifications (Coming soon)</div>} />
                 <Route path="/profile" element={<div>User Profile (Coming soon)</div>} />

@@ -4,7 +4,6 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { CartItem } from '@/types/pos';
 import { format } from 'date-fns';
-import { Patient } from '@/types';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from "sonner";
@@ -15,11 +14,8 @@ interface TransactionItemData {
   name: string;
   price: number;
   quantity: number;
+  total: number;
   type: string;
-  therapistId?: string | null;
-  therapistName?: string;
-  appointments?: Array<{ date: string; time: string }>;
-  duration?: number;
   [key: string]: any; // Untuk properti tambahan lainnya
 }
 
@@ -38,10 +34,10 @@ interface PaymentReceiptProps {
   onClose: () => void;
   items: CartItem[];
   total: number;
-  patient?: Patient | null;
   paymentAmount?: number;
   changeAmount?: number;
-  loyaltyPoints?: number;
+  category?: string;
+  note?: string;
 }
 
 const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
@@ -49,10 +45,10 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   onClose,
   items,
   total,
-  patient,
   paymentAmount = 0,
   changeAmount = 0,
-  loyaltyPoints = 0
+  category = 'Lain-lain',
+  note = ''
 }) => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -246,57 +242,32 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
   };
 
   const handleCompletePayment = async () => {
+    setIsSaving(true);
     try {
-      setIsSaving(true);
+      // Persiapkan data untuk transaksi
+      const transactionItems: TransactionItemData[] = items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        total: item.price * item.quantity,
+        type: item.type
+      }));
       
-      // Memastikan data pasien ada sebelum menyimpan transaksi
-      if (!patient) {
-        toast.error("Data pasien diperlukan untuk menyimpan transaksi");
-        setIsSaving(false);
-        return;
-      }
-      
-      // Persiapkan data untuk disimpan ke Firestore - pastikan semua data valid
+      // Struktur data transaksi (tanpa data pasien)
       const transactionData = {
+        items: transactionItems,
         receiptNo,
-        transactionDate: serverTimestamp(), // Gunakan serverTimestamp untuk konsistensi
-        patientId: patient?.id || null,
-        patientName: patient?.nama || 'Guest',
-        items: items.map(item => {
-          // Buat objek dasar dengan properti yang pasti valid
-          const itemData: TransactionItemData = {
-            id: item.id || '',
-            name: item.name || '',
-            price: typeof item.price === 'number' ? item.price : 0,
-            quantity: typeof item.quantity === 'number' ? item.quantity : 1,
-            type: item.type || 'product'
-          };
-          
-          // Tambahkan informasi terapis jika tersedia
-          if (item.therapist) {
-            itemData.therapistId = item.therapist.id || null;
-            itemData.therapistName = item.therapist.name || item.therapist.email || 'Terapis';
-          }
-          
-          // Tambahkan informasi appointment jika tersedia
-          if (item.appointments && Array.isArray(item.appointments) && item.appointments.length > 0) {
-            itemData.appointments = item.appointments.map(a => ({
-              date: a.date instanceof Date ? format(a.date, 'yyyy-MM-dd') : '',
-              time: a.time || ''
-            })).filter(a => a.date && a.time); // Filter hanya appointment yang valid
-          }
-          
-          // Tambahkan durasi jika tersedia
-          if (typeof item.duration === 'number') {
-            itemData.duration = item.duration;
-          }
-          
-          return itemData;
-        }),
-        total: typeof finalTotal === 'number' ? finalTotal : 0,
-        originalTotal: typeof total === 'number' ? total : 0,
+        transactionDate: today,
+        total: finalTotal,
+        originalTotal: total,
+        discount: 0, // Tidak ada diskon
+        tax: 0, // Tidak ada pajak
+        taxAmount: 0, // Tidak ada pajak
         paymentAmount: typeof paymentAmount === 'number' ? paymentAmount : 0,
         changeAmount: typeof changeAmount === 'number' ? changeAmount : 0,
+        category, // Kategori transaksi
+        note, // Catatan transaksi
         createdAt: serverTimestamp() // Gunakan serverTimestamp untuk konsistensi
       };
       
@@ -360,7 +331,6 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
             <ReceiptInfo 
               receiptNo={receiptNo}
               transactionDate={today}
-              patient={patient}
             />
             
             <Separator className="my-1" />
@@ -374,6 +344,8 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({
               finalTotal={finalTotal}
               paymentAmount={paymentAmount}
               changeAmount={changeAmount}
+              category={category}
+              note={note}
             />
             
             {/* Footer sederhana dengan informasi receipt */}

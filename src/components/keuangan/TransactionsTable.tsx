@@ -20,6 +20,12 @@ export const TransactionsTable = () => {
   const { data: transactions = [], isLoading: transactionsLoading } = useTransactions();
   const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  
+  // Ekstrak semua kategori transaksi yang ada
+  const transactionCategories = [...new Set(transactions
+    .filter(t => t.category)
+    .map(t => t.category as string))].sort();
 
   // Combine and sort transactions and expenses
   const allRecords: FinancialRecord[] = [...transactions, ...expenses].sort(
@@ -31,27 +37,47 @@ export const TransactionsTable = () => {
   );
 
   const filterRecords = (records: FinancialRecord[]) => {
-    if (!searchTerm) return records;
+    let filteredRecords = records;
     
-    return records.filter(record => {
-      if (record.type === 'income') {
-        const transaction = record as Transaction;
-        return (
-          transaction.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transaction.receiptNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          transaction.items.some(item => 
-            item.name.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        );
-      } else {
-        const expense = record as Expense;
-        return (
-          expense.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          expense.category.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
-    });
+    // Filter berdasarkan kategori jika bukan 'all'
+    if (categoryFilter !== 'all') {
+      filteredRecords = filteredRecords.filter(record => {
+        if (record.type === 'income') {
+          const transaction = record as Transaction;
+          return transaction.category === categoryFilter;
+        } else {
+          const expense = record as Expense;
+          return expense.category === categoryFilter;
+        }
+      });
+    }
+    
+    // Filter berdasarkan search term jika ada
+    if (searchTerm) {
+      filteredRecords = filteredRecords.filter(record => {
+        if (record.type === 'income') {
+          const transaction = record as Transaction;
+          return (
+            (transaction.patientName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            transaction.receiptNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            transaction.items.some(item => 
+              item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            ) ||
+            (transaction.note?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (transaction.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+          );
+        } else {
+          const expense = record as Expense;
+          return (
+            expense.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            expense.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            expense.category.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        }
+      });
+    }
+    
+    return filteredRecords;
   };
 
   const filteredAll = filterRecords(allRecords);
@@ -67,12 +93,19 @@ export const TransactionsTable = () => {
         <Badge variant="outline" className="bg-green-50">Pendapatan</Badge>
       </TableCell>
       <TableCell>{transaction.receiptNo}</TableCell>
-      <TableCell>{transaction.patientName}</TableCell>
+      <TableCell>
+        {transaction.patientName || 'Tanpa Pasien'}
+        {transaction.category && (
+          <Badge variant="outline" className="ml-2 bg-blue-50">
+            {transaction.category}
+          </Badge>
+        )}
+      </TableCell>
       <TableCell>
         <span className="text-green-600">{formatCurrency(transaction.total)}</span>
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {transaction.items.map(item => item.name).join(", ")}
+        {transaction.note || transaction.items.map(item => item.name).join(", ")}
       </TableCell>
     </TableRow>
   );
@@ -96,14 +129,29 @@ export const TransactionsTable = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <h3 className="text-lg font-medium">Catatan Keuangan</h3>
-        <div className="w-full max-w-sm">
-          <Input
-            placeholder="Cari catatan..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="w-full flex flex-col md:flex-row gap-2">
+          <div className="w-full md:w-48">
+            <select
+              className="w-full p-2 border rounded-md text-sm"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="all">Semua Kategori</option>
+              {transactionCategories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+              <option value="Tanpa Kategori">Tanpa Kategori</option>
+            </select>
+          </div>
+          <div className="w-full md:w-64">
+            <Input
+              placeholder="Cari catatan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 

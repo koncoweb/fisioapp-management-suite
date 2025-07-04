@@ -73,8 +73,6 @@ const AppSidebar: React.FC = () => {
     // { path: '/bookings', label: 'Jadwal', icon: Calendar }, // Disembunyikan sesuai permintaan
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/therapy-sessions-management', label: 'Konfirmasi Terapi', icon: ClipboardCheck },
-    { path: '/therapy-payments', label: 'Pembayaran Terapi', icon: Receipt },
-    { path: '/therapist-salary', label: 'Gaji Terapis', icon: DollarSign },
     { path: '/therapy-reports', label: 'Laporan Terapi', icon: BarChart },
     { path: '/pos', label: 'Point of Sale', icon: ShoppingCart },
     { path: '/keuangan', label: 'Keuangan', icon: DollarSign },

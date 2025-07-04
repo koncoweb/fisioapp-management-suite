@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, query, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, getDocs, doc, updateDoc, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -37,20 +39,55 @@ const TherapySessionsManagement = () => {
   const [selectedSession, setSelectedSession] = useState<TherapySession | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [showCalendar, setShowCalendar] = useState(false);
 
   useEffect(() => {
     fetchTherapySessions();
-  }, []);
+  }, [selectedDate, filterStatus]);
 
   const fetchTherapySessions = async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'therapySessions'));
+      let q;
+      
+      if (selectedDate) {
+        // Format the date as YYYY-MM-DD
+        const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+        
+        if (filterStatus !== 'all') {
+          // Filter by both date and status
+          q = query(
+            collection(db, 'therapySessions'),
+            where('date', '==', formattedDate),
+            where('status', '==', filterStatus)
+          );
+        } else {
+          // Filter by date only
+          q = query(
+            collection(db, 'therapySessions'),
+            where('date', '==', formattedDate)
+          );
+        }
+      } else if (filterStatus !== 'all') {
+        // Filter by status only
+        q = query(
+          collection(db, 'therapySessions'),
+          where('status', '==', filterStatus)
+        );
+      } else {
+        // No filters
+        q = query(collection(db, 'therapySessions'));
+      }
+      
       const sessionsSnapshot = await getDocs(q);
-      const sessionsData = sessionsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as TherapySession[];
+      const sessionsData = sessionsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data as object
+        } as TherapySession;
+      });
       
       setSessions(sessionsData);
     } catch (error) {
@@ -149,28 +186,112 @@ const TherapySessionsManagement = () => {
     ? sessions 
     : sessions.filter(session => session.status === filterStatus);
 
-  return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Manajemen Sesi Terapi</h1>
+  const handleStatusChange = async (session: TherapySession, newStatus: string) => {
+    if (!userData) return;
+    
+    try {
+      const sessionRef = doc(db, 'therapySessions', session.id);
+      await updateDoc(sessionRef, {
+        status: newStatus,
+        statusDiupdate: {
+          nama: userData.namaLengkap,
+          userId: userData.uid,
+          timestamp: new Date().toISOString()
+        }
+      });
       
+      toast({
+        title: 'Sukses',
+        description: 'Status sesi terapi berhasil diperbarui',
+      });
+      
+      // Refresh sessions list
+      await fetchTherapySessions();
+    } catch (error) {
+      console.error('Error updating therapy session status:', error);
+      toast({
+        title: 'Error',
+        description: 'Gagal memperbarui status sesi terapi. Silakan coba lagi.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const clearFilters = () => {
+    setSelectedDate(undefined);
+    setFilterStatus('all');
+  };
+
+  return (
+    <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle>Daftar Sesi Terapi</CardTitle>
+          <CardTitle>Manajemen Sesi Terapi</CardTitle>
           <CardDescription>
-            Konfirmasi atau batalkan sesi terapi yang telah dicatat oleh terapis
+            Konfirmasi atau batalkan sesi terapi yang telah dicatat oleh terapis.
           </CardDescription>
-          <div className="mt-2 w-full md:w-1/3">
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter berdasarkan status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Status</SelectItem>
-                <SelectItem value="pending">Menunggu Konfirmasi</SelectItem>
-                <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
-                <SelectItem value="cancelled">Dibatalkan</SelectItem>
-              </SelectContent>
-            </Select>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
+            <div className="flex-1 min-w-[250px]">
+              <div className="flex flex-col">
+                <Label className="mb-2">Filter Tanggal</Label>
+                <div className="flex gap-2 items-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowCalendar(!showCalendar)}
+                  >
+                    {selectedDate ? format(selectedDate, 'dd/MM/yyyy') : 'Pilih Tanggal'}
+                  </Button>
+                  {selectedDate && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setSelectedDate(undefined)}
+                    >
+                      ×
+                    </Button>
+                  )}
+                </div>
+                {showCalendar && (
+                  <div className="absolute z-50 bg-white rounded-md shadow-md border mt-1">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        setSelectedDate(date);
+                        setShowCalendar(false);
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex-1 min-w-[180px]">
+              <Label className="mb-2 block">Filter Status</Label>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Status</SelectItem>
+                  <SelectItem value="pending">Menunggu Konfirmasi</SelectItem>
+                  <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
+                  <SelectItem value="cancelled">Dibatalkan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={clearFilters}
+                className="mb-0"
+              >
+                Reset Filter
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -189,6 +310,7 @@ const TherapySessionsManagement = () => {
                     <TableHead>Terapis</TableHead>
                     <TableHead>Layanan</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Ubah Status</TableHead>
                     <TableHead>Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -201,6 +323,21 @@ const TherapySessionsManagement = () => {
                       <TableCell>{session.therapistName}</TableCell>
                       <TableCell>{session.serviceName}</TableCell>
                       <TableCell>{getStatusBadge(session.status)}</TableCell>
+                      <TableCell>
+                        <Select
+                          value={session.status}
+                          onValueChange={(value) => handleStatusChange(session, value)}
+                        >
+                          <SelectTrigger className="w-[140px]">
+                            <SelectValue placeholder="Pilih Status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Menunggu Konfirmasi</SelectItem>
+                            <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
+                            <SelectItem value="cancelled">Dibatalkan</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
                           <Button 

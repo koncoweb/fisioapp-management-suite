@@ -8,17 +8,36 @@ interface PaymentDetailsProps {
   finalTotal: number;
   paymentAmount: number;
   changeAmount: number;
+  category?: string;
+  note?: string;
 }
 
 const PaymentDetails: React.FC<PaymentDetailsProps> = ({ 
   total, 
   finalTotal,
   paymentAmount, 
-  changeAmount 
+  changeAmount,
+  category = 'Lain-lain',
+  note = ''
 }) => {
   
   return (
     <div className="space-y-1 text-xs print:text-sm">
+      {/* Kategori Transaksi */}
+      {category && (
+        <div className="flex justify-between items-center bg-muted/20 rounded-sm px-1 py-0.5">
+          <span className="font-medium">Kategori:</span>
+          <span>{category}</span>
+        </div>
+      )}
+      
+      {/* Catatan Transaksi (jika ada) */}
+      {note && note.trim() !== '' && (
+        <div className="text-xs print:text-xs">
+          <span className="font-medium">Catatan:</span> 
+          <span className="text-muted-foreground">{note}</span>
+        </div>
+      )}
       <div className="flex justify-between">
         <span>Total</span>
         <span>{formatRupiah(total)}</span>

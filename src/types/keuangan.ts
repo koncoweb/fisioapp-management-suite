@@ -15,6 +15,8 @@ export interface Transaction {
   changeAmount: number;
   loyaltyPoints: number;
   createdAt: Date;
+  category?: string; // Kategori transaksi (misalnya: 'Penjualan Produk', 'Layanan Terapi', dll)
+  note?: string;  // Catatan tambahan tentang transaksi
   type: 'income';
 }
 

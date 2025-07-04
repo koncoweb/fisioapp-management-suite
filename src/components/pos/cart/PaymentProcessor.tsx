@@ -1,11 +1,12 @@
 
 import React, { useState, forwardRef, useImperativeHandle } from 'react';
-import { Patient } from '@/types';
 import { toast } from "sonner";
-import PatientSelector from '../PatientSelector';
 import PaymentReceipt from '../PaymentReceipt';
 import { CartItem } from '@/types/pos';
-import { saveTherapySession } from '@/services/therapySessionService';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -19,112 +20,87 @@ export interface PaymentProcessorHandle {
   handleProcessPayment: (paymentAmount: number, changeAmount: number) => void;
 }
 
+// Predefined categories for transactions
+const TRANSACTION_CATEGORIES = [
+  'Penjualan Produk',
+  'Layanan Terapi',
+  'Paket Membership',
+  'Lain-lain'
+];
+
 const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProps>(
   ({ items, total, clearCart }, ref) => {
     const [receiptOpen, setReceiptOpen] = useState(false);
-    const [patientSelectorOpen, setPatientSelectorOpen] = useState(false);
-    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
-    const [isProcessingPatient, setIsProcessingPatient] = useState(false);
+    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
     const [paymentDetails, setPaymentDetails] = useState({
       amount: 0,
-      change: 0,
-      loyaltyPoints: 0
+      change: 0
     });
+    const [transactionCategory, setTransactionCategory] = useState('');
+    const [transactionNote, setTransactionNote] = useState('');
+    const [customCategory, setCustomCategory] = useState('');
     
     // Expose the handleProcessPayment method via ref
     useImperativeHandle(ref, () => ({
       handleProcessPayment: (paymentAmount: number, changeAmount: number) => {
-        // Calculate loyalty points (1 point per 10000 Rp spent)
-        const earnedPoints = Math.floor(total / 10000);
-        
         // Store payment information
         setPaymentDetails({
           amount: paymentAmount,
-          change: changeAmount,
-          loyaltyPoints: earnedPoints
+          change: changeAmount
         });
         
-        // First open patient selector
-        setPatientSelectorOpen(true);
+        // Open category selection dialog first
+        setCategoryDialogOpen(true);
       }
     }));
 
-    const handlePatientSelected = (patient: Patient) => {
-      setSelectedPatient(patient);
-      setPatientSelectorOpen(false);
+    // Handle category selection and proceed to receipt
+    const handleCategorySelected = () => {
+      // Use custom category if selected, otherwise use the selected predefined category
+      const finalCategory = customCategory ? customCategory : transactionCategory;
       
-      // Set processing state to true (useful for newly created patients)
-      setIsProcessingPatient(true);
-      
-      // Verify patient exists in Firestore by checking for ID
-      if (patient.id) {
-        toast.success(`Pasien "${patient.nama}" terpilih`);
-        // After selecting patient, open the receipt with a small delay 
-        // to ensure Firestore transaction is complete
-        setTimeout(() => {
-          setIsProcessingPatient(false);
-          setReceiptOpen(true);
-        }, 500);
-      } else {
-        toast.error("Data pasien tidak lengkap, mohon coba lagi");
-        setIsProcessingPatient(false);
+      // Close category dialog and open receipt
+      setCategoryDialogOpen(false);
+      setReceiptOpen(true);
+    };
+    
+    // Handle category dialog close without selection
+    const handleCategoryDialogClose = () => {
+      setCategoryDialogOpen(false);
+      // Default to 'Lain-lain' category if none selected
+      if (!transactionCategory) {
+        setTransactionCategory('Lain-lain');
       }
+      setReceiptOpen(true);
     };
 
     const handleCloseReceipt = async () => {
       try {
-        // Hanya mencoba menyimpan terapi jika sudah ada data pasien
-        if (!selectedPatient || !selectedPatient.id) {
-          throw new Error("Tidak ada data pasien yang dipilih");
-        }
+        // Simpan transaksi tanpa data pasien
+        const transactionItems = items.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          total: item.price * item.quantity,
+          type: item.type
+        }));
         
-        // Simpan sesi terapi untuk item layanan
-        const therapyItems = items.filter(item => 
-          item.type === 'service' && item.appointments && item.therapist
-        );
+        // Simpan transaksi ke Firestore
+        const transactionData = {
+          items: transactionItems,
+          total: total,
+          paymentAmount: paymentDetails.amount,
+          changeAmount: paymentDetails.change,
+          date: new Date(),
+          createdAt: new Date(),
+          // Tambahkan kategori dan catatan transaksi
+          category: customCategory || transactionCategory || 'Lain-lain',
+          note: transactionNote || '',
+          receiptNo: `POS-${new Date().getTime()}`
+        };
         
-        // Process all therapy items and save the sessions
-        if (therapyItems.length > 0) {
-          for (const item of therapyItems) {
-            if (item.appointments && item.therapist) {
-              try {
-                if (item.isPackage) {
-                  // Untuk item paket, buat beberapa sesi terapi
-                  for (let i = 0; i < item.appointments.length; i++) {
-                    await saveTherapySession(
-                      selectedPatient, 
-                      item.therapist, 
-                      item.id.split('-')[0], // Extract original product ID
-                      item.name.split('(')[0].trim(), // Extract original product name
-                      item.appointments[i],
-                      true,
-                      i, // Pass the package index
-                      null, // Pass null explicitly instead of undefined
-                      item.duration // Pass the duration from the product
-                    );
-                  }
-                } else {
-                  // Untuk kunjungan tunggal
-                  await saveTherapySession(
-                    selectedPatient,
-                    item.therapist,
-                    item.id.split('-')[0], // Extract original product ID
-                    item.name.split('(')[0].trim(), // Extract original product name
-                    item.appointments[0],
-                    false,
-                    0, // Non-package sessions get index 0
-                    null, // Pass null explicitly instead of undefined
-                    item.duration // Pass the duration from the product
-                  );
-                }
-              } catch (error) {
-                console.error("Error saving therapy session:", error);
-                toast.error(`Gagal menyimpan jadwal terapi: ${error instanceof Error ? error.message : 'Unknown error'}`);
-              }
-            }
-          }
-        }
-        
+        await addDoc(collection(db, "transactions"), transactionData);
         toast.success("Transaksi berhasil disimpan");
       } catch (error) {
         console.error("Error handling receipt close:", error);
@@ -132,31 +108,82 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
       } finally {
         // Close receipt and reset state
         setReceiptOpen(false);
-        setSelectedPatient(null);
         clearCart();
-        setPaymentDetails({ amount: 0, change: 0, loyaltyPoints: 0 });
+        setPaymentDetails({ amount: 0, change: 0 });
+        setTransactionCategory('');
+        setTransactionNote('');
+        setCustomCategory('');
       }
     };
 
     return (
       <>
-        {/* Patient Selector Modal */}
-        <PatientSelector
-          isOpen={patientSelectorOpen}
-          onClose={() => setPatientSelectorOpen(false)}
-          onSelectPatient={handlePatientSelected}
-        />
-
-        {/* Payment Receipt (includes selected patient and payment details) */}
+        {/* Category Selection Dialog */}
+        <Dialog open={categoryDialogOpen} onOpenChange={handleCategoryDialogClose}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Pilih Kategori Transaksi</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="category">Kategori</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {TRANSACTION_CATEGORIES.map((category) => (
+                    <Button
+                      key={category}
+                      type="button"
+                      variant={transactionCategory === category ? "default" : "outline"}
+                      onClick={() => {
+                        setTransactionCategory(category);
+                        setCustomCategory('');
+                      }}
+                      className="justify-start"
+                    >
+                      {category}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="custom-category">Kategori Lain</Label>
+                <Input
+                  id="custom-category"
+                  placeholder="Masukkan kategori lain"
+                  value={customCategory}
+                  onChange={(e) => {
+                    setCustomCategory(e.target.value);
+                    setTransactionCategory('');
+                  }}
+                />
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="note">Catatan Transaksi</Label>
+                <Input
+                  id="note"
+                  placeholder="Tambahkan catatan (opsional)"
+                  value={transactionNote}
+                  onChange={(e) => setTransactionNote(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleCategorySelected}>Lanjutkan</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Payment Receipt (without patient data) */}
         <PaymentReceipt
           isOpen={receiptOpen}
           onClose={handleCloseReceipt}
           items={items}
           total={total}
-          patient={selectedPatient}
           paymentAmount={paymentDetails.amount}
           changeAmount={paymentDetails.change}
-          loyaltyPoints={paymentDetails.loyaltyPoints}
+          category={customCategory || transactionCategory || 'Lain-lain'}
+          note={transactionNote}
         />
       </>
     );
