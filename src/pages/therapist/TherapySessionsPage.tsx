@@ -347,12 +347,17 @@ const TherapySessionsPage = () => {
                     {!showAddPatientForm ? (
                       <>
                         <div className="mb-2">
-                          <Input 
-                            placeholder="Cari pasien..." 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="mb-1"
-                          />
+                          <div>
+                            <Input 
+                              placeholder="Cari pasien (min. 3 karakter)..." 
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className="mb-1"
+                            />
+                            {searchQuery.length > 0 && searchQuery.length < 3 && (
+                              <p className="text-xs text-muted-foreground mt-1">Ketik minimal 3 karakter untuk pencarian</p>
+                            )}
+                          </div>
                         </div>
                         <Select value={patientId} onValueChange={setPatientId}>
                           <SelectTrigger id="patient">
@@ -360,15 +365,15 @@ const TherapySessionsPage = () => {
                           </SelectTrigger>
                           <SelectContent>
                             {patients.length > 0 ? (
-                              patients
-                                .filter(patient => 
+                              (searchQuery.length < 3 
+                                ? patients.slice(0, 20) // Tampilkan 20 pasien pertama jika pencarian kurang dari 3 karakter
+                                : patients.filter(patient => 
                                   patient.namaLengkap?.toLowerCase().includes(searchQuery.toLowerCase())
-                                )
-                                .map(patient => (
-                                  <SelectItem key={patient.id} value={patient.id}>
-                                    {patient.namaLengkap}
-                                  </SelectItem>
-                                ))
+                                )).map(patient => (
+                                <SelectItem key={patient.id} value={patient.id}>
+                                  {patient.namaLengkap}
+                                </SelectItem>
+                              ))
                             ) : (
                               <SelectItem value="no-patients" disabled>
                                 Tidak ada pasien tersedia
