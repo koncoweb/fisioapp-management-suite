@@ -293,7 +293,7 @@ const TherapySessionsManagement = () => {
               </Button>
             </div>
           </div>
-        </CardHeader>
+        </CardContent>
         <CardContent>
           {loading ? (
             <div className="text-center py-4">Memuat data...</div>
