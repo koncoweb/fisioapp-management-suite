@@ -108,19 +108,21 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-900 p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800 to-zinc-900">
       <div className="w-full max-w-md">
-        <Card className="shadow-lg">
+        <Card className="shadow-lg border-yellow-500/20 bg-zinc-950/90 backdrop-blur-sm">
           <CardHeader className="text-center">
             {logoUrl ? (
-              <div className="flex justify-center mb-4">
-                <img src={logoUrl} alt="Logo" className="h-16 w-auto" />
+              <div className="flex justify-center mb-6">
+                <div className="p-1 rounded-full bg-gradient-to-tr from-yellow-400 via-yellow-500 to-yellow-600">
+                  <img src={logoUrl || '/placeholder.svg'} alt="Logo" className="h-24 w-auto rounded-full bg-zinc-950 p-2" />
+                </div>
               </div>
             ) : null}
-            <CardTitle className="text-2xl font-bold text-primary">{appTitle}</CardTitle>
-            <CardDescription>{appDescription}</CardDescription>
+            <CardTitle className="text-2xl font-bold text-yellow-400">{appTitle}</CardTitle>
+            <CardDescription className="text-zinc-400">{appDescription}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="bg-zinc-900/50 rounded-md pb-6 px-6 pt-4">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -128,11 +130,12 @@ const Login: React.FC = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-zinc-300">Email</FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
                           placeholder="your.email@example.com" 
+                          className="bg-zinc-900 border-zinc-700 text-zinc-100"
                           {...field} 
                         />
                       </FormControl>
@@ -146,11 +149,12 @@ const Login: React.FC = () => {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel className="text-zinc-300">Password</FormLabel>
                       <FormControl>
                         <Input 
                           type="password" 
                           placeholder="******" 
+                          className="bg-zinc-900 border-zinc-700 text-zinc-100"
                           {...field} 
                         />
                       </FormControl>
@@ -161,12 +165,12 @@ const Login: React.FC = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full" 
+                  className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-zinc-900 font-bold" 
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <div className="flex items-center justify-center">
-                      <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-b-2 border-white mr-2"></div>
+                      <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-b-2 border-zinc-900 mr-2"></div>
                       Processing...
                     </div>
                   ) : (
@@ -179,7 +183,7 @@ const Login: React.FC = () => {
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link to="/register" className="text-primary hover:underline">
+              <Link to="/register" className="text-yellow-500 hover:text-yellow-400 hover:underline">
                 Register
               </Link>
             </p>
