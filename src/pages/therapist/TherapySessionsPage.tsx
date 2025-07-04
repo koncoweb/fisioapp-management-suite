@@ -62,12 +62,9 @@ const TherapySessionsPage = () => {
   const [activeTab, setActiveTab] = useState('create');
   const [showAddPatientForm, setShowAddPatientForm] = useState(false);
   const [newPatient, setNewPatient] = useState({
-    namaLengkap: '',
-    email: '',
-    jenisKelamin: '',
-    usia: '',
-    alamat: '',
+    namaLengkap: ''
   });
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch patients and services
   useEffect(() => {
@@ -161,10 +158,10 @@ const TherapySessionsPage = () => {
   };
 
   const handleAddNewPatient = async () => {
-    if (!newPatient.namaLengkap || !newPatient.email) {
+    if (!newPatient.namaLengkap) {
       toast({
         title: 'Error',
-        description: 'Nama dan email pasien harus diisi',
+        description: 'Nama lengkap pasien harus diisi',
         variant: 'destructive',
       });
       return;
@@ -172,13 +169,9 @@ const TherapySessionsPage = () => {
 
     setLoading(true);
     try {
-      // Create new patient document in users collection
+      // Create new patient document in users collection with minimal information
       const newPatientRef = await addDoc(collection(db, 'users'), {
         namaLengkap: newPatient.namaLengkap,
-        email: newPatient.email,
-        jenisKelamin: newPatient.jenisKelamin,
-        usia: newPatient.usia,
-        alamat: newPatient.alamat,
         role: 'Pasien',
         createdAt: new Date().toISOString(),
       });
@@ -186,10 +179,7 @@ const TherapySessionsPage = () => {
       // Add the new patient to the local state
       const newPatientData = {
         id: newPatientRef.id,
-        namaLengkap: newPatient.namaLengkap,
-        email: newPatient.email,
-        jenisKelamin: newPatient.jenisKelamin,
-        usia: newPatient.usia,
+        namaLengkap: newPatient.namaLengkap
       };
       setPatients([...patients, newPatientData]);
 
@@ -198,11 +188,7 @@ const TherapySessionsPage = () => {
 
       // Reset the form
       setNewPatient({
-        namaLengkap: '',
-        email: '',
-        jenisKelamin: '',
-        usia: '',
-        alamat: '',
+        namaLengkap: ''
       });
       setShowAddPatientForm(false);
 
@@ -336,7 +322,7 @@ const TherapySessionsPage = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center">
+                    <div className="flex justify-between items-center mb-1.5">
                       <Label htmlFor="patient">Pasien</Label>
                       <Button 
                         type="button" 
@@ -359,24 +345,38 @@ const TherapySessionsPage = () => {
                     </div>
                     
                     {!showAddPatientForm ? (
-                      <Select value={patientId} onValueChange={setPatientId}>
-                        <SelectTrigger id="patient">
-                          <SelectValue placeholder="Pilih pasien" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {patients.length > 0 ? (
-                            patients.map(patient => (
-                              <SelectItem key={patient.id} value={patient.id}>
-                                {patient.namaLengkap} {patient.usia ? `(${patient.usia} tahun)` : ''}
+                      <>
+                        <div className="mb-2">
+                          <Input 
+                            placeholder="Cari pasien..." 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="mb-1"
+                          />
+                        </div>
+                        <Select value={patientId} onValueChange={setPatientId}>
+                          <SelectTrigger id="patient">
+                            <SelectValue placeholder="Pilih pasien" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {patients.length > 0 ? (
+                              patients
+                                .filter(patient => 
+                                  patient.namaLengkap?.toLowerCase().includes(searchQuery.toLowerCase())
+                                )
+                                .map(patient => (
+                                  <SelectItem key={patient.id} value={patient.id}>
+                                    {patient.namaLengkap}
+                                  </SelectItem>
+                                ))
+                            ) : (
+                              <SelectItem value="no-patients" disabled>
+                                Tidak ada pasien tersedia
                               </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="no-patients" disabled>
-                              Tidak ada pasien tersedia
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </>
                     ) : (
                       <div className="space-y-3 border p-3 rounded-md">
                         <div>
@@ -388,57 +388,11 @@ const TherapySessionsPage = () => {
                             placeholder="Nama lengkap pasien"
                           />
                         </div>
-                        <div>
-                          <Label htmlFor="newPatientEmail">Email</Label>
-                          <Input
-                            id="newPatientEmail"
-                            type="email"
-                            value={newPatient.email}
-                            onChange={(e) => setNewPatient({...newPatient, email: e.target.value})}
-                            placeholder="Email pasien"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <Label htmlFor="newPatientGender">Jenis Kelamin</Label>
-                            <Select 
-                              value={newPatient.jenisKelamin} 
-                              onValueChange={(value) => setNewPatient({...newPatient, jenisKelamin: value})}
-                            >
-                              <SelectTrigger id="newPatientGender">
-                                <SelectValue placeholder="Pilih jenis kelamin" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Laki-laki">Laki-laki</SelectItem>
-                                <SelectItem value="Perempuan">Perempuan</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label htmlFor="newPatientAge">Usia</Label>
-                            <Input
-                              id="newPatientAge"
-                              type="number"
-                              value={newPatient.usia}
-                              onChange={(e) => setNewPatient({...newPatient, usia: e.target.value})}
-                              placeholder="Usia pasien"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label htmlFor="newPatientAddress">Alamat</Label>
-                          <Textarea
-                            id="newPatientAddress"
-                            value={newPatient.alamat}
-                            onChange={(e) => setNewPatient({...newPatient, alamat: e.target.value})}
-                            placeholder="Alamat pasien"
-                          />
-                        </div>
                         <Button 
                           type="button" 
                           className="w-full"
                           onClick={handleAddNewPatient}
-                          disabled={!newPatient.namaLengkap || !newPatient.email}
+                          disabled={!newPatient.namaLengkap}
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Tambah Pasien
