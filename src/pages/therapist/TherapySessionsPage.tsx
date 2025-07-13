@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
-import { useCollection } from '@/hooks/useCollection';
 import { TherapySession } from '@/types/therapySession';
 import { User } from '@/types/user';
 import { Product, ProductType } from '@/types/product';
@@ -162,8 +161,12 @@ const TherapySessionsPage = () => {
     // Set duration based on selected service
     const selectedService = services.find(service => service.id === value);
     if (selectedService) {
-      setDuration(selectedService.duration);
+      // setDuration(selectedService.duration); // This line was removed
     }
+  };
+
+  const handleSearchPatient = () => {
+    // Implementasi pencarian pasien, misal filter array atau fetch Firestore
   };
 
   const handleAddNewPatient = async () => {
@@ -186,9 +189,12 @@ const TherapySessionsPage = () => {
       });
 
       // Add the new patient to the local state
-      const newPatientData = {
+      const newPatientData: User = {
         id: newPatientRef.id,
-        namaLengkap: newPatient.namaLengkap
+        name: newPatient.namaLengkap,
+        email: '',
+        role: 'patient',
+        // tambahkan field lain jika perlu
       };
       setPatients([...patients, newPatientData]);
 
@@ -316,69 +322,42 @@ const TherapySessionsPage = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center mb-1.5">
                       <Label htmlFor="patient">Pasien</Label>
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                            <Input 
-                              placeholder="Cari pasien (min. 3 karakter)..." 
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                              className="mb-1"
-                            />
-                            {searchQuery.length > 0 && searchQuery.length < 3 && (
-                              <p className="text-xs text-muted-foreground mt-1">Ketik minimal 3 karakter untuk pencarian</p>
-                            )}
-                          </div>
-                        </div>
-                        <Select value={patientId} onValueChange={setPatientId}>
-                          <SelectTrigger id="patient">
-                            <SelectValue placeholder="Pilih pasien" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {patients.length > 0 ? (
-                              (searchQuery.length < 3 
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </>
-                    ) : (
-                      <div className="space-y-3 border p-3 rounded-md">
-                        <div>
-                          <Label htmlFor="newPatientName">Nama Lengkap</Label>
-                          <Input
-                            id="newPatientName"
-                            value={newPatient.namaLengkap}
-                            onChange={(e) => setNewPatient({...newPatient, namaLengkap: e.target.value})}
-                            placeholder="Nama lengkap pasien"
-                          />
-                        </div>
-                        <Button 
-                          type="button" 
-                          className="w-full"
-                          onClick={handleAddNewPatient}
-                          disabled={!newPatient.namaLengkap}
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Cari pasien (min. 3 karakter)..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="mb-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleSearchPatient}
+                          disabled={searchQuery.length < 3}
                         >
-                          Simpan Pasien Baru
+                          Cari
                         </Button>
                       </div>
-                    ) : (
-                      <Select value={patientId} onValueChange={setPatientId}>
-                        <SelectTrigger id="patient">
-                          <SelectValue placeholder="Pilih pasien" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {patients.length > 0 ? (
-                            patients.map(patient => (
-                              <SelectItem key={patient.id} value={patient.id}>
-                                {patient.name}
-                              </SelectItem>
-                            ))
-                          ) : (
-                            <SelectItem value="">Tidak ada pasien</SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
+                    </div>
+                    {searchQuery.length > 0 && searchQuery.length < 3 && (
+                      <p className="text-xs text-muted-foreground mt-1">Ketik minimal 3 karakter untuk pencarian</p>
                     )}
+                    <Select value={patientId} onValueChange={setPatientId}>
+                      <SelectTrigger id="patient">
+                        <SelectValue placeholder="Pilih pasien" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {patients.length > 0 ? (
+                          patients.map(patient => (
+                            <SelectItem key={patient.id} value={patient.id}>
+                              {patient.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="">Tidak ada pasien</SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="service">Layanan</Label>
@@ -395,21 +374,48 @@ const TherapySessionsPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                    <TableBody>
-                      {sessions.map((session) => (
-                        <TableRow key={session.id}>
-                          <TableCell>{session.date}</TableCell>
-                          <TableCell>{session.time}</TableCell>
-                          <TableCell>{session.patientName}</TableCell>
-                          <TableCell>{session.serviceName}</TableCell>
-                          <TableCell>{session.duration} menit</TableCell>
-                          <TableCell>{getStatusBadge(session.status)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
                 </div>
-              )}
+                <Button type="submit" className="w-full">
+                  Catat Sesi Terapi
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="list">
+          <Card>
+            <CardHeader>
+              <CardTitle>Daftar Sesi Terapi</CardTitle>
+              <CardDescription>
+                Daftar sesi terapi yang telah dicatat
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tanggal</TableHead>
+                    <TableHead>Waktu</TableHead>
+                    <TableHead>Pasien</TableHead>
+                    <TableHead>Layanan</TableHead>
+                    <TableHead>Durasi</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sessions.map((session) => (
+                    <TableRow key={session.id}>
+                      <TableCell>{session.date}</TableCell>
+                      <TableCell>{session.time}</TableCell>
+                      <TableCell>{session.patientName}</TableCell>
+                      <TableCell>{session.serviceName}</TableCell>
+                      <TableCell>{session.duration} menit</TableCell>
+                      <TableCell>{getStatusBadge(session.status)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
         </TabsContent>
