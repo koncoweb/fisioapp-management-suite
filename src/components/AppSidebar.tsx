@@ -21,7 +21,6 @@ import {
   LayoutDashboard,
   Users,
   Package,
-  Calendar,
   MessageSquare,
   LogOut,
   Bell,
@@ -83,7 +82,6 @@ const AppSidebar: React.FC = () => {
 
   const therapistMenuItems = [
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/bookings', label: 'Jadwal', icon: Calendar },
     { path: '/attendance', label: 'Absensi', icon: Fingerprint },
     { path: '/therapy-sessions', label: 'Catat Terapi', icon: ClipboardList },
     // { path: '/messages', label: 'Pesan', icon: MessageSquare }, // Disembunyikan sesuai permintaan

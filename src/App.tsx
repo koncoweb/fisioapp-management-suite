@@ -21,8 +21,6 @@ import NotFound from "./pages/NotFound";
 import ProductManagement from "./pages/admin/ProductManagement";
 import EmployeeManagement from "./pages/admin/EmployeeManagement";
 import PatientDashboard from "./pages/patients/Dashboard";
-import BookingPage from "./pages/patients/BookingPage";
-import BookingManagement from "./pages/admin/BookingManagement";
 import Settings from "./pages/admin/Settings";
 import PointOfSale from "./pages/admin/PointOfSale";
 import KeuanganPage from "./pages/keuangan";
@@ -54,7 +52,6 @@ const App = () => (
               <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/patients" element={<PatientDashboard />} />
-                <Route path="/booking" element={<BookingPage />} />
                 <Route path="/products" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <ProductManagement />
@@ -63,11 +60,6 @@ const App = () => (
                 <Route path="/employees" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <EmployeeManagement />
-                  </ProtectedRoute>
-                } />
-                <Route path="/bookings" element={
-                  <ProtectedRoute allowedRoles={['admin', 'therapist']}>
-                    <BookingManagement />
                   </ProtectedRoute>
                 } />
                 <Route path="/pos" element={
@@ -100,11 +92,7 @@ const App = () => (
                     <TherapySessionsPage />
                   </ProtectedRoute>
                 } />
-                <Route path="/schedule" element={
-                  <ProtectedRoute allowedRoles={['admin', 'therapist']}>
-                    <BookingManagement />
-                  </ProtectedRoute>
-                } />
+
                 <Route path="/therapy-sessions-management" element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <TherapySessionsManagement />
@@ -116,7 +104,6 @@ const App = () => (
                     <TherapyReportsPage />
                   </ProtectedRoute>
                 } />
-
                 <Route path="/messages" element={<div>Messages (Coming soon)</div>} />
                 <Route path="/notifications" element={<div>Notifications (Coming soon)</div>} />
                 <Route path="/profile" element={<div>User Profile (Coming soon)</div>} />

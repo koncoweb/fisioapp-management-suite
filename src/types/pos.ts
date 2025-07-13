@@ -13,8 +13,6 @@ export interface CartItemBase extends Product {
 }
 
 export interface CartItem extends CartItemBase {
-  appointmentDate?: Date; // For backward compatibility
-  appointmentTime?: string; // For backward compatibility
   appointments?: AppointmentSlot[];
   therapist?: Employee; // Added therapist field
 }

@@ -1,23 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { collection, addDoc, query, where, getDocs, doc, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { useToast } from '@/components/ui/use-toast';
+import { useCollection } from '@/hooks/useCollection';
+import { TherapySession } from '@/types/therapySession';
+import { User } from '@/types/user';
+import { Product, ProductType } from '@/types/product';
+import { addDoc, collection, query, where, getDocs, getDoc, doc, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { format } from 'date-fns';
+import { CalendarIcon, UserPlus, RefreshCw, Plus, CheckCircle, Clock, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/components/ui/use-toast';
-import { TherapySession } from '@/types/therapySession';
-import { format } from 'date-fns';
-import { CalendarIcon, CheckCircle, Clock, Package, Plus, RefreshCw, UserPlus } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -47,16 +50,13 @@ interface Service {
 const TherapySessionsPage = () => {
   const { userData } = useAuth();
   const { toast } = useToast();
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [time, setTime] = useState('');
-  const [duration, setDuration] = useState(60);
   const [isPackage, setIsPackage] = useState(false);
   const [packageIndex, setPackageIndex] = useState<number | undefined>(undefined);
   const [patientId, setPatientId] = useState('');
   const [serviceId, setServiceId] = useState('');
+  const [patients, setPatients] = useState<User[]>([]);
+  const [services, setServices] = useState<Product[]>([]);
   const [notes, setNotes] = useState('');
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
   const [sessions, setSessions] = useState<TherapySession[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('create');
@@ -66,7 +66,6 @@ const TherapySessionsPage = () => {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Fetch patients and services
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -78,10 +77,18 @@ const TherapySessionsPage = () => {
         const patientsSnapshot = await getDocs(patientQuery);
         const patientsData = patientsSnapshot.docs.map(doc => ({
           id: doc.id,
-          namaLengkap: doc.data().namaLengkap,
+          name: doc.data().name,
           email: doc.data().email,
-          jenisKelamin: doc.data().jenisKelamin,
-          usia: doc.data().usia,
+          role: doc.data().role,
+          phone: doc.data().phone,
+          address: doc.data().address,
+          photoURL: doc.data().photoURL,
+          createdAt: doc.data().createdAt,
+          updatedAt: doc.data().updatedAt,
+          lastLogin: doc.data().lastLogin,
+          isActive: doc.data().isActive,
+          specialization: doc.data().specialization,
+          notes: doc.data().notes
         }));
         setPatients(patientsData);
 
@@ -98,6 +105,8 @@ const TherapySessionsPage = () => {
           duration: doc.data().duration || 60, // Default to 60 minutes if not specified
           price: doc.data().price,
           type: doc.data().type,
+          createdAt: doc.data().createdAt || new Date().toISOString(),
+          updatedAt: doc.data().updatedAt || new Date().toISOString(),
         }));
         setServices(servicesData);
 
@@ -211,10 +220,10 @@ const TherapySessionsPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!userData?.uid || !patientId || !serviceId || !date || !time) {
+    if (!userData?.uid || !patientId || !serviceId) {
       toast({
         title: 'Error',
-        description: 'Semua field harus diisi',
+        description: 'Pasien dan layanan harus dipilih',
         variant: 'destructive',
       });
       return;
@@ -234,20 +243,13 @@ const TherapySessionsPage = () => {
         throw new Error('Layanan tidak ditemukan');
       }
 
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      
       const sessionData = {
         patientId,
-        patientName: patientDoc.namaLengkap,
+        patientName: patientDoc.name,
         serviceId,
         serviceName: serviceDoc.name,
         therapistId: userData.uid,
         therapistName: userData.namaLengkap,
-        date: formattedDate,
-        time,
-        duration,
-        isPackage,
-        ...(isPackage && packageIndex !== undefined ? { packageIndex } : {}),
         status: 'pending',
         notes,
         createdAt: new Date().toISOString(),
@@ -259,16 +261,6 @@ const TherapySessionsPage = () => {
         title: 'Sukses',
         description: 'Sesi terapi berhasil dicatat',
       });
-      
-      // Reset form
-      setPatientId('');
-      setServiceId('');
-      setDate(new Date());
-      setTime('');
-      setDuration(60);
-      setIsPackage(false);
-      setPackageIndex(undefined);
-      setNotes('');
       
       // Refresh sessions list
       await fetchTherapySessions();
@@ -327,27 +319,6 @@ const TherapySessionsPage = () => {
                       <Button 
                         type="button" 
                         variant="outline" 
-                        size="sm"
-                        onClick={() => setShowAddPatientForm(!showAddPatientForm)}
-                      >
-                        {showAddPatientForm ? (
-                          <>
-                            <RefreshCw className="h-4 w-4 mr-1" />
-                            Batal
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="h-4 w-4 mr-1" />
-                            Pasien Baru
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    {!showAddPatientForm ? (
-                      <>
-                        <div className="mb-2">
-                          <div>
                             <Input 
                               placeholder="Cari pasien (min. 3 karakter)..." 
                               value={searchQuery}
@@ -366,18 +337,6 @@ const TherapySessionsPage = () => {
                           <SelectContent>
                             {patients.length > 0 ? (
                               (searchQuery.length < 3 
-                                ? patients.slice(0, 20) // Tampilkan 20 pasien pertama jika pencarian kurang dari 3 karakter
-                                : patients.filter(patient => 
-                                  patient.namaLengkap?.toLowerCase().includes(searchQuery.toLowerCase())
-                                )).map(patient => (
-                                <SelectItem key={patient.id} value={patient.id}>
-                                  {patient.namaLengkap}
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <SelectItem value="no-patients" disabled>
-                                Tidak ada pasien tersedia
-                              </SelectItem>
                             )}
                           </SelectContent>
                         </Select>
@@ -399,16 +358,31 @@ const TherapySessionsPage = () => {
                           onClick={handleAddNewPatient}
                           disabled={!newPatient.namaLengkap}
                         >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Tambah Pasien
+                          Simpan Pasien Baru
                         </Button>
                       </div>
+                    ) : (
+                      <Select value={patientId} onValueChange={setPatientId}>
+                        <SelectTrigger id="patient">
+                          <SelectValue placeholder="Pilih pasien" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {patients.length > 0 ? (
+                            patients.map(patient => (
+                              <SelectItem key={patient.id} value={patient.id}>
+                                {patient.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="">Tidak ada pasien</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                     )}
                   </div>
-                  
                   <div className="space-y-2">
                     <Label htmlFor="service">Layanan</Label>
-                    <Select value={serviceId} onValueChange={handleServiceChange}>
+                    <Select value={serviceId} onValueChange={setServiceId}>
                       <SelectTrigger id="service">
                         <SelectValue placeholder="Pilih layanan" />
                       </SelectTrigger>
@@ -421,126 +395,6 @@ const TherapySessionsPage = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Tanggal</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !date && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {date ? format(date, "PPP") : <span>Pilih tanggal</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={date}
-                          onSelect={setDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="time">Waktu</Label>
-                    <Input
-                      id="time"
-                      type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">Durasi (menit)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      min="1"
-                      value={duration}
-                      onChange={(e) => setDuration(parseInt(e.target.value))}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 pt-6">
-                    <Checkbox
-                      id="isPackage"
-                      checked={isPackage}
-                      onCheckedChange={(checked) => {
-                        setIsPackage(checked === true);
-                        if (checked === false) {
-                          setPackageIndex(undefined);
-                        }
-                      }}
-                    />
-                    <Label htmlFor="isPackage">Bagian dari paket</Label>
-                  </div>
-                </div>
-                
-                {isPackage && (
-                  <div className="space-y-2">
-                    <Label htmlFor="packageIndex">Sesi ke-</Label>
-                    <Input
-                      id="packageIndex"
-                      type="number"
-                      min="1"
-                      value={packageIndex || ''}
-                      onChange={(e) => setPackageIndex(parseInt(e.target.value))}
-                    />
-                  </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Catatan</Label>
-                  <Textarea
-                    id="notes"
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Tambahkan catatan tentang sesi terapi ini"
-                  />
-                </div>
-                
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Menyimpan...' : 'Simpan Sesi Terapi'}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="list">
-          <Card>
-            <CardHeader>
-              <CardTitle>Daftar Sesi Terapi</CardTitle>
-              <CardDescription>
-                Daftar sesi terapi yang telah Anda catat
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-4">Memuat data...</div>
-              ) : sessions.length === 0 ? (
-                <div className="text-center py-4">Belum ada sesi terapi yang dicatat</div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tanggal</TableHead>
-                        <TableHead>Waktu</TableHead>
-                        <TableHead>Pasien</TableHead>
-                        <TableHead>Layanan</TableHead>
-                        <TableHead>Durasi</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
                     <TableBody>
                       {sessions.map((session) => (
                         <TableRow key={session.id}>

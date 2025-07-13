@@ -609,10 +609,22 @@ const TherapyPaymentsPage = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="cash">Tunai</SelectItem>
+                      <SelectItem value="qris">QRIS</SelectItem>
+                      <SelectItem value="emoney">E-Money</SelectItem>
                       <SelectItem value="transfer">Transfer Bank</SelectItem>
+                      <SelectItem value="virtual_account">Virtual Account</SelectItem>
                       <SelectItem value="debit">Kartu Debit</SelectItem>
                       <SelectItem value="credit">Kartu Kredit</SelectItem>
-                      <SelectItem value="qris">QRIS</SelectItem>
+                      <SelectItem value="ewallet">E-Wallet</SelectItem>
+                      <SelectItem value="dana">DANA</SelectItem>
+                      <SelectItem value="ovo">OVO</SelectItem>
+                      <SelectItem value="gopay">GoPay</SelectItem>
+                      <SelectItem value="shopeepay">ShopeePay</SelectItem>
+                      <SelectItem value="linkaja">LinkAja</SelectItem>
+                      <SelectItem value="bca_mobile">BCA Mobile</SelectItem>
+                      <SelectItem value="mandiri_online">Mandiri Online</SelectItem>
+                      <SelectItem value="bni_mobile">BNI Mobile</SelectItem>
+                      <SelectItem value="bri_mobile">BRI Mobile</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

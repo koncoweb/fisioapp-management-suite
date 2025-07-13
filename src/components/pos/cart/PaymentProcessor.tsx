@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { addDoc, collection } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Patient } from '@/types';
+import PatientSearch from '../patient/PatientSearch';
 
 interface PaymentProcessorProps {
   items: CartItem[];
@@ -23,9 +25,7 @@ export interface PaymentProcessorHandle {
 // Predefined categories for transactions
 const TRANSACTION_CATEGORIES = [
   'Penjualan Produk',
-  'Layanan Terapi',
-  'Paket Membership',
-  'Lain-lain'
+  'Layanan Terapi'
 ];
 
 // Predefined payment methods
@@ -35,7 +35,18 @@ const PAYMENT_METHODS = [
   'Bank Transfer',
   'Kartu Debit',
   'Kartu Kredit',
-  'E-Wallet'
+  'E-Money',
+  'Transfer Bank',
+  'Virtual Account',
+  'DANA',
+  'OVO',
+  'GoPay',
+  'ShopeePay',
+  'LinkAja',
+  'BCA Mobile',
+  'Mandiri Online',
+  'BNI Mobile',
+  'BRI Mobile'
 ];
 
 const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProps>(
@@ -48,9 +59,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     });
     const [transactionCategory, setTransactionCategory] = useState('');
     const [transactionNote, setTransactionNote] = useState('');
-    const [customCategory, setCustomCategory] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('Tunai');
-    const [customPaymentMethod, setCustomPaymentMethod] = useState('');
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
     
     // Expose the handleProcessPayment method via ref
     useImperativeHandle(ref, () => ({
@@ -69,7 +79,7 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
     // Handle category selection and proceed to receipt
     const handleCategorySelected = () => {
       // Use custom category if selected, otherwise use the selected predefined category
-      const finalCategory = customCategory ? customCategory : transactionCategory;
+      const finalCategory = transactionCategory;
       
       // Close category dialog and open receipt
       setCategoryDialogOpen(false);
@@ -107,10 +117,15 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           date: new Date(),
           createdAt: new Date(),
           // Tambahkan kategori, metode pembayaran dan catatan transaksi
-          category: customCategory || transactionCategory || 'Lain-lain',
-          paymentMethod: customPaymentMethod || paymentMethod || 'Tunai',
+          category: transactionCategory || 'Lain-lain',
+          paymentMethod: paymentMethod || 'Tunai',
           note: transactionNote || '',
-          receiptNo: `POS-${new Date().getTime()}`
+          receiptNo: `POS-${new Date().getTime()}`,
+          customerId: selectedPatient?.id,
+          customerNama: selectedPatient?.nama,
+          customerTelepon: selectedPatient?.telepon,
+          customerEmail: selectedPatient?.email,
+          customerAlamat: selectedPatient?.alamat
         };
         
         await addDoc(collection(db, "transactions"), transactionData);
@@ -125,9 +140,8 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         setPaymentDetails({ amount: 0, change: 0 });
         setTransactionCategory('');
         setTransactionNote('');
-        setCustomCategory('');
         setPaymentMethod('Tunai');
-        setCustomPaymentMethod('');
+        setSelectedPatient(null); // Reset selected patient
       }
     };
 
@@ -137,9 +151,25 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
         <Dialog open={categoryDialogOpen} onOpenChange={handleCategoryDialogClose}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Pilih Kategori Transaksi</DialogTitle>
+              <DialogTitle>Pilih Kustomer & Kategori Transaksi</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
+              {/* Pencarian Customer */}
+              <div className="grid gap-2">
+                <Label htmlFor="customer">Cari Customer</Label>
+                {!selectedPatient ? (
+                  <PatientSearch onSelectPatient={setSelectedPatient} />
+                ) : (
+                  <div className="p-2 border rounded flex items-center justify-between bg-muted/30">
+                    <div>
+                      <div className="font-medium">{selectedPatient.nama}</div>
+                      <div className="text-xs text-muted-foreground">{selectedPatient.alamat} | {selectedPatient.telepon || '-'} | {selectedPatient.email || '-'}</div>
+                    </div>
+                    <Button size="sm" variant="ghost" onClick={() => setSelectedPatient(null)}>Ganti</Button>
+                  </div>
+                )}
+              </div>
+              {/* Pilihan Kategori & Metode Pembayaran */}
               <div className="grid gap-2">
                 <Label htmlFor="category">Kategori</Label>
                 <div className="grid grid-cols-2 gap-2">
@@ -150,7 +180,6 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
                       variant={transactionCategory === category ? "default" : "outline"}
                       onClick={() => {
                         setTransactionCategory(category);
-                        setCustomCategory('');
                       }}
                       className="justify-start"
                     >
@@ -161,50 +190,23 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
               </div>
               
               <div className="grid gap-2">
-                <Label htmlFor="custom-category">Kategori Lain</Label>
-                <Input
-                  id="custom-category"
-                  placeholder="Masukkan kategori lain"
-                  value={customCategory}
-                  onChange={(e) => {
-                    setCustomCategory(e.target.value);
-                    setTransactionCategory('');
-                  }}
-                />
-              </div>
-              
-              <div className="grid gap-2">
                 <Label htmlFor="payment-method">Metode Pembayaran</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  {PAYMENT_METHODS.map((method) => (
+                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                  {PAYMENT_METHODS.filter(method => method !== 'E-Wallet').map((method) => (
                     <Button
                       key={method}
                       type="button"
                       variant={paymentMethod === method ? "default" : "outline"}
                       onClick={() => {
                         setPaymentMethod(method);
-                        setCustomPaymentMethod('');
                       }}
-                      className="justify-start"
+                      className="justify-start text-xs"
                       size="sm"
                     >
                       {method}
                     </Button>
                   ))}
                 </div>
-              </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="custom-payment">Metode Pembayaran Lain</Label>
-                <Input
-                  id="custom-payment"
-                  placeholder="Metode pembayaran lain"
-                  value={customPaymentMethod}
-                  onChange={(e) => {
-                    setCustomPaymentMethod(e.target.value);
-                    setPaymentMethod('');
-                  }}
-                />
               </div>
               
               <div className="grid gap-2">
@@ -218,12 +220,12 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
               </div>
             </div>
             <div className="flex justify-end">
-              <Button onClick={handleCategorySelected}>Lanjutkan</Button>
+              <Button onClick={handleCategorySelected} disabled={!selectedPatient}>Lanjutkan</Button>
             </div>
           </DialogContent>
         </Dialog>
         
-        {/* Payment Receipt (without patient data) */}
+        {/* Payment Receipt */}
         <PaymentReceipt
           isOpen={receiptOpen}
           onClose={handleCloseReceipt}
@@ -231,9 +233,10 @@ const PaymentProcessor = forwardRef<PaymentProcessorHandle, PaymentProcessorProp
           total={total}
           paymentAmount={paymentDetails.amount}
           changeAmount={paymentDetails.change}
-          category={customCategory || transactionCategory || 'Lain-lain'}
-          paymentMethod={customPaymentMethod || paymentMethod || 'Tunai'}
+          category={transactionCategory || 'Lain-lain'}
+          paymentMethod={paymentMethod || 'Tunai'}
           note={transactionNote}
+          customer={selectedPatient}
         />
       </>
     );

@@ -1,8 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { CalendarPlus } from 'lucide-react';
 import StatsGrid from '@/components/patients/StatsGrid';
 import RecentActivities from '@/components/patients/RecentActivities';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,14 +37,7 @@ const PatientDashboard = () => {
               Selamat datang, {userData?.namaLengkap || userData?.email}
             </p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <Button asChild className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600">
-              <Link to="/booking">
-                <CalendarPlus className="mr-2 h-4 w-4" />
-                Buat Jadwal Terapi
-              </Link>
-            </Button>
-          </div>
+
         </div>
       </div>
 

@@ -6,13 +6,24 @@ import { Printer, Download } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import AppConfigHeader from '@/components/receipt/AppConfigHeader';
+import { Patient } from '@/types';
 
 interface PaymentReceiptProps {
-  payment: TherapyPayment;
+  payment?: TherapyPayment; // untuk pembayaran terapi
   onClose: () => void;
+  // Untuk POS
+  isOpen?: boolean;
+  items?: any[];
+  total?: number;
+  paymentAmount?: number;
+  changeAmount?: number;
+  category?: string;
+  paymentMethod?: string;
+  note?: string;
+  customer?: Patient;
 }
 
-const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => {
+const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose, isOpen, items, total, paymentAmount, changeAmount, category, paymentMethod, note, customer }) => {
   const receiptRef = useRef<HTMLDivElement>(null);
   
   const formatCurrency = (amount: number) => {
@@ -56,7 +67,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => 
     printWindow.document.write(`
       <html>
         <head>
-          <title>Receipt-${payment.receiptNumber || payment.id}</title>
+          <title>Receipt-${payment?.receiptNumber || payment?.id}</title>
           <style>${printStyles}</style>
         </head>
         <body>
@@ -92,7 +103,7 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => 
     });
     
     pdf.addImage(imgData, 'PNG', 0, 0, 80, 0);
-    pdf.save(`Receipt-${payment.receiptNumber || payment.id}.pdf`);
+    pdf.save(`Receipt-${payment?.receiptNumber || payment?.id}.pdf`);
   };
   
   return (
@@ -103,23 +114,32 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => 
         style={{ width: '80mm', margin: '0 auto', color: 'black' }}
       >
         <AppConfigHeader type="payment" />
+        {/* Tampilkan info customer jika ada */}
+        {customer && (
+          <div className="mb-2 text-black text-xs border-b pb-2">
+            <div><span className="font-medium">Customer:</span> {customer.nama}</div>
+            <div><span className="font-medium">Telepon:</span> {customer.telepon || '-'}</div>
+            <div><span className="font-medium">Email:</span> {customer.email || '-'}</div>
+            <div><span className="font-medium">Alamat:</span> {customer.alamat || '-'}</div>
+          </div>
+        )}
         <div className="text-center">
-          <p className="text-sm text-black font-medium">No: {payment.receiptNumber || payment.id.substring(0, 8)}</p>
-          <p className="text-sm text-black">Tanggal: {format(new Date(payment.paymentDate || payment.createdAt), 'dd/MM/yyyy HH:mm')}</p>
+          <p className="text-sm text-black font-medium">No: {payment?.receiptNumber || payment?.id.substring(0, 8)}</p>
+          <p className="text-sm text-black">Tanggal: {format(new Date(payment?.paymentDate || payment?.createdAt), 'dd/MM/yyyy HH:mm')}</p>
         </div>
         
         <div className="text-base mb-4 text-black">
           <div className="flex justify-between mb-1">
             <span className="font-medium">Pasien:</span>
-            <span>{payment.patientName}</span>
+            <span>{payment?.patientName}</span>
           </div>
           <div className="flex justify-between mb-1">
             <span className="font-medium">Terapis:</span>
-            <span>{payment.therapistName}</span>
+            <span>{payment?.therapistName}</span>
           </div>
           <div className="flex justify-between mb-1">
             <span className="font-medium">Layanan:</span>
-            <span>{payment.serviceName}</span>
+            <span>{payment?.serviceName}</span>
           </div>
         </div>
         
@@ -128,15 +148,27 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => 
         <div className="text-base mb-4 text-black">
           <div className="flex justify-between font-bold mb-1">
             <span>Total:</span>
-            <span>{formatCurrency(payment.amount)}</span>
+            <span>{formatCurrency(payment?.amount || 0)}</span>
           </div>
           <div className="flex justify-between mb-1">
             <span className="font-medium">Metode Pembayaran:</span>
-            <span>{payment.paymentMethod === 'cash' ? 'Tunai' :
-                   payment.paymentMethod === 'transfer' ? 'Transfer Bank' :
-                   payment.paymentMethod === 'debit' ? 'Kartu Debit' :
-                   payment.paymentMethod === 'credit' ? 'Kartu Kredit' :
-                   payment.paymentMethod === 'qris' ? 'QRIS' : payment.paymentMethod}</span>
+            <span>{payment?.paymentMethod === 'cash' ? 'Tunai' :
+                   payment?.paymentMethod === 'qris' ? 'QRIS' :
+                   payment?.paymentMethod === 'emoney' ? 'E-Money' :
+                   payment?.paymentMethod === 'transfer' ? 'Transfer Bank' :
+                   payment?.paymentMethod === 'virtual_account' ? 'Virtual Account' :
+                   payment?.paymentMethod === 'debit' ? 'Kartu Debit' :
+                   payment?.paymentMethod === 'credit' ? 'Kartu Kredit' :
+                   payment?.paymentMethod === 'ewallet' ? 'E-Wallet' :
+                   payment?.paymentMethod === 'dana' ? 'DANA' :
+                   payment?.paymentMethod === 'ovo' ? 'OVO' :
+                   payment?.paymentMethod === 'gopay' ? 'GoPay' :
+                   payment?.paymentMethod === 'shopeepay' ? 'ShopeePay' :
+                   payment?.paymentMethod === 'linkaja' ? 'LinkAja' :
+                   payment?.paymentMethod === 'bca_mobile' ? 'BCA Mobile' :
+                   payment?.paymentMethod === 'mandiri_online' ? 'Mandiri Online' :
+                   payment?.paymentMethod === 'bni_mobile' ? 'BNI Mobile' :
+                   payment?.paymentMethod === 'bri_mobile' ? 'BRI Mobile' : payment?.paymentMethod}</span>
           </div>
           <div className="flex justify-between mb-1">
             <span className="font-medium">Status:</span>
@@ -144,10 +176,10 @@ const PaymentReceipt: React.FC<PaymentReceiptProps> = ({ payment, onClose }) => 
           </div>
         </div>
         
-        {payment.notes && (
+        {payment?.notes && (
           <div className="text-sm mb-4 text-black">
             <p className="font-bold">Catatan:</p>
-            <p>{payment.notes}</p>
+            <p>{payment?.notes}</p>
           </div>
         )}
         

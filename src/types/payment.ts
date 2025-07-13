@@ -9,8 +9,8 @@ export interface TherapyPayment {
   serviceName: string;
   amount: number;
   status: 'pending' | 'paid' | 'cancelled';
-  paymentMethod?: string;
-  paymentType: 'direct' | 'salary'; // 'direct' untuk pembayaran langsung, 'salary' untuk masuk gaji
+  paymentMethod?: PaymentMethod;
+  paymentType: PaymentType; 
   paymentDate?: string;
   createdAt: string;
   updatedAt?: string;

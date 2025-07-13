@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Product } from '@/types/product';
 import { AppointmentSlot, CartItem } from '@/types/pos';
 import { Employee } from '@/types';
-import { format } from 'date-fns';
+
 import { toast } from "sonner";
 
 export const useShoppingCart = () => {
@@ -22,22 +22,8 @@ export const useShoppingCart = () => {
       const packagePrice = (product.price * 4) - 200000;
       customProduct.name = `${product.name} (Package - 4 visits)`;
       customProduct.price = packagePrice;
-      
-      // Format package name with first appointment date
-      if (appointments.length === 4) {
-        const { date } = appointments[0];
-        const formattedDate = format(date, "dd MMM yyyy");
-        customProduct.name = `${customProduct.name} - Starting ${formattedDate}`;
-      }
     } else {
       customProduct.name = `${product.name} (Single visit)`;
-      
-      // For single visit, format name with date/time
-      if (appointments.length === 1) {
-        const { date, time } = appointments[0];
-        const formattedDate = format(date, "dd MMM yyyy");
-        customProduct.name = `${customProduct.name} - ${formattedDate} at ${time}`;
-      }
     }
     
     addToCart(customProduct, isPackage, appointments, therapist);
@@ -53,31 +39,17 @@ export const useShoppingCart = () => {
       // Generate a unique ID for the cart item
       let uniqueId = product.id;
       
-      // For services with appointments
-      if (product.type === 'service' && appointments.length > 0) {
-        if (isPackage) {
-          uniqueId = `${product.id}-package-${Date.now()}`;
-        } else {
-          const { date, time } = appointments[0];
-          uniqueId = `${product.id}-${date.toISOString()}-${time}`;
-        }
-      } else if (isPackage) {
+      if (isPackage) {
         uniqueId = `${product.id}-package`;
       }
       
-      // For services with appointments, always add as a new item
-      if (product.type === 'service' && appointments.length > 0) {
-        // For backward compatibility
-        const appointmentDate = appointments.length > 0 ? appointments[0].date : undefined;
-        const appointmentTime = appointments.length > 0 ? appointments[0].time : undefined;
-        
+      // For services, always add as a new item
+      if (product.type === 'service') {
         const newItem = { 
           ...product, 
           quantity: 1, 
           isPackage,
           appointments,
-          appointmentDate,  // For backward compatibility
-          appointmentTime,  // For backward compatibility
           therapist,        // Add therapist to the cart item
           id: uniqueId
         };
